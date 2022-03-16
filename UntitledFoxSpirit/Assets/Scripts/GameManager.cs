@@ -4,15 +4,20 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
+
+    [SerializeField] GameObject player;
+    [SerializeField] GameObject spear;
+
+    public Vector3 playerPos;
+
     void Start()
     {
-        
+        playerPos = Vector3.zero;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        playerPos = player.transform.position;
     }
 }
