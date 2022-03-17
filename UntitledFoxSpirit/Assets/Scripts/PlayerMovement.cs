@@ -18,11 +18,13 @@ public class PlayerMovement : MonoBehaviour
     public Transform groundCheck;
     public LayerMask ignorePlayerMask;
     private float velocity;
-    private Vector3 surfacePosition;
-
     bool isGrounded;
 
-    public Transform cam;
+    [Header("Camera")]
+    public float camSpeed = 0.2f;
+    public Transform camFollow;
+
+    [Header("References")]
     public Transform path;
 
     private int currentPoint = 0;
@@ -80,16 +82,21 @@ public class PlayerMovement : MonoBehaviour
 
     void Movement()
     {
+        // Path direction
+        Vector3 pathDir = Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position;
+        float pathAngle = Quaternion.LookRotation(pathDir).eulerAngles.y - 90f;
+
+        // Rotate camera
+        Vector3 camEulerAngle = camFollow.rotation.eulerAngles;
+        camFollow.rotation = Quaternion.Lerp(camFollow.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camSpeed);
+
         // Get input
         Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
 
         if (direction.magnitude >= 0.1f)
         {
-            // Path direction
-            Vector3 pathDir = Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position;
-
             // Player movement/rotation direction
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg - 90f + Quaternion.LookRotation(pathDir).eulerAngles.y;
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + pathAngle;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
@@ -130,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
         // Going Left
         float leftDis = Vector3.Distance(waypoint2, playerPos);
 
-        if (leftDis >= maxDistance && rightDis <= maxDistance)
+        if (leftDis > maxDistance && rightDis < maxDistance)
         {
             // Going left
             if (currentPoint > 0)
@@ -138,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
                 currentPoint--;
             }
         }
-        else if (rightDis >= maxDistance && leftDis <= maxDistance)
+        else if (rightDis > maxDistance && leftDis < maxDistance)
         {
             // Going Right
             if (currentPoint < Waypoints.Count - 2)
