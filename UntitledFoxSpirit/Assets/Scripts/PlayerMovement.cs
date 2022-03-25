@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -8,8 +9,10 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Movement")]
     public float speed = 5.0f;
-    public float turnSmoothTime = 1.0f;
+    public float turnSmoothTime2D = 0.03f;
+    public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
+    public bool camera3D = false;
 
     [Header("Jump")]
     public float jumpForce = 5f;
@@ -21,20 +24,26 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;
 
     [Header("Camera")]
-    public float camSpeed = 0.2f;
-    public Transform camFollow;
+    public float camRotationSpeed2D = 0.2f;
+    public Transform mainCamera;
 
     [Header("References")]
     public Transform path;
+    public CinemachineVirtualCamera virtualCam2D;
+    public CinemachineFreeLook virtualCam3D;
 
     private int currentPoint = 0;
-
     List<Transform> Waypoints = new List<Transform>();
 
     // Start is called before the first frame update
     void Start()
     {
         controller = GetComponent<CharacterController>();
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        #region Waypoint
 
         // "path (transform)" magically supply "all of its children" when it is in a situation such as a foreach
         foreach (Transform child in path)
@@ -43,13 +52,16 @@ public class PlayerMovement : MonoBehaviour
         }
 
         Vector3 waypoint = Waypoints[currentPoint].position;
-
         transform.position = waypoint;
+
+        #endregion
     }
 
     // Update is called once per frame
     void Update()
     {
+        VirtualCamUpdate();
+
         GroundCheck();
 
         PlayerInput();
@@ -57,6 +69,19 @@ public class PlayerMovement : MonoBehaviour
         CheckPlayerOnPath();
     }
 
+    void VirtualCamUpdate()
+    {
+        if (camera3D)
+        {
+            virtualCam3D.Priority = 10;
+            virtualCam2D.Priority = 0;
+        }
+        else
+        {
+            virtualCam3D.Priority = 0;
+            virtualCam2D.Priority = 10;
+        }
+    }
 
     void GroundCheck()
     {
@@ -86,23 +111,30 @@ public class PlayerMovement : MonoBehaviour
         Vector3 pathDir = Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position;
         float pathAngle = Quaternion.LookRotation(pathDir).eulerAngles.y - 90f;
 
-        // Rotate camera
-        Vector3 camEulerAngle = camFollow.rotation.eulerAngles;
-        camFollow.rotation = Quaternion.Lerp(camFollow.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camSpeed);
+        // Is 2d cam on
+        if (!camera3D)
+        {
+            // Rotate camera
+            Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
+            virtualCam2D.transform.rotation = Quaternion.Lerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
+        }
 
         // Get input
         Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
 
         if (direction.magnitude >= 0.1f)
         {
+            float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
+            float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
+
             // Player movement/rotation direction
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + pathAngle;
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f); 
 
             // Move player
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDir * speed * Time.deltaTime);
+            controller.Move(moveDir.normalized * speed * Time.deltaTime);
         }
     }
 
@@ -125,32 +157,35 @@ public class PlayerMovement : MonoBehaviour
 
     void CheckPlayerOnPath()
     {
-        Vector3 waypoint1 = new Vector3(Waypoints[currentPoint].position.x, 0f, Waypoints[currentPoint].position.z);
-        Vector3 waypoint2 = new Vector3(Waypoints[currentPoint + 1].position.x, 0f, Waypoints[currentPoint + 1].position.z);
-        Vector3 playerPos = new Vector3(transform.position.x, 0f, transform.position.z);
-
-        float maxDistance = Vector3.Distance(waypoint1, waypoint2);
-
-        // Going right
-        float rightDis = Vector3.Distance(waypoint1, playerPos);
-
-        // Going Left
-        float leftDis = Vector3.Distance(waypoint2, playerPos);
-
-        if (leftDis > maxDistance && rightDis < maxDistance)
+        if (!camera3D)
         {
-            // Going left
-            if (currentPoint > 0)
+            Vector3 waypoint1 = new Vector3(Waypoints[currentPoint].position.x, 0f, Waypoints[currentPoint].position.z);
+            Vector3 waypoint2 = new Vector3(Waypoints[currentPoint + 1].position.x, 0f, Waypoints[currentPoint + 1].position.z);
+            Vector3 playerPos = new Vector3(transform.position.x, 0f, transform.position.z);
+
+            float maxDistance = Vector3.Distance(waypoint1, waypoint2);
+
+            // Going right
+            float rightDis = Vector3.Distance(waypoint1, playerPos);
+
+            // Going Left
+            float leftDis = Vector3.Distance(waypoint2, playerPos);
+
+            if (leftDis > maxDistance && rightDis < maxDistance)
             {
-                currentPoint--;
+                // Going left
+                if (currentPoint > 0)
+                {
+                    currentPoint--;
+                }
             }
-        }
-        else if (rightDis > maxDistance && leftDis < maxDistance)
-        {
-            // Going Right
-            if (currentPoint < Waypoints.Count - 2)
+            else if (rightDis > maxDistance && leftDis < maxDistance)
             {
-                currentPoint++;
+                // Going Right
+                if (currentPoint < Waypoints.Count - 2)
+                {
+                    currentPoint++;
+                }
             }
         }
     }
