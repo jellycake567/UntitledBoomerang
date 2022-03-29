@@ -16,16 +16,17 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jump")]
     public float jumpHeight = 5f;
+    public float jumpBufferLength = 0.1f;
     public float hangTime = 0.2f;
     public float gravityScale = 3f;
     public float gravity = -9.81f;
-    public Transform groundCheck;
     public LayerMask ignorePlayerMask;
     private float velocity;
-    bool isGrounded;
-    bool canDoubleJump;
-    bool usedDoubleJump;
-    float hangCounter;
+    private bool isGrounded;
+    private float hangCounter;
+    private bool canDoubleJump;
+    private float jumpBufferCounter;
+
 
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
@@ -107,6 +108,20 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    float HeadCheck(float velocity)
+    {
+        Vector3 point = transform.position + Vector3.up * 0.1f;
+        Vector3 size = transform.localScale - new Vector3(0.5f, 0, 0.5f);
+        Collider[] results = Physics.OverlapBox(point, size, Quaternion.identity, ~ignorePlayerMask);
+
+        if (results.Length > 0 && velocity > 0)
+        {
+            return 0f;
+        }
+
+        return velocity;
+    }
+
     void PlayerInput()
     {
         Movement();
@@ -150,6 +165,7 @@ public class PlayerMovement : MonoBehaviour
     {
         velocity += gravity * gravityScale * Time.deltaTime;
 
+        // Player is grounded
         if (isGrounded && velocity < 0)
         {
             velocity = 0f;
@@ -157,7 +173,18 @@ public class PlayerMovement : MonoBehaviour
             canDoubleJump = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && hangCounter > 0f || (Input.GetKeyDown(KeyCode.Space) && canDoubleJump))
+        // Jump before you touch the ground
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            jumpBufferCounter = jumpBufferLength;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
+        // Player jump input
+        if (jumpBufferCounter >= 0f && hangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
             velocity = Mathf.Sqrt(-2 * (gravity * gravityScale) * jumpHeight);
 
@@ -165,8 +192,16 @@ public class PlayerMovement : MonoBehaviour
             {
                 canDoubleJump = false;
             }
+            else if (hangCounter > 0f)
+            {
+                hangCounter = 0f; // So you don't triple jump
+            }
         }
 
+        // If we bump our head set velocity to 0 (so we don't float)
+        velocity = HeadCheck(velocity);
+
+        // Player jump
         controller.Move(new Vector3(0, velocity, 0) * Time.deltaTime);
     }
 
