@@ -22,6 +22,7 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask ignorePlayerMask;
     private float velocity;
     bool isGrounded;
+    bool canDoubleJump;
 
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
@@ -85,13 +86,15 @@ public class PlayerMovement : MonoBehaviour
 
     void GroundCheck()
     {
-        Vector3 point = transform.position + Vector3.down * 0.2f;
-        Vector3 size = transform.localScale;
+        Vector3 point = transform.position + Vector3.down * 0.1f;
+        Vector3 size = transform.localScale - new Vector3(0.5f, 0, 0.5f);
+        Debug.Log(size);
         Collider[] results = Physics.OverlapBox(point, size, Quaternion.identity, ~ignorePlayerMask);
 
         if (results.Length > 0)
         {
             isGrounded = true;
+            canDoubleJump = false;
         }
         else
         {
@@ -150,6 +153,12 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             velocity = jumpForce;
+            canDoubleJump = true;
+        }
+        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
+        {
+            velocity = jumpForce;
+            canDoubleJump = false;
         }
 
         controller.Move(new Vector3(0, velocity, 0) * Time.deltaTime);
