@@ -9,10 +9,15 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Movement")]
     public float speed = 5.0f;
+    public float dashSpeed = 5.0f;
+    public float dashTimer = 0.5f;
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
     public bool camera3D = false;
+    private float dashCounter;
+    private Vector3 movementDirection;
+    private bool isDashing;
 
     [Header("Jump")]
     public float jumpHeight = 5f;
@@ -157,8 +162,12 @@ public class PlayerMovement : MonoBehaviour
 
             // Move player
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDir.normalized * speed * Time.deltaTime);
+
+            if (!isDashing)
+                controller.Move(moveDir.normalized * speed * Time.deltaTime);
         }
+
+        Dash(pathAngle, direction);
     }
 
     void Jump()
@@ -201,8 +210,42 @@ public class PlayerMovement : MonoBehaviour
         // If we bump our head set velocity to 0 (so we don't float)
         velocity = HeadCheck(velocity);
 
+        if (isDashing)
+            velocity = 0f;
+
         // Player jump
         controller.Move(new Vector3(0, velocity, 0) * Time.deltaTime);
+    }
+
+    void Dash(float pathAngle, Vector3 movement)
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing)
+        {
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+            {
+                movementDirection = movement;
+                dashCounter = dashTimer;
+            }            
+        }
+        else
+        {
+            dashCounter -= Time.deltaTime;
+        }
+
+        if (dashCounter > 0)
+        {
+            isDashing = true;
+
+            float targetAngle = Mathf.Atan2(movementDirection.x, movementDirection.z) * Mathf.Rad2Deg + pathAngle;
+
+            // Move player
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            controller.Move(moveDir.normalized * dashSpeed * Time.deltaTime);
+        }
+        else
+        {
+            isDashing = false;
+        }
     }
 
     void CheckPlayerOnPath()

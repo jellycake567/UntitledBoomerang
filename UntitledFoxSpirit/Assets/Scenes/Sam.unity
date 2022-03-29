@@ -939,6 +939,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 7
+  dashSpeed: 30
+  dashTimer: 0.1
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   camera3D: 0
