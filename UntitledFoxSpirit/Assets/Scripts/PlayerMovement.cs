@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jump")]
     public float jumpHeight = 5f;
+    public float hangTime = 0.2f;
     public float gravityScale = 3f;
     public float gravity = -9.81f;
     public Transform groundCheck;
@@ -23,6 +24,8 @@ public class PlayerMovement : MonoBehaviour
     private float velocity;
     bool isGrounded;
     bool canDoubleJump;
+    bool usedDoubleJump;
+    float hangCounter;
 
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
@@ -93,11 +96,14 @@ public class PlayerMovement : MonoBehaviour
         if (results.Length > 0)
         {
             isGrounded = true;
-            canDoubleJump = false;
+
+            hangCounter = hangTime;
         }
         else
         {
             isGrounded = false;
+
+            hangCounter -= Time.deltaTime;
         }
     }
 
@@ -147,13 +153,18 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded && velocity < 0)
         {
             velocity = 0f;
+
+            canDoubleJump = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded || (Input.GetKeyDown(KeyCode.Space) && canDoubleJump))
+        if (Input.GetKeyDown(KeyCode.Space) && hangCounter > 0f || (Input.GetKeyDown(KeyCode.Space) && canDoubleJump))
         {
             velocity = Mathf.Sqrt(-2 * (gravity * gravityScale) * jumpHeight);
 
-            canDoubleJump = isGrounded ? true : false;
+            if (hangCounter <= 0f && !isGrounded && canDoubleJump)
+            {
+                canDoubleJump = false;
+            }
         }
 
         controller.Move(new Vector3(0, velocity, 0) * Time.deltaTime);
