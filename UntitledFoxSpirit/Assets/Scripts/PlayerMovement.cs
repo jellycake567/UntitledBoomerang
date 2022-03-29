@@ -15,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
     public bool camera3D = false;
 
     [Header("Jump")]
-    public float jumpForce = 5f;
+    public float jumpHeight = 5f;
     public float gravityScale = 3f;
     public float gravity = -9.81f;
     public Transform groundCheck;
@@ -88,7 +88,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 point = transform.position + Vector3.down * 0.1f;
         Vector3 size = transform.localScale - new Vector3(0.5f, 0, 0.5f);
-        Debug.Log(size);
         Collider[] results = Physics.OverlapBox(point, size, Quaternion.identity, ~ignorePlayerMask);
 
         if (results.Length > 0)
@@ -150,15 +149,11 @@ public class PlayerMovement : MonoBehaviour
             velocity = 0f;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded || (Input.GetKeyDown(KeyCode.Space) && canDoubleJump))
         {
-            velocity = jumpForce;
-            canDoubleJump = true;
-        }
-        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
-        {
-            velocity = jumpForce;
-            canDoubleJump = false;
+            velocity = Mathf.Sqrt(-2 * (gravity * gravityScale) * jumpHeight);
+
+            canDoubleJump = isGrounded ? true : false;
         }
 
         controller.Move(new Vector3(0, velocity, 0) * Time.deltaTime);

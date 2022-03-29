@@ -540,7 +540,7 @@ MonoBehaviour:
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   camera3D: 0
-  jumpForce: 10
+  jumpHeight: 5
   gravityScale: 3
   gravity: -9.81
   groundCheck: {fileID: 1711744877}
