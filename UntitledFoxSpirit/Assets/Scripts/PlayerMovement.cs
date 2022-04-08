@@ -9,20 +9,29 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Movement")]
     public float speed = 5.0f;
-    public float dashSpeed = 5.0f;
-    public float dashTimer = 0.5f;
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
     public bool camera3D = false;
-    private float dashCounter;
     private Vector3 movementDirection;
+    
+    private float currentSpeed;
+
+    [Header("Dash")]
+    public float dashSpeed = 5.0f;
+    public float dashLength = 4.0f;
+    [Range(0f, 1f)] public float startDashAcc = 0.1f;   // Acceleration speed to dashspeed
+    [Range(0f, 1f)] public float endDashAcc = 0.1f;     // Deceleration dashspeed to speed
+    private float dashTimer;
+    private float dashCounter;
     private bool isDashing;
+    
+    
 
     [Header("Jump")]
     public float jumpHeight = 5f;
-    public float jumpBufferLength = 0.1f;
-    public float hangTime = 0.2f;
+    public float jumpBufferLength = 0.1f;   // Detect jump input before touching the ground
+    public float hangTime = 0.2f;           // Allow you to jump when you walk off platform
     public float gravityScale = 3f;
     public float gravity = -9.81f;
     public LayerMask ignorePlayerMask;
@@ -224,23 +233,45 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
             {
                 movementDirection = movement;
+                currentSpeed = speed;
+                dashTimer = dashLength / dashSpeed;
                 dashCounter = dashTimer;
+
+                isDashing = true;
             }            
         }
-        else
+        else if (isDashing)
         {
             dashCounter -= Time.deltaTime;
+
+            float startAcc = dashTimer * (1f - startDashAcc);
+            float endAcc = dashTimer * endDashAcc;
+
+            if (dashCounter >= startAcc)
+            {
+                float acceleration = (dashCounter - startAcc) / (dashTimer - startAcc);
+
+                currentSpeed = Mathf.Lerp(dashSpeed, speed, acceleration);
+            }
+            else if (dashCounter <= endAcc && dashCounter >= 0f)
+            {
+                float acceleration = dashCounter / endAcc;
+
+                currentSpeed = Mathf.Lerp(speed, dashSpeed, acceleration);
+            }
+            else if (dashCounter > 0f && dashCounter <= dashTimer)
+            {
+                currentSpeed = dashSpeed;
+            }
         }
 
-        if (dashCounter > 0)
+        if (dashCounter > 0 && isDashing)
         {
-            isDashing = true;
-
             float targetAngle = Mathf.Atan2(movementDirection.x, movementDirection.z) * Mathf.Rad2Deg + pathAngle;
 
             // Move player
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDir.normalized * dashSpeed * Time.deltaTime);
+            controller.Move(moveDir.normalized * currentSpeed * Time.deltaTime);
         }
         else
         {

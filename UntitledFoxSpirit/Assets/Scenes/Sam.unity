@@ -939,15 +939,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 7
-  dashSpeed: 30
-  dashTimer: 0.1
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   camera3D: 0
+  dashSpeed: 20
+  dashLength: 5
+  startDashAcc: 0.4
+  endDashAcc: 0.2
   jumpHeight: 2
   jumpBufferLength: 0.1
   hangTime: 0.2
-  gravityScale: 2.5
+  gravityScale: 4
   gravity: -9.81
   ignorePlayerMask:
     serializedVersion: 2
@@ -2141,7 +2143,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TrackedObjectOffset: {x: 0, y: 0, z: 0}
-  m_LookaheadTime: 0.3
+  m_LookaheadTime: 0.1
   m_LookaheadSmoothing: 1
   m_LookaheadIgnoreY: 1
   m_XDamping: 1
