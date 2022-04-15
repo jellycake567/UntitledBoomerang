@@ -1,20 +1,23 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    CharacterController controller;
+
+    [Header("PID Settings")]
+    public float proportional;
+    public float integral;
+    public float derivative;
 
     [Header("Movement")]
-    public float speed = 5.0f;
+    public float playerSpeed = 5.0f;
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
     public bool camera3D = false;
     private Vector3 movementDirection;
-    
     private float currentSpeed;
 
     [Header("Dash")]
@@ -25,8 +28,6 @@ public class PlayerMovement : MonoBehaviour
     private float dashTimer;
     private float dashCounter;
     private bool isDashing;
-    
-    
 
     [Header("Jump")]
     public float jumpHeight = 5f;
@@ -41,7 +42,6 @@ public class PlayerMovement : MonoBehaviour
     private bool canDoubleJump;
     private float jumpBufferCounter;
 
-
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
     public Transform mainCamera;
@@ -54,13 +54,19 @@ public class PlayerMovement : MonoBehaviour
     private int currentPoint = 0;
     List<Transform> Waypoints = new List<Transform>();
 
+    private PID pid;
+    Rigidbody rb;
+
     // Start is called before the first frame update
     void Start()
     {
-        controller = GetComponent<CharacterController>();
+        Physics.gravity *= gravityScale;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+
+        rb = GetComponent<Rigidbody>();
+
+        //Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.visible = false;
 
         #region Waypoint
 
@@ -79,36 +85,30 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        pid = new PID(proportional, integral, derivative);
+
         VirtualCamUpdate();
 
         GroundCheck();
 
-        PlayerInput();
-
         CheckPlayerOnPath();
     }
 
-    void VirtualCamUpdate()
+    void FixedUpdate()
     {
-        if (camera3D)
-        {
-            virtualCam3D.Priority = 10;
-            virtualCam2D.Priority = 0;
-        }
-        else
-        {
-            virtualCam3D.Priority = 0;
-            virtualCam2D.Priority = 10;
-        }
+        Movement();
+        Jump();
     }
+
+    #region Gravity Check
 
     void GroundCheck()
     {
         Vector3 point = transform.position + Vector3.down * 0.1f;
         Vector3 size = transform.localScale - new Vector3(0.5f, 0, 0.5f);
-        Collider[] results = Physics.OverlapBox(point, size, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
 
-        if (results.Length > 0)
+        if (overlap)
         {
             isGrounded = true;
 
@@ -126,9 +126,9 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 point = transform.position + Vector3.up * 0.1f;
         Vector3 size = transform.localScale - new Vector3(0.5f, 0, 0.5f);
-        Collider[] results = Physics.OverlapBox(point, size, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
 
-        if (results.Length > 0 && velocity > 0)
+        if (overlap && velocity > 0)
         {
             return 0f;
         }
@@ -136,11 +136,9 @@ public class PlayerMovement : MonoBehaviour
         return velocity;
     }
 
-    void PlayerInput()
-    {
-        Movement();
-        Jump();
-    }
+    #endregion
+
+    #region Player Movement
 
     void Movement()
     {
@@ -167,13 +165,19 @@ public class PlayerMovement : MonoBehaviour
             // Player movement/rotation direction
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, angle, 0f); 
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
             // Move player
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
+            float speed = new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude;
+            float correctionSpeed = pid.Update(playerSpeed, speed, Time.deltaTime);
+
+            Debug.Log(speed);
+
             if (!isDashing)
-                controller.Move(moveDir.normalized * speed * Time.deltaTime);
+                rb.AddForce(moveDir * correctionSpeed);
+
         }
 
         Dash(pathAngle, direction);
@@ -181,8 +185,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
-        velocity += gravity * gravityScale * Time.deltaTime;
-
         // Player is grounded
         if (isGrounded && velocity < 0)
         {
@@ -204,7 +206,11 @@ public class PlayerMovement : MonoBehaviour
         // Player jump input
         if (jumpBufferCounter >= 0f && hangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
-            velocity = Mathf.Sqrt(-2 * (gravity * gravityScale) * jumpHeight);
+            velocity = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
+
+            rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
+
+            Debug.Log("Jump");
 
             if (hangCounter <= 0f && !isGrounded && canDoubleJump)
             {
@@ -223,7 +229,7 @@ public class PlayerMovement : MonoBehaviour
             velocity = 0f;
 
         // Player jump
-        controller.Move(new Vector3(0, velocity, 0) * Time.deltaTime);
+        //rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
     }
 
     void Dash(float pathAngle, Vector3 movement)
@@ -233,12 +239,12 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
             {
                 movementDirection = movement;
-                currentSpeed = speed;
+                currentSpeed = playerSpeed;
                 dashTimer = dashLength / dashSpeed;
                 dashCounter = dashTimer;
 
                 isDashing = true;
-            }            
+            }
         }
         else if (isDashing)
         {
@@ -251,13 +257,13 @@ public class PlayerMovement : MonoBehaviour
             {
                 float acceleration = (dashCounter - startAcc) / (dashTimer - startAcc);
 
-                currentSpeed = Mathf.Lerp(dashSpeed, speed, acceleration);
+                currentSpeed = Mathf.Lerp(dashSpeed, playerSpeed, acceleration);
             }
             else if (dashCounter <= endAcc && dashCounter >= 0f)
             {
                 float acceleration = dashCounter / endAcc;
 
-                currentSpeed = Mathf.Lerp(speed, dashSpeed, acceleration);
+                currentSpeed = Mathf.Lerp(playerSpeed, dashSpeed, acceleration);
             }
             else if (dashCounter > 0f && dashCounter <= dashTimer)
             {
@@ -271,13 +277,33 @@ public class PlayerMovement : MonoBehaviour
 
             // Move player
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDir.normalized * currentSpeed * Time.deltaTime);
+            rb.AddForce(moveDir.normalized * currentSpeed * Time.deltaTime);
         }
         else
         {
             isDashing = false;
         }
     }
+
+    #endregion
+
+
+    void VirtualCamUpdate()
+    {
+        if (camera3D)
+        {
+            virtualCam3D.Priority = 10;
+            virtualCam2D.Priority = 0;
+        }
+        else
+        {
+            virtualCam3D.Priority = 0;
+            virtualCam2D.Priority = 10;
+        }
+    }
+
+    
+
 
     void CheckPlayerOnPath()
     {
