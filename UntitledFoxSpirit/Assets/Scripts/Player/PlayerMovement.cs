@@ -10,6 +10,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement")] public float foxSpeed = 5.0f;
 
     [Header("Movement")]
+    public float acceleration = 0.2f;
+    public float deceleration = 0.1f;
+    public float velPower = 2f;
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
@@ -32,15 +35,15 @@ public class PlayerMovement : MonoBehaviour
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
-    public float jumpBufferLength = 0.1f;   // Detect jump input before touching the ground
-    public float hangTime = 0.2f;           // Allow you to jump when you walk off platform
+    public float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
+    public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
+    private float jumpHangCounter;
+    private float jumpBufferCounter;
     public float gravityScale = 3f;
     public LayerMask ignorePlayerMask;
     private float velocity;
     private bool isGrounded;
-    private float hangCounter;
     private bool canDoubleJump;
-    private float jumpBufferCounter;
 
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
@@ -52,6 +55,7 @@ public class PlayerMovement : MonoBehaviour
     public CinemachineFreeLook virtualCam3D;
     public GameObject human;
     public GameObject fox;
+    public Animation attack;
 
     private int currentPoint = 0;
     List<Transform> Waypoints = new List<Transform>();
@@ -94,6 +98,7 @@ public class PlayerMovement : MonoBehaviour
         Jump();
         DashInput();
         ChangeForm();
+        Attack();
 
         CheckPlayerOnPath();
     }
@@ -157,6 +162,11 @@ public class PlayerMovement : MonoBehaviour
             // Apply a force that attempts to reach our target velocity
             Vector3 velocity = rbVelocity;
             Vector3 velocityChange = (targetVelocity - velocity);
+
+            //float accelRate = (Mathf.Abs(targetVelocity.magnitude) > 0.01f) ? acceleration : deceleration;
+
+            //float movement = Mathf.Pow(Mathf.Abs(velocityChange.magnitude) * accelRate, velPower) * Mathf.Sign(velocityChange.magnitude);
+
             velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
             velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
             velocityChange.y = 0;
@@ -165,7 +175,9 @@ public class PlayerMovement : MonoBehaviour
 
             if (!isDashing)
                 rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
         }
+        
     }
 
     void Jump()
@@ -175,11 +187,11 @@ public class PlayerMovement : MonoBehaviour
         {
             canDoubleJump = true;
 
-            hangCounter = hangTime;
+            jumpHangCounter = jumpCoyoteTime;
         }
         else
         {
-            hangCounter -= Time.deltaTime;
+            jumpHangCounter -= Time.deltaTime;
 
             // Jumping cooldown
             jumpCounter -= Time.deltaTime;
@@ -188,7 +200,7 @@ public class PlayerMovement : MonoBehaviour
         // Jump before you touch the ground
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            jumpBufferCounter = jumpBufferLength;
+            jumpBufferCounter = jumpBufferTime;
         }
         else
         {
@@ -197,7 +209,7 @@ public class PlayerMovement : MonoBehaviour
 
         
         // Player jump input
-        if (jumpBufferCounter > 0f && hangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
+        if (jumpBufferCounter > 0f && jumpHangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
@@ -219,13 +231,13 @@ public class PlayerMovement : MonoBehaviour
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
-            if (hangCounter <= 0f && !isGrounded && canDoubleJump)
+            if (jumpHangCounter <= 0f && !isGrounded && canDoubleJump)
             {
                 canDoubleJump = false;
             }
-            if (hangCounter > 0f)
+            if (jumpHangCounter > 0f)
             {
-                hangCounter = 0f; // So you don't triple jump
+                jumpHangCounter = 0f; // So you don't triple jump
             }
         }
 
@@ -286,6 +298,14 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #endregion
+
+    void Attack()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            attack.Play();
+        }
+    }
 
     void ChangeForm()
     {
