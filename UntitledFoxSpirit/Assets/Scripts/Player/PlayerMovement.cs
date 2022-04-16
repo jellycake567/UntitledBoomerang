@@ -5,33 +5,36 @@ using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
 {
+
+    [Header("Movement")] public float humanSpeed = 5.0f;
+    [Header("Movement")] public float foxSpeed = 5.0f;
+
     [Header("Movement")]
-    public float playerSpeed = 5.0f;
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
     public float maxVelocityChange = 10f;
     public bool camera3D = false;
-    private Vector3 movementDirection;
-    private float currentSpeed;
+    private bool isFox;
 
     [Header("Dash")]
-    public float dashTime = 5.0f;
-    public float dashDistance = 4.0f;
-    [Range(0f, 1f)] public float startDashAcc = 0.1f;   // Acceleration speed to dashspeed
-    [Range(0f, 1f)] public float endDashAcc = 0.1f;     // Deceleration dashspeed to speed
-    private float dashTimer;
-    private float dashCounter;
+    public float humanDashTime = 5.0f;
+    public float humanDashDistance = 4.0f;
+
+    [Header("Dash")]
+    public float foxDashTime = 5.0f;
+    public float foxDashDistance = 4.0f;
     private bool isDashing;
+
+    [Header("Jump")] public float humanJumpHeight = 5f;
+    [Header("Jump")] public float foxJumpHeight = 5f;
 
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
-    public float jumpHeight = 5f;
     public float jumpBufferLength = 0.1f;   // Detect jump input before touching the ground
     public float hangTime = 0.2f;           // Allow you to jump when you walk off platform
     public float gravityScale = 3f;
-    public float gravity = -9.81f;
     public LayerMask ignorePlayerMask;
     private float velocity;
     private bool isGrounded;
@@ -47,6 +50,8 @@ public class PlayerMovement : MonoBehaviour
     public Transform path;
     public CinemachineVirtualCamera virtualCam2D;
     public CinemachineFreeLook virtualCam3D;
+    public GameObject human;
+    public GameObject fox;
 
     private int currentPoint = 0;
     List<Transform> Waypoints = new List<Transform>();
@@ -59,7 +64,6 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         Physics.gravity *= gravityScale;
-
 
         rb = GetComponent<Rigidbody>();
 
@@ -89,6 +93,8 @@ public class PlayerMovement : MonoBehaviour
 
         Jump();
         DashInput();
+        ChangeForm();
+
         CheckPlayerOnPath();
     }
 
@@ -96,7 +102,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Movement();
     }
-    
 
     #region Player Movement
 
@@ -134,14 +139,16 @@ public class PlayerMovement : MonoBehaviour
 
             #region Calculate Velocity
 
+            float speed = isFox ? foxSpeed : humanSpeed;
+
             // Player is moving diagonally
             if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
             {
-                targetVelocity = -targetVelocity * playerSpeed / REDUCE_SPEED;
+                targetVelocity = -targetVelocity * speed / REDUCE_SPEED;
             }
             else
             {
-                targetVelocity = -targetVelocity * playerSpeed;
+                targetVelocity = -targetVelocity * speed;
             }
 
             
@@ -192,6 +199,8 @@ public class PlayerMovement : MonoBehaviour
         // Player jump input
         if (jumpBufferCounter > 0f && hangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
+            float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
+
             // Calculate jump velocity
             if (rb.velocity.y >= 0)
             {
@@ -235,60 +244,8 @@ public class PlayerMovement : MonoBehaviour
                 Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
 
                 StartCoroutine(Dash(-direction));
-
-                //currentSpeed = playerSpeed;
-                //dashTimer = dashLength / dashSpeed;
-                //dashCounter = dashTimer;
-
-                //isDashing = true;
             }
         }
-
-        //if (isDashing)
-        //{
-        //    dashCounter -= Time.deltaTime;
-
-        //    float startAcc = dashTimer * (1f - startDashAcc);
-        //    float endAcc = dashTimer * endDashAcc;
-
-        //    if (dashCounter >= startAcc)
-        //    {
-        //        // Accelerate to dash speed 
-
-        //        float acceleration = (dashCounter - startAcc) / (dashTimer - startAcc);
-
-        //        currentSpeed = Mathf.Lerp(dashSpeed, playerSpeed, acceleration);
-        //    }
-        //    else if (dashCounter <= endAcc && dashCounter >= 0f)
-        //    {
-        //        // Decelerate to normal speed
-
-        //        float acceleration = dashCounter / endAcc;
-
-        //        currentSpeed = Mathf.Lerp(playerSpeed, dashSpeed, acceleration);
-        //    }
-        //    else if (dashCounter > 0f && dashCounter <= dashTimer)
-        //    {
-        //        // Maintain dash speed
-
-        //        currentSpeed = dashSpeed;
-        //    }
-        //}
-
-        //// If dash is active
-        //if (dashCounter > 0 && isDashing)
-        //{
-        //    rb.useGravity = false;
-
-
-        //    rb.velocity = targetVelocity * currentSpeed;
-            
-        //}
-        //else
-        //{
-        //    rb.useGravity = true;
-        //    isDashing = false;
-        //}
     }
 
     IEnumerator Dash(Vector3 direction)
@@ -296,6 +253,9 @@ public class PlayerMovement : MonoBehaviour
         isDashing = true;
 
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        float dashDistance = isFox ? foxDashDistance : humanDashDistance;
+        float dashTime = isFox ? foxDashTime : humanDashTime;
 
         float speed = dashDistance / dashTime;
 
@@ -308,12 +268,11 @@ public class PlayerMovement : MonoBehaviour
         rb.useGravity = true;
     }
 
-    #endregion
-
     void GroundCheck()
     {
         Vector3 point = transform.position + Vector3.down;
-        Vector3 size = new Vector3(0.6f, 0.1f, 0.6f);
+        Vector3 size = isFox ? new Vector3(0.6f, 0.1f, 0.6f) : new Vector3(0.9f, 0.1f, 1.9f);
+
         bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
 
         if (overlap && rb.velocity.y <= 0f)
@@ -323,6 +282,29 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             isGrounded = false;
+        }
+    }
+
+    #endregion
+
+    void ChangeForm()
+    {
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (isFox)
+            {
+                human.SetActive(true);
+                fox.SetActive(false);
+
+                isFox = false;
+            }
+            else
+            {
+                human.SetActive(false);
+                fox.SetActive(true);
+
+                isFox = true;
+            }
         }
     }
 
