@@ -5,24 +5,19 @@ using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
 {
-
-    [Header("PID Settings")]
-    public float proportional;
-    public float integral;
-    public float derivative;
-
     [Header("Movement")]
     public float playerSpeed = 5.0f;
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
+    public float maxVelocityChange = 10f;
     public bool camera3D = false;
     private Vector3 movementDirection;
     private float currentSpeed;
 
     [Header("Dash")]
-    public float dashSpeed = 5.0f;
-    public float dashLength = 4.0f;
+    public float dashTime = 5.0f;
+    public float dashDistance = 4.0f;
     [Range(0f, 1f)] public float startDashAcc = 0.1f;   // Acceleration speed to dashspeed
     [Range(0f, 1f)] public float endDashAcc = 0.1f;     // Deceleration dashspeed to speed
     private float dashTimer;
@@ -30,6 +25,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isDashing;
 
     [Header("Jump")]
+    public float jumpCooldown = 0.2f;
+    private float jumpCounter;
     public float jumpHeight = 5f;
     public float jumpBufferLength = 0.1f;   // Detect jump input before touching the ground
     public float hangTime = 0.2f;           // Allow you to jump when you walk off platform
@@ -54,7 +51,8 @@ public class PlayerMovement : MonoBehaviour
     private int currentPoint = 0;
     List<Transform> Waypoints = new List<Transform>();
 
-    private PID pid;
+    const float REDUCE_SPEED = 1.414214f;
+
     Rigidbody rb;
 
     // Start is called before the first frame update
@@ -85,58 +83,20 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        pid = new PID(proportional, integral, derivative);
-
         VirtualCamUpdate();
 
         GroundCheck();
 
+        Jump();
+        DashInput();
         CheckPlayerOnPath();
     }
 
     void FixedUpdate()
     {
         Movement();
-        Jump();
     }
-
-    #region Gravity Check
-
-    void GroundCheck()
-    {
-        Vector3 point = transform.position + Vector3.down * 0.1f;
-        Vector3 size = transform.localScale - new Vector3(0.5f, 0, 0.5f);
-        bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
-
-        if (overlap)
-        {
-            isGrounded = true;
-
-            hangCounter = hangTime;
-        }
-        else
-        {
-            isGrounded = false;
-
-            hangCounter -= Time.deltaTime;
-        }
-    }
-
-    float HeadCheck(float velocity)
-    {
-        Vector3 point = transform.position + Vector3.up * 0.1f;
-        Vector3 size = transform.localScale - new Vector3(0.5f, 0, 0.5f);
-        bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
-
-        if (overlap && velocity > 0)
-        {
-            return 0f;
-        }
-
-        return velocity;
-    }
-
-    #endregion
+    
 
     #region Player Movement
 
@@ -155,10 +115,13 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Get input
-        Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
+        Vector3 targetVelocity = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        Vector3 direction = targetVelocity.normalized;
 
         if (direction.magnitude >= 0.1f)
         {
+            #region Player Rotation
+
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
             float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
 
@@ -167,30 +130,52 @@ public class PlayerMovement : MonoBehaviour
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
-            // Move player
-            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            #endregion
 
-            float speed = new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude;
-            float correctionSpeed = pid.Update(playerSpeed, speed, Time.deltaTime);
+            #region Calculate Velocity
 
-            Debug.Log(speed);
+            // Player is moving diagonally
+            if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
+            {
+                targetVelocity = -targetVelocity * playerSpeed / REDUCE_SPEED;
+            }
+            else
+            {
+                targetVelocity = -targetVelocity * playerSpeed;
+            }
+
+            
+            Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+            // Apply a force that attempts to reach our target velocity
+            Vector3 velocity = rbVelocity;
+            Vector3 velocityChange = (targetVelocity - velocity);
+            velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+            velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+            velocityChange.y = 0;
+
+            #endregion
 
             if (!isDashing)
-                rb.AddForce(moveDir * correctionSpeed);
-
+                rb.AddForce(velocityChange, ForceMode.VelocityChange);
         }
-
-        Dash(pathAngle, direction);
     }
 
     void Jump()
     {
-        // Player is grounded
-        if (isGrounded && velocity < 0)
+        // Can jump when leaving the ground
+        if (isGrounded && jumpCounter <= 0f)
         {
-            velocity = 0f;
-
             canDoubleJump = true;
+
+            hangCounter = hangTime;
+        }
+        else
+        {
+            hangCounter -= Time.deltaTime;
+
+            // Jumping cooldown
+            jumpCounter -= Time.deltaTime;
         }
 
         // Jump before you touch the ground
@@ -203,90 +188,143 @@ public class PlayerMovement : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
+        
         // Player jump input
-        if (jumpBufferCounter >= 0f && hangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
+        if (jumpBufferCounter > 0f && hangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
-            velocity = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
+            // Calculate jump velocity
+            if (rb.velocity.y >= 0)
+            {
+                velocity = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
+                velocity += -rb.velocity.y; // When double jumping cancel out your first jump force
+            }
+            else
+            {
+                velocity = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
+                velocity += Mathf.Abs(rb.velocity.y); // When falling cancel out gravity force
+            }
 
+            // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
-            Debug.Log("Jump");
+            // Set jump cooldown
+            jumpCounter = jumpCooldown;
 
             if (hangCounter <= 0f && !isGrounded && canDoubleJump)
             {
                 canDoubleJump = false;
             }
-            else if (hangCounter > 0f)
+            if (hangCounter > 0f)
             {
                 hangCounter = 0f; // So you don't triple jump
             }
         }
 
-        // If we bump our head set velocity to 0 (so we don't float)
-        velocity = HeadCheck(velocity);
-
         if (isDashing)
             velocity = 0f;
-
-        // Player jump
-        //rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
     }
 
-    void Dash(float pathAngle, Vector3 movement)
+    void DashInput()
     {
+        // Dash input
         if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing)
         {
+            // If player is moving left or right
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
             {
-                movementDirection = movement;
-                currentSpeed = playerSpeed;
-                dashTimer = dashLength / dashSpeed;
-                dashCounter = dashTimer;
+                Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
 
-                isDashing = true;
-            }
-        }
-        else if (isDashing)
-        {
-            dashCounter -= Time.deltaTime;
+                StartCoroutine(Dash(-direction));
 
-            float startAcc = dashTimer * (1f - startDashAcc);
-            float endAcc = dashTimer * endDashAcc;
+                //currentSpeed = playerSpeed;
+                //dashTimer = dashLength / dashSpeed;
+                //dashCounter = dashTimer;
 
-            if (dashCounter >= startAcc)
-            {
-                float acceleration = (dashCounter - startAcc) / (dashTimer - startAcc);
-
-                currentSpeed = Mathf.Lerp(dashSpeed, playerSpeed, acceleration);
-            }
-            else if (dashCounter <= endAcc && dashCounter >= 0f)
-            {
-                float acceleration = dashCounter / endAcc;
-
-                currentSpeed = Mathf.Lerp(playerSpeed, dashSpeed, acceleration);
-            }
-            else if (dashCounter > 0f && dashCounter <= dashTimer)
-            {
-                currentSpeed = dashSpeed;
+                //isDashing = true;
             }
         }
 
-        if (dashCounter > 0 && isDashing)
-        {
-            float targetAngle = Mathf.Atan2(movementDirection.x, movementDirection.z) * Mathf.Rad2Deg + pathAngle;
+        //if (isDashing)
+        //{
+        //    dashCounter -= Time.deltaTime;
 
-            // Move player
-            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            rb.AddForce(moveDir.normalized * currentSpeed * Time.deltaTime);
-        }
-        else
-        {
-            isDashing = false;
-        }
+        //    float startAcc = dashTimer * (1f - startDashAcc);
+        //    float endAcc = dashTimer * endDashAcc;
+
+        //    if (dashCounter >= startAcc)
+        //    {
+        //        // Accelerate to dash speed 
+
+        //        float acceleration = (dashCounter - startAcc) / (dashTimer - startAcc);
+
+        //        currentSpeed = Mathf.Lerp(dashSpeed, playerSpeed, acceleration);
+        //    }
+        //    else if (dashCounter <= endAcc && dashCounter >= 0f)
+        //    {
+        //        // Decelerate to normal speed
+
+        //        float acceleration = dashCounter / endAcc;
+
+        //        currentSpeed = Mathf.Lerp(playerSpeed, dashSpeed, acceleration);
+        //    }
+        //    else if (dashCounter > 0f && dashCounter <= dashTimer)
+        //    {
+        //        // Maintain dash speed
+
+        //        currentSpeed = dashSpeed;
+        //    }
+        //}
+
+        //// If dash is active
+        //if (dashCounter > 0 && isDashing)
+        //{
+        //    rb.useGravity = false;
+
+
+        //    rb.velocity = targetVelocity * currentSpeed;
+            
+        //}
+        //else
+        //{
+        //    rb.useGravity = true;
+        //    isDashing = false;
+        //}
+    }
+
+    IEnumerator Dash(Vector3 direction)
+    {
+        isDashing = true;
+
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        float speed = dashDistance / dashTime;
+
+        rb.AddForce(direction * speed, ForceMode.Impulse);
+        rb.useGravity = false;
+
+        yield return new WaitForSeconds(dashTime);
+
+        isDashing = false;
+        rb.useGravity = true;
     }
 
     #endregion
 
+    void GroundCheck()
+    {
+        Vector3 point = transform.position + Vector3.down;
+        Vector3 size = new Vector3(0.6f, 0.1f, 0.6f);
+        bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
+
+        if (overlap && rb.velocity.y <= 0f)
+        {
+            isGrounded = true;
+        }
+        else
+        {
+            isGrounded = false;
+        }
+    }
 
     void VirtualCamUpdate()
     {
@@ -301,9 +339,6 @@ public class PlayerMovement : MonoBehaviour
             virtualCam2D.Priority = 10;
         }
     }
-
-    
-
 
     void CheckPlayerOnPath()
     {

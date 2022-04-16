@@ -685,7 +685,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067233, y: 0.000000008476823, z: -0.0000000014683023, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067233, y: 0.000000008476961, z: -0.0000000014683265, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -984,7 +984,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1047464483}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
@@ -1082,21 +1082,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d4577d9795ee3f4db4883727f97d0c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proportional: 0.6
-  integral: 0.7
-  derivative: 0.4
-  playerSpeed: 5
+  playerSpeed: 7
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
+  maxVelocityChange: 10
   camera3D: 0
-  dashSpeed: 20
-  dashLength: 5
+  dashTime: 0.3
+  dashDistance: 4
   startDashAcc: 0.4
   endDashAcc: 0.2
-  jumpHeight: 5
-  jumpBufferLength: 0.1
+  jumpCooldown: 0.2
+  jumpHeight: 3
+  jumpBufferLength: 0.2
   hangTime: 0.2
-  gravityScale: 4
+  gravityScale: 7
   gravity: -9.81
   ignorePlayerMask:
     serializedVersion: 2
@@ -1765,7 +1764,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1337856846}
-  m_LocalRotation: {x: 0.1347677, y: 0.000000008524705, z: -0.0000000011594323, w: 0.9908773}
+  m_LocalRotation: {x: 0.1347677, y: -0.000000008524705, z: 0.0000000011594323, w: 0.9908773}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
