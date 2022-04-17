@@ -5,29 +5,44 @@ using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movement")] public float humanSpeed = 5.0f;
-    [Header("Movement")] public float foxSpeed = 5.0f;
+    #region Human Settings
+
+    [Header("Movement")]
+    public float humanSpeed = 5.0f;
+
+    [Header("Jump")]
+    public float humanJumpHeight = 5f;
+
+    [Header("Dash")]
+    public float humanDashTime = 5.0f;
+    public float humanDashDistance = 4.0f;
+
+    #endregion
+
+    #region Fox Settings
+
+    [Header("Movement")]
+    public float foxSpeed = 5.0f;
+
+    
+    [Header("Jump")]
+    public float foxJumpHeight = 5f;
+
+    [Header("Dash")]
+    public float foxDashTime = 5.0f;
+    public float foxDashDistance = 4.0f;
+
+    #endregion
 
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
     public float maxVelocityChange = 10f;
+    public float frictionAmount = 0.2f;
     public bool camera3D = false;
-    private bool isFox;
 
-    [Header("Dash")]
-    public float humanDashTime = 5.0f;
-    public float humanDashDistance = 4.0f;
-
-    [Header("Dash")]
-    public float foxDashTime = 5.0f;
-    public float foxDashDistance = 4.0f;
-    private bool isDashing;
-
-    [Header("Jump")] public float humanJumpHeight = 5f;
-    [Header("Jump")] public float foxJumpHeight = 5f;
-
+    
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
@@ -42,7 +57,6 @@ public class PlayerMovement : MonoBehaviour
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
     public LayerMask ignorePlayerMask;
-    private float velocity;
     private bool isGrounded;
 
     [Header("Camera")]
@@ -57,12 +71,22 @@ public class PlayerMovement : MonoBehaviour
     public GameObject fox;
     public Animation attack;
 
+
+    #region Internal Variables
+
+    private bool isFox;
+    private bool isDashing;
+
+    // Waypoint
     private int currentPoint = 0;
     List<Transform> Waypoints = new List<Transform>();
 
     const float REDUCE_SPEED = 1.414214f;
 
     Rigidbody rb;
+
+    #endregion
+
 
     // Start is called before the first frame update
     void Start()
@@ -128,19 +152,22 @@ public class PlayerMovement : MonoBehaviour
         Vector3 targetVelocity = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
         Vector3 direction = targetVelocity.normalized;
 
-        if (direction.magnitude >= 0.1f)
+        if (!isDashing)
         {
-            #region Player Rotation
+            if (direction.magnitude > 0.1f)
+            {
+                #region Player Rotation
 
-            float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
-            float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
+                float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
+                float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
 
-            // Player movement/rotation direction
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+                // Player movement/rotation direction
+                float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
+                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+                transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
-            #endregion
+                #endregion
+            }
 
             #region Calculate Velocity
 
@@ -156,7 +183,7 @@ public class PlayerMovement : MonoBehaviour
                 targetVelocity = -targetVelocity * speed;
             }
 
-            
+
             Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
             // Apply a force that attempts to reach our target velocity
@@ -168,11 +195,9 @@ public class PlayerMovement : MonoBehaviour
 
             #endregion
 
-            if (!isDashing)
-                rb.AddForce(velocityChange, ForceMode.VelocityChange);
-
+            rb.AddForce(velocityChange, ForceMode.VelocityChange);
         }
-        
+
     }
 
     void Jump()
@@ -214,6 +239,8 @@ public class PlayerMovement : MonoBehaviour
 
             #region Velocity
 
+            float velocity;
+
             // Calculate jump velocity
             if (rb.velocity.y >= 0)
             {
@@ -243,9 +270,6 @@ public class PlayerMovement : MonoBehaviour
                 jumpHangCounter = 0f; // So you don't triple jump
             }
         }
-
-        if (isDashing)
-            velocity = 0f;
     }
 
     void DashInput()
@@ -275,23 +299,24 @@ public class PlayerMovement : MonoBehaviour
         float speed = dashDistance / dashTime;
 
         rb.AddForce(direction * speed, ForceMode.Impulse);
-        rb.useGravity = false;
 
         yield return new WaitForSeconds(dashTime);
 
         isDashing = false;
-        rb.useGravity = true;
     }
 
     void Gravity()
     {
-        if (rb.velocity.y < 0f)
+        if (!isDashing)
         {
-            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
-        }
-        else
-        {
-            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+            if (rb.velocity.y < 0f)
+            {
+                rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
+            }
+            else
+            {
+                rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+            }
         }
     }
 
