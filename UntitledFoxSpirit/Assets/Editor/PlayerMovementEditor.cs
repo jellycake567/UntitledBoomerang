@@ -58,15 +58,14 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxVelocityChange"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("camera3D"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("acceleration"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("deceleration"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("velPower"));
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCooldown"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpBufferTime"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCoyoteTime"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScale"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("fallGravityMultiplier"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ignorePlayerMask"));
 
         // Camera

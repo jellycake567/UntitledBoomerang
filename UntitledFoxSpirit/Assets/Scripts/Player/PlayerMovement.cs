@@ -5,14 +5,10 @@ using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
 {
-
     [Header("Movement")] public float humanSpeed = 5.0f;
     [Header("Movement")] public float foxSpeed = 5.0f;
 
     [Header("Movement")]
-    public float acceleration = 0.2f;
-    public float deceleration = 0.1f;
-    public float velPower = 2f;
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
@@ -39,11 +35,15 @@ public class PlayerMovement : MonoBehaviour
     public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
     private float jumpHangCounter;
     private float jumpBufferCounter;
+    private bool canDoubleJump;
+
+    [Header("Gravity")]
+    public float gravity = -9.81f;
     public float gravityScale = 3f;
+    public float fallGravityMultiplier = 0.2f;
     public LayerMask ignorePlayerMask;
     private float velocity;
     private bool isGrounded;
-    private bool canDoubleJump;
 
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
@@ -67,8 +67,6 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Physics.gravity *= gravityScale;
-
         rb = GetComponent<Rigidbody>();
 
         //Cursor.lockState = CursorLockMode.Locked;
@@ -105,6 +103,8 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        Gravity();
+
         Movement();
     }
 
@@ -162,11 +162,6 @@ public class PlayerMovement : MonoBehaviour
             // Apply a force that attempts to reach our target velocity
             Vector3 velocity = rbVelocity;
             Vector3 velocityChange = (targetVelocity - velocity);
-
-            //float accelRate = (Mathf.Abs(targetVelocity.magnitude) > 0.01f) ? acceleration : deceleration;
-
-            //float movement = Mathf.Pow(Mathf.Abs(velocityChange.magnitude) * accelRate, velPower) * Mathf.Sign(velocityChange.magnitude);
-
             velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
             velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
             velocityChange.y = 0;
@@ -182,6 +177,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
+
+        #region Coyote and Jump Buffer
+
         // Can jump when leaving the ground
         if (isGrounded && jumpCounter <= 0f)
         {
@@ -207,23 +205,28 @@ public class PlayerMovement : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
-        
+        #endregion
+
         // Player jump input
         if (jumpBufferCounter > 0f && jumpHangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
+            #region Velocity
+
             // Calculate jump velocity
             if (rb.velocity.y >= 0)
             {
-                velocity = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
+                velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
                 velocity += -rb.velocity.y; // When double jumping cancel out your first jump force
             }
             else
             {
-                velocity = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
+                velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
                 velocity += Mathf.Abs(rb.velocity.y); // When falling cancel out gravity force
             }
+
+            #endregion
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
@@ -278,6 +281,18 @@ public class PlayerMovement : MonoBehaviour
 
         isDashing = false;
         rb.useGravity = true;
+    }
+
+    void Gravity()
+    {
+        if (rb.velocity.y < 0f)
+        {
+            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
+        }
+        else
+        {
+            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+        }
     }
 
     void GroundCheck()
