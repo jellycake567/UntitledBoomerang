@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
@@ -16,6 +17,14 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash")]
     public float humanDashTime = 5.0f;
     public float humanDashDistance = 4.0f;
+
+    [Header("Stamina")]
+    public float staminaConsumption = 20f;
+    public float staminaRecovery = 5f;
+    public float staminaCooldown = 1f;
+    private float currentStaminaCooldown = 0f;
+    public float maxStamina = 100f;
+    private float currentStamina;
 
     #endregion
 
@@ -65,6 +74,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("References")]
     public Transform path;
+    public Slider staminaBar;
     public CinemachineVirtualCamera virtualCam2D;
     public CinemachineFreeLook virtualCam3D;
     public GameObject human;
@@ -93,6 +103,8 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
 
+        currentStamina = maxStamina;
+
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
 
@@ -116,6 +128,8 @@ public class PlayerMovement : MonoBehaviour
         VirtualCamUpdate();
 
         GroundCheck();
+
+        Stamina();
 
         Jump();
         DashInput();
@@ -274,15 +288,18 @@ public class PlayerMovement : MonoBehaviour
 
     void DashInput()
     {
-        // Dash input
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing)
+        if (!isFox && currentStamina >= staminaConsumption || isFox)
         {
-            // If player is moving left or right
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+            // Dash input
+            if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing)
             {
-                Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
+                // If player is moving left or right
+                if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+                {
+                    Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
 
-                StartCoroutine(Dash(-direction));
+                    StartCoroutine(Dash(-direction));
+                }
             }
         }
     }
@@ -291,18 +308,29 @@ public class PlayerMovement : MonoBehaviour
     {
         isDashing = true;
 
+        // Set Y velocity to 0
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
+        // Is in fox form?
         float dashDistance = isFox ? foxDashDistance : humanDashDistance;
         float dashTime = isFox ? foxDashTime : humanDashTime;
 
+        // Calculate speed
         float speed = dashDistance / dashTime;
 
+        // Apply force
         rb.AddForce(direction * speed, ForceMode.Impulse);
 
         yield return new WaitForSeconds(dashTime);
 
         isDashing = false;
+
+        if (!isFox)
+        {
+            // Stamina
+            currentStamina -= staminaConsumption;
+            currentStaminaCooldown = staminaCooldown;
+        }
     }
 
     void Gravity()
@@ -338,6 +366,25 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #endregion
+
+    void Stamina()
+    {
+        if (!isFox)
+        {
+            if (currentStaminaCooldown > 0)
+            {
+                currentStaminaCooldown -= Time.deltaTime;
+            }
+
+            // If stamina hasn't been used recover stamina
+            if (currentStamina < maxStamina && currentStaminaCooldown <= 0f)
+            {
+                currentStamina += staminaRecovery;
+            }
+
+            staminaBar.value = currentStamina / maxStamina;
+        }
+    }
 
     void Attack()
     {

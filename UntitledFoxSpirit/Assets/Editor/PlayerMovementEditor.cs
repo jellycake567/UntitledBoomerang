@@ -37,10 +37,21 @@ public class PlayerMovementEditor : Editor
 
     void DisplayHumanInfo()
     {
+        // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanSpeed"));
+
+        // Dash
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanDashTime"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanDashDistance"));
+
+        // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanJumpHeight"));
+
+        // Stamina
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaConsumption"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaRecovery"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaCooldown"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("maxStamina"));
     }
 
     void DisplayFoxInfo()
@@ -75,6 +86,7 @@ public class PlayerMovementEditor : Editor
 
         // References
         EditorGUILayout.PropertyField(serializedObject.FindProperty("path"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaBar"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam2D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("human"));
