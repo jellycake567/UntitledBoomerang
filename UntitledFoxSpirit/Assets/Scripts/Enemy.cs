@@ -24,6 +24,7 @@ public class Enemy : MonoBehaviour
     float wanderJitter;
     public float chargeSpeed;
 
+
     Vector2 wanderPoint;
     Vector2 target;
     Vector2 agentHeading;
@@ -55,7 +56,7 @@ public class Enemy : MonoBehaviour
         //maxSpinCount = Random.Range(1, 3);
         maxChargeCount = 1;
         maxShootCount = 3;
-       
+    
     }
 
 

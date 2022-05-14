@@ -14,6 +14,8 @@ public class projectile : MonoBehaviour
     Vector3 initialPos;
 
     Vector3 projectileHeadNorm;
+
+    public float speed;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,14 +30,14 @@ public class projectile : MonoBehaviour
         projectileHeadingDebug.z = projectileHeading.z;
 
         projectileHeadNorm = projectileHeading.normalized;
-
+        speed = 3;
         
     }
 
     // Update is called once per frame
     void Update()
     {
-        this.transform.Translate(projectileHeadNorm * Time.deltaTime, Space.World);
+        this.transform.Translate(projectileHeadNorm * Time.deltaTime * speed, Space.World);
     }
 
 
