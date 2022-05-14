@@ -6,13 +6,14 @@ public class GameManager : MonoBehaviour
 {
 
     [SerializeField] GameObject player;
-    [SerializeField] GameObject spear;
+    //[SerializeField] GameObject spear;
 
     public Vector3 playerPos;
 
     void Start()
     {
         playerPos = Vector3.zero;
+        Application.targetFrameRate = 60;
     }
 
     // Update is called once per frame

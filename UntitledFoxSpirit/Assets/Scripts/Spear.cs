@@ -43,7 +43,7 @@ public class Spear : MonoBehaviour
 
             dirToReturn = returnPosition - transform.position;
 
-            if (Vector3.Magnitude(dirToReturn) < 0.5f) //magic number
+            if (Vector3.Magnitude(dirToReturn) < 1f) //magic number
             {
                 isReturning = false;
                 isHeld = true;
@@ -53,7 +53,7 @@ public class Spear : MonoBehaviour
             }
             else
             {
-                //do vector shit to rotate the spear
+                //do vector shit for rotating the spear
                 dirToReturn = Vector3.Normalize(returnPosition - transform.position);
 
                 rotationAmount = Vector3.Magnitude(Vector3.Cross(dirToReturn, transform.forward));
@@ -63,9 +63,9 @@ public class Spear : MonoBehaviour
                 //apply force
                 //RB.angularVelocity = rotationAxis * rotationAmount * rotationSpeed;
 
-                if (rb.velocity.magnitude < 25)//more magic numbers
+                if (rb.velocity.magnitude < 10)//more magic numbers
                 {
-                    rb.AddForce(dirToReturn * 3, ForceMode.Impulse);
+                    rb.AddForce(dirToReturn * 45, ForceMode.VelocityChange);
                 }
             }
             
