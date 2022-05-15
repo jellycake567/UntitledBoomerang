@@ -10,6 +10,8 @@ public class Spear : MonoBehaviour
 
     Rigidbody rb;
 
+
+    Transform parent;
     Vector3 throwingDir;
     Vector3 returnPosition;
     Vector3 spearLocalHoldPos;
@@ -24,14 +26,14 @@ public class Spear : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        throwingDir = Vector3.zero;
-        returnPosition = Vector3.zero;
-        spearLocalHoldPos = Vector3.zero;
-        dirToReturn = Vector3.zero;
-        rotationAxis = Vector3.zero;
-        throwingDir = Vector3.forward;
+        //throwingDir = Vector3.zero;
+        //returnPosition = Vector3.zero;
+        //spearLocalHoldPos = Vector3.zero;
+        //dirToReturn = Vector3.zero;
+        //rotationAxis = Vector3.zero;
         rotationAmount = 0;
-        spearLocalHoldPos = transform.localPosition;
+        //spearLocalHoldPos = transform.localPosition;
+        parent = transform.parent;
     }
 
     private void FixedUpdate()
@@ -79,13 +81,19 @@ public class Spear : MonoBehaviour
         if (isHeld)
         {
             //if player wants to throw spear
-            if (Input.GetKeyUp(KeyCode.Space) && this.transform.parent != null)
+            if (Input.GetKeyDown(KeyCode.Mouse1) && this.transform.parent != null)
             {
-                //rb = gameObject.AddComponent<Rigidbody>();
+                GetComponent<MeshCollider>().enabled = true;
+
+                rb = gameObject.AddComponent<Rigidbody>();
                 rb.useGravity = true;
+                rb.constraints = RigidbodyConstraints.FreezeRotation;
+
                 this.transform.parent = null;
+
+                throwingDir = player.transform.forward;
                 rb.AddForce(throwingDir * 40, ForceMode.Impulse); //another magic number
-                isHeld = !isHeld;
+                isHeld = false;
             }
 
 
@@ -94,10 +102,19 @@ public class Spear : MonoBehaviour
         {
 
             //if player wants the spear to return
-            if (Input.GetKeyUp(KeyCode.Space) && this.transform.parent == null)
+            if (Input.GetKeyDown(KeyCode.Mouse1) && this.transform.parent == null)
             {
-                rb.useGravity = false;
-                isReturning = true;
+                Destroy(GetComponent<Rigidbody>());
+
+                GetComponent<MeshCollider>().enabled = false;
+
+                transform.parent = parent;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
+
+                isHeld = true;
+
+                //isReturning = true;
             }
 
             //check if spear has returned
