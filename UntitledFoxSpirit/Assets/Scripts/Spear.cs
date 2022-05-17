@@ -7,6 +7,7 @@ public class Spear : MonoBehaviour
 
     [SerializeField] GameManager gM;
     [SerializeField] GameObject player;
+    [SerializeField] Camera cam;
 
     Rigidbody rb;
 
@@ -91,9 +92,19 @@ public class Spear : MonoBehaviour
 
                 this.transform.parent = null;
 
-                throwingDir = player.transform.forward;
+                throwingDir = transform.up;
                 rb.AddForce(throwingDir * 40, ForceMode.Impulse); //another magic number
                 isHeld = false;
+            }
+            else
+            {
+                Vector3 input = Input.mousePosition;
+                Vector3 screenPoint = cam.WorldToScreenPoint(player.transform.position);
+
+                // Get Angle
+                float angle = Mathf.Atan2(input.x - screenPoint.x, input.y - screenPoint.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
+                transform.rotation = Quaternion.AngleAxis(angle + 180f, Vector3.forward);
+
             }
 
 
