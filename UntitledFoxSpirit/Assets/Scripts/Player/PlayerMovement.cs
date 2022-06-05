@@ -168,15 +168,16 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isDashing)
         {
+            float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
+
             if (direction.magnitude > 0.1f)
             {
                 #region Player Rotation
-
-                float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
+                
                 float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
 
                 // Player movement/rotation direction
-                float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
                 float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
@@ -187,14 +188,16 @@ public class PlayerMovement : MonoBehaviour
 
             float speed = isFox ? foxSpeed : humanSpeed;
 
+            Vector3 desiredDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+
             // Player is moving diagonally
             if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
             {
-                targetVelocity = -targetVelocity * speed / REDUCE_SPEED;
+                targetVelocity = desiredDir * targetVelocity.magnitude * speed / REDUCE_SPEED;
             }
             else
             {
-                targetVelocity = -targetVelocity * speed;
+                targetVelocity = desiredDir * targetVelocity.magnitude * speed;
             }
 
 
