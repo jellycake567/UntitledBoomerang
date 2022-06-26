@@ -5,13 +5,29 @@ using UnityEngine.AI;
 
 public class AIPatrol : MonoBehaviour
 {
+    public enum State
+    {
+        Chase,
+        Patrol
+    }
+
+    public State AIState;
+
+    [Header("Movement")]
+    public float maxVelocityChange = 10f;
     public float speed = 2.0f;
     public Transform groundCheck;
+    public Transform target;
     public LayerMask groundLayer;
+
+    [Header("Gravity")]
+    public float gravity = -9.81f;
+    public float gravityScale = 3f;
+    public float fallGravityMultiplier = 0.2f;
 
     bool mustPatrol = true;
     bool mustTurn;
-    
+
     Rigidbody rb;
 
     // Start is called before the first frame update
@@ -23,14 +39,23 @@ public class AIPatrol : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (mustPatrol)
+        if (AIState == State.Chase)
         {
-            Patrol();
+            Chase();
+        }
+        else if (AIState == State.Patrol)
+        {
+            if (mustPatrol)
+            {
+                Patrol();
+            }
         }
     }
 
     void FixedUpdate()
     {
+        Gravity();
+
         if (mustPatrol)
         {
             Collider[] overlap = Physics.OverlapSphere(groundCheck.position, 0.1f, groundLayer);
@@ -42,26 +67,66 @@ public class AIPatrol : MonoBehaviour
         }
     }
 
-    void Patrol()
+    void Chase()
     {
-        if (mustTurn)
+        Vector3 dirToPlayer = (target.position - transform.position).normalized;
+        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+
+        if (angle > 100f)
         {
             Flip();
         }
 
-        // Move AI
-        Vector3 velocity = new Vector3(speed * Time.fixedDeltaTime, rb.velocity.y, rb.velocity.z);
-        rb.velocity = transform.forward * velocity.magnitude;
+        Movement();
+    }
+
+    void Patrol()
+    {
+        if (mustTurn)
+        {
+            mustPatrol = false;
+            Flip();
+            mustPatrol = true;
+        }
+
+        Movement();
     }
 
     void Flip()
     {
-        mustPatrol = false;
-
         Vector3 rotation = transform.eulerAngles + Quaternion.Euler(new Vector3(0, 180f, 0)).eulerAngles;
         transform.rotation = Quaternion.Euler(rotation);
-        speed *= -1;
+    }
 
-        mustPatrol = true;
+    void Movement()
+    {
+        #region Calculate Velocity
+
+        Vector3 targetVelocity = transform.forward * speed;
+        Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        // Apply a force that attempts to reach our target velocity
+        Vector3 velocity = rbVelocity;
+        Vector3 velocityChange = (targetVelocity - velocity);
+        velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+        velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+        velocityChange.y = 0;
+
+        #endregion
+
+        // Move AI
+        rb.AddForce(velocityChange, ForceMode.VelocityChange);
+    }
+
+    void Gravity()
+    {
+        if (rb.velocity.y < 0f)
+        {
+            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
+        }
+        else
+        {
+            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+        }
     }
 }

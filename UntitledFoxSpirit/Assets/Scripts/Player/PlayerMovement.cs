@@ -163,7 +163,10 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Get input
-        Vector3 targetVelocity = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        Vector3 targetVelocity3D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        Vector3 targetVelocity2D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0);
+
+        Vector3 targetVelocity = camera3D ? targetVelocity3D : targetVelocity2D;
         Vector3 direction = targetVelocity.normalized;
 
         if (!isDashing)
