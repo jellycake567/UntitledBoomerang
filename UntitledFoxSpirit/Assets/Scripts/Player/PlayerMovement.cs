@@ -86,6 +86,8 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isFox;
     private bool isDashing;
+    private bool isClimbing;
+    private bool canClimb;
 
     // Waypoint
     private int currentPoint = 0;
@@ -131,19 +133,27 @@ public class PlayerMovement : MonoBehaviour
 
         Stamina();
 
-        Jump();
-        DashInput();
-        ChangeForm();
-        Attack();
+        if (!isClimbing)
+        {
+            Jump();
+            DashInput();
+            ChangeForm();
+            Attack();
+        }
+
+        WallClimb();
 
         CheckPlayerOnPath();
     }
 
     void FixedUpdate()
     {
-        Gravity();
+        if (!isClimbing)
+        {
+            Gravity();
 
-        Movement();
+            Movement();
+        }
     }
 
     #region Player Movement
@@ -191,6 +201,7 @@ public class PlayerMovement : MonoBehaviour
 
             float speed = isFox ? foxSpeed : humanSpeed;
 
+            // Where we want to player to face/walk towards
             Vector3 desiredDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
             // Player is moving diagonally
@@ -371,7 +382,61 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void WallClimb()
+    {
+        if (canClimb && !isClimbing)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                isClimbing = true;
+            }
+        }
+        else if (isClimbing)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                isClimbing = false;
+            }
+
+            // Get input
+            Vector3 targetVelocity = new Vector3(0, Input.GetAxisRaw("Vertical"), 0f);
+
+            #region Calculate Velocity
+
+            float speed = humanSpeed;
+
+
+            if (targetVelocity.y < 0f)
+            {
+                // Down
+                targetVelocity = -transform.up * targetVelocity.magnitude * speed;
+            }
+            else
+            {
+                // Up
+                targetVelocity = transform.up * targetVelocity.magnitude * speed;
+            }
+            
+
+            Vector3 rbVelocity = new Vector3(0f, rb.velocity.y, 0f);
+
+            // Apply a force that attempts to reach our target velocity
+            Vector3 velocity = rbVelocity;
+            Vector3 velocityChange = (targetVelocity - velocity);
+            velocityChange.x = 0f;
+            velocityChange.z = 0f;
+            velocityChange.y = Mathf.Clamp(velocityChange.y, -maxVelocityChange, maxVelocityChange);
+
+            #endregion
+
+            rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+        }
+    }
+
     #endregion
+
+    #region Player Controls
 
     void Stamina()
     {
@@ -421,6 +486,8 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    #endregion
+
     void VirtualCamUpdate()
     {
         if (camera3D)
@@ -467,6 +534,22 @@ public class PlayerMovement : MonoBehaviour
                     currentPoint++;
                 }
             }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimb = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimb = false;
         }
     }
 }
