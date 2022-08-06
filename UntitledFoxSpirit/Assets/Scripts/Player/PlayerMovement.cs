@@ -176,10 +176,10 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-            Gravity();
         if (!isClimbing && !canClimbLedge)
         {
 
+            Gravity();
             Movement();
         }
     }
@@ -544,23 +544,14 @@ public class PlayerMovement : MonoBehaviour
 
                 climbAnim.Play();
                 rb.velocity = Vector3.zero;
-
-                climbPos = hit.point;
-                climbPos.y += 1f;
-
-                StartCoroutine(StartLedgeClimb());
             }
         }
     }
 
-    IEnumerator StartLedgeClimb()
+    void FinishLedgeClimb()
     {
-        while (canClimbLedge)
-        {
-            yield return new WaitForEndOfFrame();
-
-            Vector3.MoveTowards(transform.position, climbPos, 5f);
-        }
+        canClimbLedge = false;
+        ledgeDetected = false;
     }
 
     #region Player Controls
