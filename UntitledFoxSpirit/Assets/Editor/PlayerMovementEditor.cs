@@ -52,6 +52,17 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaRecovery"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaCooldown"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxStamina"));
+
+        // Wall Climb
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("wallCheckDistance"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeClimbXOffset1"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeClimbYOffset1"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeClimbXOffset2"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeClimbYOffset2"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("wallCheck"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeCheck"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("groundLayer"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("climbAnim"));
     }
 
     void DisplayFoxInfo()

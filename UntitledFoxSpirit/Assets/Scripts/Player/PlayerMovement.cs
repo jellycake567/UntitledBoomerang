@@ -26,6 +26,17 @@ public class PlayerMovement : MonoBehaviour
     public float maxStamina = 100f;
     private float currentStamina;
 
+    [Header("Wall Climb")]
+    public float wallCheckDistance = 3.0f;
+    public float ledgeClimbXOffset1 = 0f;
+    public float ledgeClimbYOffset1 = 0f;
+    public float ledgeClimbXOffset2 = 0f;
+    public float ledgeClimbYOffset2 = 0f;
+    public Transform wallCheck;
+    public Transform ledgeCheck;
+    public LayerMask groundLayer;
+    public Animation climbAnim;
+
     #endregion
 
     #region Fox Settings
@@ -50,7 +61,6 @@ public class PlayerMovement : MonoBehaviour
     public float maxVelocityChange = 10f;
     public float frictionAmount = 0.2f;
     public bool camera3D = false;
-
     
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
@@ -89,6 +99,19 @@ public class PlayerMovement : MonoBehaviour
     private bool isClimbing;
     private bool canClimb;
 
+    private bool isTouchingWall;
+    private bool isTouchingLedge;
+    [HideInInspector] public bool canClimbLedge = false;
+    [HideInInspector] public bool ledgeDetected;
+
+    private Vector3 ledgePosBot;
+    private Vector3 ledgePos1;
+    private Vector3 ledgePos2;
+
+    private Vector3 rightDir;
+    private Vector3 leftDir;
+    private Vector3 climbPos;
+
     // Waypoint
     private int currentPoint = 0;
     List<Transform> Waypoints = new List<Transform>();
@@ -99,6 +122,8 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+
+    #region Unity Functions
 
     // Start is called before the first frame update
     void Start()
@@ -128,12 +153,13 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         VirtualCamUpdate();
+        CalculatePlayerDirection();
 
         GroundCheck();
 
         Stamina();
 
-        if (!isClimbing)
+        if (!isClimbing && !canClimbLedge)
         {
             Jump();
             DashInput();
@@ -142,18 +168,34 @@ public class PlayerMovement : MonoBehaviour
         }
 
         WallClimb();
+        LedgeClimb();
+        ShowOffset();
 
         CheckPlayerOnPath();
     }
 
     void FixedUpdate()
     {
-        if (!isClimbing)
-        {
             Gravity();
+        if (!isClimbing && !canClimbLedge)
+        {
 
             Movement();
         }
+    }
+
+    #endregion
+
+    void ShowOffset()
+    {
+        Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
+        Debug.DrawLine(ledgeCheck.position, ledgeCheck.position + transform.forward * wallCheckDistance);
+    }
+
+    void CalculatePlayerDirection()
+    {
+        rightDir = (Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position).normalized;
+        leftDir = (Waypoints[currentPoint].position - Waypoints[currentPoint + 1].position).normalized;
     }
 
     #region Player Movement
@@ -303,6 +345,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Dash
+
     void DashInput()
     {
         if (!isFox && currentStamina >= staminaConsumption || isFox)
@@ -350,6 +396,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Gravity
+
     void Gravity()
     {
         if (!isDashing)
@@ -381,6 +431,10 @@ public class PlayerMovement : MonoBehaviour
             isGrounded = false;
         }
     }
+
+    #endregion
+
+    #region Wall Climb
 
     void WallClimb()
     {
@@ -434,7 +488,80 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimb = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimb = false;
+        }
+    }
+
     #endregion
+
+    void LedgeClimb()
+    {
+        isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
+        isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
+
+        Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, out hit, wallCheckDistance, groundLayer))
+        {
+            if (isTouchingWall && !isTouchingLedge && !ledgeDetected)
+            {
+                ledgeDetected = true;
+                ledgePosBot = wallCheck.position;
+            }
+            else if (ledgeDetected && !canClimbLedge)
+            {
+                canClimbLedge = true;
+
+                //if (Input.GetAxisRaw("Horizontal") > 0f)
+                //{
+                //    ledgePos1 = new Vector3(ledgePosBot + transform.forward * wallCheckDistance - ledgeClimbXOffset1, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset1, 0f);
+                //    ledgePos2 = new Vector3(Mathf.Floor(ledgePosBot.x + wallCheckDistance) + ledgeClimbXOffset2, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset2, 0f);
+                //}
+                //else
+                //{
+                //    ledgePos1 = new Vector3(Mathf.Ceil(ledgePosBot.x - wallCheckDistance) + ledgeClimbXOffset1, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset1, 0f);
+                //    ledgePos2 = new Vector3(Mathf.Ceil(ledgePosBot.x - wallCheckDistance) - ledgeClimbXOffset2, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset2, 0f);
+                //}
+                //
+                //if (canClimbLedge)
+                //    transform.position = ledgePos1;
+
+                Debug.Log("Climb");
+
+                climbAnim.Play();
+                rb.velocity = Vector3.zero;
+
+                climbPos = hit.point;
+                climbPos.y += 1f;
+
+                StartCoroutine(StartLedgeClimb());
+            }
+        }
+    }
+
+    IEnumerator StartLedgeClimb()
+    {
+        while (canClimbLedge)
+        {
+            yield return new WaitForEndOfFrame();
+
+            Vector3.MoveTowards(transform.position, climbPos, 5f);
+        }
+    }
 
     #region Player Controls
 
@@ -537,19 +664,5 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimb = true;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimb = false;
-        }
-    }
+    
 }
