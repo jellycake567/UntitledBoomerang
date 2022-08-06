@@ -28,10 +28,6 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Wall Climb")]
     public float wallCheckDistance = 3.0f;
-    public float ledgeClimbXOffset1 = 0f;
-    public float ledgeClimbYOffset1 = 0f;
-    public float ledgeClimbXOffset2 = 0f;
-    public float ledgeClimbYOffset2 = 0f;
     public Transform wallCheck;
     public Transform ledgeCheck;
     public LayerMask groundLayer;
@@ -513,45 +509,15 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
 
-        RaycastHit hit;
-
-        if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, out hit, wallCheckDistance, groundLayer))
+        if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
         {
-            if (isTouchingWall && !isTouchingLedge && !ledgeDetected)
-            {
-                ledgeDetected = true;
-                ledgePosBot = wallCheck.position;
-            }
-            else if (ledgeDetected && !canClimbLedge)
+            if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
             {
                 canClimbLedge = true;
-
-                //if (Input.GetAxisRaw("Horizontal") > 0f)
-                //{
-                //    ledgePos1 = new Vector3(ledgePosBot + transform.forward * wallCheckDistance - ledgeClimbXOffset1, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset1, 0f);
-                //    ledgePos2 = new Vector3(Mathf.Floor(ledgePosBot.x + wallCheckDistance) + ledgeClimbXOffset2, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset2, 0f);
-                //}
-                //else
-                //{
-                //    ledgePos1 = new Vector3(Mathf.Ceil(ledgePosBot.x - wallCheckDistance) + ledgeClimbXOffset1, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset1, 0f);
-                //    ledgePos2 = new Vector3(Mathf.Ceil(ledgePosBot.x - wallCheckDistance) - ledgeClimbXOffset2, Mathf.Floor(ledgePosBot.y) + ledgeClimbXOffset2, 0f);
-                //}
-                //
-                //if (canClimbLedge)
-                //    transform.position = ledgePos1;
-
-                Debug.Log("Climb");
-
                 climbAnim.Play();
                 rb.velocity = Vector3.zero;
             }
         }
-    }
-
-    void FinishLedgeClimb()
-    {
-        canClimbLedge = false;
-        ledgeDetected = false;
     }
 
     #region Player Controls
