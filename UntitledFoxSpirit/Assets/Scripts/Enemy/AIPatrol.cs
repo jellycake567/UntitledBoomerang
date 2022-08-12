@@ -12,7 +12,6 @@ public class AIPatrol : MonoBehaviour
     }
 
     public State AIState;
-    NavMeshAgent agent;
 
     [Header("Movement")]
     public float maxVelocityChange = 10f;
@@ -35,8 +34,6 @@ public class AIPatrol : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        agent = GetComponent<NavMeshAgent>();
-        agent.updateRotation = false;
     }
 
     // Update is called once per frame
@@ -57,7 +54,7 @@ public class AIPatrol : MonoBehaviour
 
     void FixedUpdate()
     {
-        //Gravity();
+        Gravity();
 
         if (mustPatrol)
         {
