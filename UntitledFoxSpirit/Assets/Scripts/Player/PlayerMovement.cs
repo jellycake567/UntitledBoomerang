@@ -50,6 +50,8 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Other Settings
+
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
@@ -63,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
     private float jumpCounter;
     public float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
     public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
-    private float jumpHangCounter;
+    private float jumpCoyoteCounter;
     private float jumpBufferCounter;
     private bool canDoubleJump;
 
@@ -87,13 +89,14 @@ public class PlayerMovement : MonoBehaviour
     public GameObject fox;
     public Animation attack;
 
+    #endregion
 
     #region Internal Variables
 
     private bool isFox;
     private bool isDashing;
-    private bool isClimbing;
-    private bool canClimb;
+    private bool isWallClimbing;
+    private bool canClimbWall;
 
     private bool isTouchingWall;
     private bool isTouchingLedge;
@@ -117,7 +120,6 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
 
     #endregion
-
 
     #region Unity Functions
 
@@ -150,31 +152,28 @@ public class PlayerMovement : MonoBehaviour
     {
         VirtualCamUpdate();
         CalculatePlayerDirection();
+        CheckPlayerOnPath();
 
         GroundCheck();
-
         Stamina();
-
-        if (!isClimbing && !canClimbLedge)
+        WallClimb();
+        LedgeClimb();
+        ShowLedgeRaycast();
+        
+        if (!isWallClimbing && !canClimbLedge)
         {
+            // Player Input Functions
             Jump();
             DashInput();
             ChangeForm();
             Attack();
         }
-
-        WallClimb();
-        LedgeClimb();
-        ShowOffset();
-
-        CheckPlayerOnPath();
     }
 
     void FixedUpdate()
     {
-        if (!isClimbing && !canClimbLedge)
+        if (!isWallClimbing && !canClimbLedge)
         {
-
             Gravity();
             Movement();
         }
@@ -182,27 +181,16 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
-    void ShowOffset()
-    {
-        Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
-        Debug.DrawLine(ledgeCheck.position, ledgeCheck.position + transform.forward * wallCheckDistance);
-    }
-
-    void CalculatePlayerDirection()
-    {
-        rightDir = (Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position).normalized;
-        leftDir = (Waypoints[currentPoint].position - Waypoints[currentPoint + 1].position).normalized;
-    }
 
     #region Player Movement
 
     void Movement()
     {
-        // Path direction
+        // Get Path direction
         Vector3 pathDir = Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position;
         float pathAngle = Quaternion.LookRotation(pathDir).eulerAngles.y - 90f;
 
-        // Is 2d cam on
+        // Is 2d camera on
         if (!camera3D)
         {
             // Rotate camera
@@ -219,11 +207,13 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isDashing)
         {
+            // Calculate player rotation
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
 
             if (direction.magnitude > 0.1f)
             {
+                // Apply rotation to player
                 #region Player Rotation
                 
                 float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
@@ -252,7 +242,7 @@ public class PlayerMovement : MonoBehaviour
                 targetVelocity = desiredDir * targetVelocity.magnitude * speed;
             }
 
-
+            // Get rigidbody x and y velocity
             Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
             // Apply a force that attempts to reach our target velocity
@@ -271,25 +261,24 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
+        #region Coyote and Jump Buffer Timers
 
-        #region Coyote and Jump Buffer
-
-        // Can jump when leaving the ground
+        // Coyote Time
         if (isGrounded && jumpCounter <= 0f)
         {
             canDoubleJump = true;
 
-            jumpHangCounter = jumpCoyoteTime;
+            jumpCoyoteCounter = jumpCoyoteTime;
         }
         else
         {
-            jumpHangCounter -= Time.deltaTime;
+            jumpCoyoteCounter -= Time.deltaTime;
 
             // Jumping cooldown
             jumpCounter -= Time.deltaTime;
         }
 
-        // Jump before you touch the ground
+        // Jump Buffer
         if (Input.GetKeyDown(KeyCode.Space))
         {
             jumpBufferCounter = jumpBufferTime;
@@ -302,27 +291,13 @@ public class PlayerMovement : MonoBehaviour
         #endregion
 
         // Player jump input
-        if (jumpBufferCounter > 0f && jumpHangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
+        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
-            #region Velocity
-
-            float velocity;
-
-            // Calculate jump velocity
-            if (rb.velocity.y >= 0)
-            {
-                velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
-                velocity += -rb.velocity.y; // When double jumping cancel out your first jump force
-            }
-            else
-            {
-                velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
-                velocity += Mathf.Abs(rb.velocity.y); // When falling cancel out gravity force
-            }
-
-            #endregion
+            // Calculate Velocity
+            float velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
+            velocity += -rb.velocity.y; // Cancel out current velocity
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
@@ -330,13 +305,13 @@ public class PlayerMovement : MonoBehaviour
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
-            if (jumpHangCounter <= 0f && !isGrounded && canDoubleJump)
+            if (jumpCoyoteCounter <= 0f && !isGrounded && canDoubleJump)
             {
                 canDoubleJump = false;
             }
-            if (jumpHangCounter > 0f)
+            if (jumpCoyoteCounter > 0f)
             {
-                jumpHangCounter = 0f; // So you don't triple jump
+                jumpCoyoteCounter = 0f; // So you don't triple jump
             }
         }
     }
@@ -402,6 +377,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (rb.velocity.y < 0f)
             {
+                // Player Falling
                 rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
             }
             else
@@ -434,18 +410,18 @@ public class PlayerMovement : MonoBehaviour
 
     void WallClimb()
     {
-        if (canClimb && !isClimbing)
+        if (canClimbWall && !isWallClimbing)
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                isClimbing = true;
+                isWallClimbing = true;
             }
         }
-        else if (isClimbing)
+        else if (isWallClimbing)
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                isClimbing = false;
+                isWallClimbing = false;
             }
 
             // Get input
@@ -488,7 +464,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("WallClimb"))
         {
-            canClimb = true;
+            canClimbWall = true;
         }
     }
 
@@ -496,29 +472,11 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("WallClimb"))
         {
-            canClimb = false;
+            canClimbWall = false;
         }
     }
 
     #endregion
-
-    void LedgeClimb()
-    {
-        isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
-        isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
-
-        Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
-
-        if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
-        {
-            if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
-            {
-                canClimbLedge = true;
-                climbAnim.Play();
-                rb.velocity = Vector3.zero;
-            }
-        }
-    }
 
     #region Player Controls
 
@@ -526,6 +484,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!isFox)
         {
+            // How long until stamina starts recovering
             if (currentStaminaCooldown > 0)
             {
                 currentStaminaCooldown -= Time.deltaTime;
@@ -537,6 +496,7 @@ public class PlayerMovement : MonoBehaviour
                 currentStamina += staminaRecovery;
             }
 
+            // Set stamina ui
             staminaBar.value = currentStamina / maxStamina;
         }
     }
@@ -570,7 +530,29 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void LedgeClimb()
+    {
+        // Raycasts
+        isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
+        isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
+
+        Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
+
+        // Check if there is floor
+        if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
+        {
+            if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
+            {
+                canClimbLedge = true;
+                climbAnim.Play();
+                rb.velocity = Vector3.zero;
+            }
+        }
+    }
+
     #endregion
+
+    #region Other Functions
 
     void VirtualCamUpdate()
     {
@@ -621,5 +603,17 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    
+    void ShowLedgeRaycast()
+    {
+        Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
+        Debug.DrawLine(ledgeCheck.position, ledgeCheck.position + transform.forward * wallCheckDistance);
+    }
+
+    void CalculatePlayerDirection()
+    {
+        rightDir = (Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position).normalized;
+        leftDir = (Waypoints[currentPoint].position - Waypoints[currentPoint + 1].position).normalized;
+    }
+
+    #endregion
 }
