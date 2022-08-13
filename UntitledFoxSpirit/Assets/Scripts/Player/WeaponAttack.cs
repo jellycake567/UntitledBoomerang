@@ -117,7 +117,8 @@ public class WeaponAttack : MonoBehaviour
                                 hardPointHit = hardPoints;
 
                             // Enemy Take Damage
-                            //StartCoroutine(hit.collider.gameObject.GetComponent<Enemy>().TakeDamage(attackDamage));                            
+                            Debug.Log("hit enemy");
+                            hit.collider.gameObject.GetComponent<EnemyStats>().TakeDamage(attackDamage);                           
                         }
                     }
                 }
