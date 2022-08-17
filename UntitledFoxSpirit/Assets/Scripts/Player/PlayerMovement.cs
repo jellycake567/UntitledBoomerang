@@ -98,18 +98,16 @@ public class PlayerMovement : MonoBehaviour
     private bool isWallClimbing;
     private bool canClimbWall;
 
+    // Ledge Climbing
     private bool isTouchingWall;
     private bool isTouchingLedge;
     [HideInInspector] public bool canClimbLedge = false;
     [HideInInspector] public bool ledgeDetected;
 
-    private Vector3 ledgePosBot;
-    private Vector3 ledgePos1;
-    private Vector3 ledgePos2;
 
+    private Vector3 currentPathFacingDir;
     private Vector3 rightDir;
     private Vector3 leftDir;
-    private Vector3 climbPos;
 
     // Waypoint
     private int currentPoint = 0;
@@ -330,15 +328,15 @@ public class PlayerMovement : MonoBehaviour
                 // If player is moving left or right
                 if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
                 {
-                    Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
+                    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
 
-                    StartCoroutine(Dash(-direction));
+                    StartCoroutine(Dash());
                 }
             }
         }
     }
 
-    IEnumerator Dash(Vector3 direction)
+    IEnumerator Dash()
     {
         isDashing = true;
 
@@ -353,7 +351,7 @@ public class PlayerMovement : MonoBehaviour
         float speed = dashDistance / dashTime;
 
         // Apply force
-        rb.AddForce(direction * speed, ForceMode.Impulse);
+        rb.AddForce(currentPathFacingDir * speed, ForceMode.Impulse);
 
         yield return new WaitForSeconds(dashTime);
 
