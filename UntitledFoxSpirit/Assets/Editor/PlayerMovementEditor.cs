@@ -91,6 +91,11 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("camRotationSpeed2D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("mainCamera"));
 
+        // Path
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("pathCreator"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("maxDistancePath"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("adjustVelocity"));
+
         // References
         EditorGUILayout.PropertyField(serializedObject.FindProperty("path"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaBar"));
