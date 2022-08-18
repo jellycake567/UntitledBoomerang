@@ -195,15 +195,15 @@ public class PlayerMovement : MonoBehaviour
     void Movement()
     {
         // Get Path direction
-        Vector3 pathDir = Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position;
-        float pathAngle = Quaternion.LookRotation(pathDir).eulerAngles.y - 90f;
+        Quaternion targetRot = GetPathRotation();
+        float pathAngle = targetRot.eulerAngles.y - 90f;
 
         // Is 2d camera on
         if (!camera3D)
         {
             // Rotate camera
             Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
-            virtualCam2D.transform.rotation = Quaternion.Lerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
+            virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
         }
 
         // Get input
@@ -219,44 +219,40 @@ public class PlayerMovement : MonoBehaviour
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
 
-            Quaternion targetRot = pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
             float speed = isFox ? foxSpeed : humanSpeed;
 
+            // If player is moving
             if (direction.magnitude > 0.1f)
             {
-                #region Player Movement
-
-                //returns if its positive = 1, negative = -1
-                if (Mathf.Sign(direction.x) < 0f)
+                if (camera3D)
                 {
-                    distanceOnPath -= speed * Time.deltaTime;
+                    // Player movement/rotation direction
+                    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime3D);
+                    transform.rotation = Quaternion.Euler(0f, angle, 0f);
                 }
                 else
                 {
-                    distanceOnPath += speed * Time.deltaTime;
+                    #region Path Position
+                    //returns if its positive = 1, negative = -1
+                    if (Mathf.Sign(direction.x) < 0f)
+                    {
+                        distanceOnPath -= speed * Time.deltaTime;
+                    }
+                    else
+                    {
+                        distanceOnPath += speed * Time.deltaTime;
+                    }
+                    #endregion
+
+                    #region Player Rotation
+                    if (direction.x < 0f)
+                    {
+                        Vector3 rot = targetRot.eulerAngles;
+                        targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
+                    }
+                    transform.rotation = targetRot;
+                    #endregion
                 }
-
-                #endregion
-
-                // Apply rotation to player
-                #region Player Rotation
-
-                //float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
-                //
-                //// Player movement/rotation direction
-                //float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-                //transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-
-                if (direction.x < 0f)
-                {
-                    Vector3 rot = targetRot.eulerAngles;
-                    targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
-                }
-
-                transform.rotation = targetRot;
-
-                #endregion
             }
 
             #region Calculate Velocity
@@ -265,10 +261,10 @@ public class PlayerMovement : MonoBehaviour
             //Vector3 desiredDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
             Vector3 desiredDir = targetRot * Vector3.forward;
 
-            Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 5f, Color.red);
+            //Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
 
             Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
-            Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 5f, Color.green);
+            Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
 
             // Player is moving diagonally
             if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
@@ -290,21 +286,27 @@ public class PlayerMovement : MonoBehaviour
             velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
             velocityChange.y = 0;
 
-            #endregion
-
             rb.AddForce(velocityChange, ForceMode.VelocityChange);
 
+            #endregion
+
+            #region Adjust Player on Path
+
+            // Distance between path and player
             float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
 
+            // Direction from path towards player
             Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
             Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
 
+            // Keeps player on the path
             if (distance > maxDistancePath)
             {
                 Vector3 dirTowardPath = (pathPos - transform.position.IgnoreYAxis()).normalized;
-
-                rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Force);
+                rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
             }
+
+            #endregion
         }
 
     }
@@ -380,15 +382,16 @@ public class PlayerMovement : MonoBehaviour
                 // If player is moving left or right
                 if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
                 {
-                    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
+                    //currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
+                    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
 
-                    StartCoroutine(Dash());
+                    StartCoroutine(Dash(isFacingRight));
                 }
             }
         }
     }
 
-    IEnumerator Dash()
+    IEnumerator Dash(bool isFacingRight)
     {
         isDashing = true;
 
@@ -402,10 +405,54 @@ public class PlayerMovement : MonoBehaviour
         // Calculate speed
         float speed = dashDistance / dashTime;
 
-        // Apply force
-        rb.AddForce(currentPathFacingDir * speed, ForceMode.Impulse);
+        float currentDashTime = dashTime;
 
-        yield return new WaitForSeconds(dashTime);
+        while (currentDashTime > 0f)
+        {
+            currentDashTime -= Time.deltaTime;
+
+            #region Rotation
+
+            Quaternion targetRot = GetPathRotation();
+            if (isFacingRight)
+            {
+                distanceOnPath += speed * Time.deltaTime;
+            }
+            else
+            {
+                Vector3 rot = targetRot.eulerAngles;
+                targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
+
+                distanceOnPath -= speed * Time.deltaTime;
+            }
+
+            #endregion
+
+            #region Velocity
+
+            // Where we want to player to face/walk towards
+            Vector3 desiredDir = targetRot * Vector3.forward;
+
+            Vector3 targetVelocity = desiredDir * speed;
+
+            // Get rigidbody x and y velocity
+            Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+            // Apply a force that attempts to reach our target velocity
+            Vector3 velocity = rbVelocity;
+            Vector3 velocityChange = (targetVelocity - velocity);
+            velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+            velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+            velocityChange.y = 0;
+
+            rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+            #endregion
+
+            yield return new WaitForEndOfFrame();
+        }
+
+        
 
         isDashing = false;
 
@@ -657,6 +704,11 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
         Debug.DrawLine(ledgeCheck.position, ledgeCheck.position + transform.forward * wallCheckDistance);
+    }
+
+    Quaternion GetPathRotation()
+    {
+        return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
     }
 
     void CalculatePlayerDirection()
