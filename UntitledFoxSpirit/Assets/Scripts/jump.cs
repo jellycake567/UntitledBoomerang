@@ -18,6 +18,7 @@ public class jump : MonoBehaviour
 
     bool jumpForceIncrease;
     bool isGrounded;
+    bool isHoldingJump = false;
 
     // Start is called before the first frame update
     void Start()
@@ -39,7 +40,7 @@ public class jump : MonoBehaviour
         
         if (Input.GetKey(KeyCode.Space)) //if space is pressed
         {
-
+            isHoldingJump = true;
             //jumpKeyDownTimer += Time.deltaTime; // increase timer
             //jumpForceValue += 0.5f;
 
@@ -61,6 +62,10 @@ public class jump : MonoBehaviour
             //    }
             //}
 
+        }
+        else
+        {
+            isHoldingJump = false;
         }
         //else if(Input.GetKeyDown(KeyCode.Space))
         //{
@@ -135,7 +140,7 @@ public class jump : MonoBehaviour
         {
             rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
         }
-        else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space))//if jumping and not holding the jump button
+        else if (rb.velocity.y > 0 && isHoldingJump)//if jumping and not holding the jump button
         {
             rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * lowFallGravityMultiplier);
         }
