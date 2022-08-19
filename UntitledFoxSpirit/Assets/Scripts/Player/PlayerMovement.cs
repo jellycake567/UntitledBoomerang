@@ -191,12 +191,10 @@ public class PlayerMovement : MonoBehaviour
 
 
     #region Player Movement
-
     void Movement()
     {
         // Get Path direction
-        Quaternion targetRot = GetPathRotation();
-        float pathAngle = targetRot.eulerAngles.y - 90f;
+        float pathAngle = GetPathRotation().eulerAngles.y - 90f;
 
         // Is 2d camera on
         if (!camera3D)
@@ -218,6 +216,8 @@ public class PlayerMovement : MonoBehaviour
             // Calculate player rotation
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
+
+            Quaternion targetRot = GetPathRotation();
 
             float speed = isFox ? foxSpeed : humanSpeed;
 
@@ -258,9 +258,9 @@ public class PlayerMovement : MonoBehaviour
             #region Calculate Velocity
 
             // Where we want to player to face/walk towards
-            //Vector3 desiredDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            Vector3 desiredDir = targetRot * Vector3.forward;
+            Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
 
+            // Rotation Debug Line for path
             //Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
 
             Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
@@ -290,23 +290,28 @@ public class PlayerMovement : MonoBehaviour
 
             #endregion
 
-            #region Adjust Player on Path
-
-            // Distance between path and player
-            float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
-
-            // Direction from path towards player
-            Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
-            Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
-
-            // Keeps player on the path
-            if (distance > maxDistancePath)
+            if (!camera3D)
             {
-                Vector3 dirTowardPath = (pathPos - transform.position.IgnoreYAxis()).normalized;
-                rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
+                #region Adjust Player on Path
+
+                // Distance between path and player
+                float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
+
+                // Direction from path towards player
+                Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
+                Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
+
+                // Keeps player on the path
+                if (distance > maxDistancePath)
+                {
+                    Vector3 dirTowardPath = (pathPos - transform.position.IgnoreYAxis()).normalized;
+                    rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
+                }
+
+                #endregion
             }
 
-            #endregion
+
         }
 
     }
