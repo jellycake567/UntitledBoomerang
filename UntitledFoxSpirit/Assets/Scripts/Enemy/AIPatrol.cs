@@ -69,15 +69,14 @@ public class AIPatrol : MonoBehaviour
 
     void Chase()
     {
-        Vector3 dirToPlayer = (target.position - transform.position).normalized;
-        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+        //Vector3 dirToPlayer = (target.position - transform.position).normalized;
+        //float angle = Vector3.Angle(transform.forward, dirToPlayer);
 
-        if (angle > 100f)
-        {
-            Flip();
-        }
+        //if (angle > 100f)
+        //{
+        //    Flip();
+        //}
 
-        Movement();
     }
 
     void Patrol()
@@ -89,7 +88,7 @@ public class AIPatrol : MonoBehaviour
             mustPatrol = true;
         }
 
-        Movement();
+        Movement(transform.forward);
     }
 
     void Flip()
@@ -98,11 +97,11 @@ public class AIPatrol : MonoBehaviour
         transform.rotation = Quaternion.Euler(rotation);
     }
 
-    void Movement()
+    void Movement(Vector3 direction)
     {
         #region Calculate Velocity
 
-        Vector3 targetVelocity = transform.forward * speed;
+        Vector3 targetVelocity = direction * speed;
         Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         // Apply a force that attempts to reach our target velocity

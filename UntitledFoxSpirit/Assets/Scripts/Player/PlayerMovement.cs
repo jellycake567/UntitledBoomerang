@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Cinemachine;
+using PathCreation;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -26,6 +27,13 @@ public class PlayerMovement : MonoBehaviour
     public float maxStamina = 100f;
     private float currentStamina;
 
+    [Header("Wall Climb")]
+    public float wallCheckDistance = 3.0f;
+    public Transform wallCheck;
+    public Transform ledgeCheck;
+    public LayerMask groundLayer;
+    public Animation climbAnim;
+
     #endregion
 
     #region Fox Settings
@@ -43,6 +51,8 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Other Settings
+
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
@@ -50,14 +60,13 @@ public class PlayerMovement : MonoBehaviour
     public float maxVelocityChange = 10f;
     public float frictionAmount = 0.2f;
     public bool camera3D = false;
-
     
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
     public float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
     public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
-    private float jumpHangCounter;
+    private float jumpCoyoteCounter;
     private float jumpBufferCounter;
     private bool canDoubleJump;
 
@@ -72,6 +81,11 @@ public class PlayerMovement : MonoBehaviour
     public float camRotationSpeed2D = 0.2f;
     public Transform mainCamera;
 
+    [Header("Path")]
+    public PathCreator pathCreator;
+    public float maxDistancePath = 0.5f;
+    [Tooltip("Velocity to push player towards the path")] public float adjustVelocity = 1.0f;
+
     [Header("References")]
     public Transform path;
     public Slider staminaBar;
@@ -81,22 +95,39 @@ public class PlayerMovement : MonoBehaviour
     public GameObject fox;
     public Animation attack;
 
+    #endregion
 
     #region Internal Variables
 
     private bool isFox;
     private bool isDashing;
+    private bool isWallClimbing;
+    private bool canClimbWall;
+
+    // Ledge Climbing
+    private bool isTouchingWall;
+    private bool isTouchingLedge;
+    [HideInInspector] public bool canClimbLedge = false;
+    [HideInInspector] public bool ledgeDetected;
+
+    // Direction
+    private Vector3 currentPathFacingDir;
+    private Vector3 rightDir;
+    private Vector3 leftDir;
 
     // Waypoint
     private int currentPoint = 0;
     List<Transform> Waypoints = new List<Transform>();
 
     const float REDUCE_SPEED = 1.414214f;
+    private float distanceOnPath;
 
+    // References
     Rigidbody rb;
 
     #endregion
 
+    #region Unity Functions
 
     // Start is called before the first frame update
     void Start()
@@ -116,8 +147,10 @@ public class PlayerMovement : MonoBehaviour
             Waypoints.Add(child);
         }
 
-        Vector3 waypoint = Waypoints[currentPoint].position;
-        transform.position = waypoint;
+        //Vector3 waypoint = Waypoints[currentPoint].position;
+        //transform.position = waypoint;
+
+        transform.position = pathCreator.path.localPoints[0] + pathCreator.transform.position + new Vector3(0, 1f, 0);
 
         #endregion
     }
@@ -126,40 +159,49 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         VirtualCamUpdate();
+        CalculatePlayerDirection();
+        CheckPlayerOnPath();
 
         GroundCheck();
-
         Stamina();
-
-        Jump();
-        DashInput();
-        ChangeForm();
-        Attack();
-
-        CheckPlayerOnPath();
+        WallClimb();
+        LedgeClimb();
+        ShowLedgeRaycast();
+        
+        if (!isWallClimbing && !canClimbLedge)
+        {
+            // Player Input Functions
+            Jump();
+            DashInput();
+            ChangeForm();
+            Attack();
+        }
     }
 
     void FixedUpdate()
     {
-        Gravity();
-
-        Movement();
+        if (!isWallClimbing && !canClimbLedge)
+        {
+            Gravity();
+            Movement();
+        }
     }
 
-    #region Player Movement
+    #endregion
 
+
+    #region Player Movement
     void Movement()
     {
-        // Path direction
-        Vector3 pathDir = Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position;
-        float pathAngle = Quaternion.LookRotation(pathDir).eulerAngles.y - 90f;
+        // Get Path direction
+        float pathAngle = GetPathRotation().eulerAngles.y - 90f;
 
-        // Is 2d cam on
+        // Is 2d camera on
         if (!camera3D)
         {
             // Rotate camera
             Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
-            virtualCam2D.transform.rotation = Quaternion.Lerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
+            virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
         }
 
         // Get input
@@ -171,27 +213,58 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isDashing)
         {
+            // Calculate player rotation
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
 
+            Quaternion targetRot = GetPathRotation();
+
+            float speed = isFox ? foxSpeed : humanSpeed;
+
+            // If player is moving
             if (direction.magnitude > 0.1f)
             {
-                #region Player Rotation
-                
-                float turnSmoothTime = camera3D ? turnSmoothTime3D : turnSmoothTime2D;
+                if (camera3D)
+                {
+                    // Player movement/rotation direction
+                    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime3D);
+                    transform.rotation = Quaternion.Euler(0f, angle, 0f);
+                }
+                else
+                {
+                    #region Path Position
+                    //returns if its positive = 1, negative = -1
+                    if (Mathf.Sign(direction.x) < 0f)
+                    {
+                        distanceOnPath -= speed * Time.deltaTime;
+                    }
+                    else
+                    {
+                        distanceOnPath += speed * Time.deltaTime;
+                    }
+                    #endregion
 
-                // Player movement/rotation direction
-                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-                transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-                #endregion
+                    #region Player Rotation
+                    if (direction.x < 0f)
+                    {
+                        Vector3 rot = targetRot.eulerAngles;
+                        targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
+                    }
+                    transform.rotation = targetRot;
+                    #endregion
+                }
             }
 
             #region Calculate Velocity
 
-            float speed = isFox ? foxSpeed : humanSpeed;
+            // Where we want to player to face/walk towards
+            Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
 
-            Vector3 desiredDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            // Rotation Debug Line for path
+            //Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
+
+            Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+            Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
 
             // Player is moving diagonally
             if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
@@ -203,7 +276,7 @@ public class PlayerMovement : MonoBehaviour
                 targetVelocity = desiredDir * targetVelocity.magnitude * speed;
             }
 
-
+            // Get rigidbody x and y velocity
             Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
             // Apply a force that attempts to reach our target velocity
@@ -213,34 +286,56 @@ public class PlayerMovement : MonoBehaviour
             velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
             velocityChange.y = 0;
 
+            rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
             #endregion
 
-            rb.AddForce(velocityChange, ForceMode.VelocityChange);
+            if (!camera3D)
+            {
+                #region Adjust Player on Path
+
+                // Distance between path and player
+                float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
+
+                // Direction from path towards player
+                Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
+                Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
+
+                // Keeps player on the path
+                if (distance > maxDistancePath)
+                {
+                    Vector3 dirTowardPath = (pathPos - transform.position.IgnoreYAxis()).normalized;
+                    rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
+                }
+
+                #endregion
+            }
+
+
         }
 
     }
 
     void Jump()
     {
+        #region Coyote and Jump Buffer Timers
 
-        #region Coyote and Jump Buffer
-
-        // Can jump when leaving the ground
+        // Coyote Time
         if (isGrounded && jumpCounter <= 0f)
         {
             canDoubleJump = true;
 
-            jumpHangCounter = jumpCoyoteTime;
+            jumpCoyoteCounter = jumpCoyoteTime;
         }
         else
         {
-            jumpHangCounter -= Time.deltaTime;
+            jumpCoyoteCounter -= Time.deltaTime;
 
             // Jumping cooldown
             jumpCounter -= Time.deltaTime;
         }
 
-        // Jump before you touch the ground
+        // Jump Buffer
         if (Input.GetKeyDown(KeyCode.Space))
         {
             jumpBufferCounter = jumpBufferTime;
@@ -253,27 +348,13 @@ public class PlayerMovement : MonoBehaviour
         #endregion
 
         // Player jump input
-        if (jumpBufferCounter > 0f && jumpHangCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
+        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
         {
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
-            #region Velocity
-
-            float velocity;
-
-            // Calculate jump velocity
-            if (rb.velocity.y >= 0)
-            {
-                velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
-                velocity += -rb.velocity.y; // When double jumping cancel out your first jump force
-            }
-            else
-            {
-                velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
-                velocity += Mathf.Abs(rb.velocity.y); // When falling cancel out gravity force
-            }
-
-            #endregion
+            // Calculate Velocity
+            float velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
+            velocity += -rb.velocity.y; // Cancel out current velocity
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
@@ -281,16 +362,20 @@ public class PlayerMovement : MonoBehaviour
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
-            if (jumpHangCounter <= 0f && !isGrounded && canDoubleJump)
+            if (jumpCoyoteCounter <= 0f && !isGrounded && canDoubleJump)
             {
                 canDoubleJump = false;
             }
-            if (jumpHangCounter > 0f)
+            if (jumpCoyoteCounter > 0f)
             {
-                jumpHangCounter = 0f; // So you don't triple jump
+                jumpCoyoteCounter = 0f; // So you don't triple jump
             }
         }
     }
+
+    #endregion
+
+    #region Dash
 
     void DashInput()
     {
@@ -302,15 +387,16 @@ public class PlayerMovement : MonoBehaviour
                 // If player is moving left or right
                 if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
                 {
-                    Vector3 direction = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
+                    //currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
+                    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
 
-                    StartCoroutine(Dash(-direction));
+                    StartCoroutine(Dash(isFacingRight));
                 }
             }
         }
     }
 
-    IEnumerator Dash(Vector3 direction)
+    IEnumerator Dash(bool isFacingRight)
     {
         isDashing = true;
 
@@ -324,10 +410,54 @@ public class PlayerMovement : MonoBehaviour
         // Calculate speed
         float speed = dashDistance / dashTime;
 
-        // Apply force
-        rb.AddForce(direction * speed, ForceMode.Impulse);
+        float currentDashTime = dashTime;
 
-        yield return new WaitForSeconds(dashTime);
+        while (currentDashTime > 0f)
+        {
+            currentDashTime -= Time.deltaTime;
+
+            #region Rotation
+
+            Quaternion targetRot = GetPathRotation();
+            if (isFacingRight)
+            {
+                distanceOnPath += speed * Time.deltaTime;
+            }
+            else
+            {
+                Vector3 rot = targetRot.eulerAngles;
+                targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
+
+                distanceOnPath -= speed * Time.deltaTime;
+            }
+
+            #endregion
+
+            #region Velocity
+
+            // Where we want to player to face/walk towards
+            Vector3 desiredDir = targetRot * Vector3.forward;
+
+            Vector3 targetVelocity = desiredDir * speed;
+
+            // Get rigidbody x and y velocity
+            Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+            // Apply a force that attempts to reach our target velocity
+            Vector3 velocity = rbVelocity;
+            Vector3 velocityChange = (targetVelocity - velocity);
+            velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+            velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+            velocityChange.y = 0;
+
+            rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+            #endregion
+
+            yield return new WaitForEndOfFrame();
+        }
+
+        
 
         isDashing = false;
 
@@ -339,12 +469,17 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Gravity
+
     void Gravity()
     {
         if (!isDashing)
         {
             if (rb.velocity.y < 0f)
             {
+                // Player Falling
                 rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
             }
             else
@@ -373,10 +508,85 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Wall Climb
+
+    void WallClimb()
+    {
+        if (canClimbWall && !isWallClimbing)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                isWallClimbing = true;
+            }
+        }
+        else if (isWallClimbing)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                isWallClimbing = false;
+            }
+
+            // Get input
+            Vector3 targetVelocity = new Vector3(0, Input.GetAxisRaw("Vertical"), 0f);
+
+            #region Calculate Velocity
+
+            float speed = humanSpeed;
+
+
+            if (targetVelocity.y < 0f)
+            {
+                // Down
+                targetVelocity = -transform.up * targetVelocity.magnitude * speed;
+            }
+            else
+            {
+                // Up
+                targetVelocity = transform.up * targetVelocity.magnitude * speed;
+            }
+            
+
+            Vector3 rbVelocity = new Vector3(0f, rb.velocity.y, 0f);
+
+            // Apply a force that attempts to reach our target velocity
+            Vector3 velocity = rbVelocity;
+            Vector3 velocityChange = (targetVelocity - velocity);
+            velocityChange.x = 0f;
+            velocityChange.z = 0f;
+            velocityChange.y = Mathf.Clamp(velocityChange.y, -maxVelocityChange, maxVelocityChange);
+
+            #endregion
+
+            rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = false;
+        }
+    }
+
+    #endregion
+
+    #region Player Controls
+
     void Stamina()
     {
         if (!isFox)
         {
+            // How long until stamina starts recovering
             if (currentStaminaCooldown > 0)
             {
                 currentStaminaCooldown -= Time.deltaTime;
@@ -388,6 +598,7 @@ public class PlayerMovement : MonoBehaviour
                 currentStamina += staminaRecovery;
             }
 
+            // Set stamina ui
             staminaBar.value = currentStamina / maxStamina;
         }
     }
@@ -420,6 +631,30 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
+    void LedgeClimb()
+    {
+        // Raycasts
+        isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
+        isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
+
+        Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
+
+        // Check if there is floor
+        if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
+        {
+            if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
+            {
+                canClimbLedge = true;
+                climbAnim.Play();
+                rb.velocity = Vector3.zero;
+            }
+        }
+    }
+
+    #endregion
+
+    #region Other Functions
 
     void VirtualCamUpdate()
     {
@@ -469,4 +704,23 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
+    void ShowLedgeRaycast()
+    {
+        Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
+        Debug.DrawLine(ledgeCheck.position, ledgeCheck.position + transform.forward * wallCheckDistance);
+    }
+
+    Quaternion GetPathRotation()
+    {
+        return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+    }
+
+    void CalculatePlayerDirection()
+    {
+        rightDir = (Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position).normalized;
+        leftDir = (Waypoints[currentPoint].position - Waypoints[currentPoint + 1].position).normalized;
+    }
+
+    #endregion
 }
