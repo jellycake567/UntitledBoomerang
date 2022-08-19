@@ -84,6 +84,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Path")]
     public PathCreator pathCreator;
     public float maxDistancePath = 0.5f;
+    public float distanceSpawn = 0f;
+    public float spawnYOffset = 0f;
     [Tooltip("Velocity to push player towards the path")] public float adjustVelocity = 1.0f;
 
     [Header("References")]
@@ -115,10 +117,6 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 rightDir;
     private Vector3 leftDir;
 
-    // Waypoint
-    private int currentPoint = 0;
-    List<Transform> Waypoints = new List<Transform>();
-
     const float REDUCE_SPEED = 1.414214f;
     private float distanceOnPath;
 
@@ -139,28 +137,18 @@ public class PlayerMovement : MonoBehaviour
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
 
-        #region Waypoint
+        
+        Vector3 spawnPos = pathCreator.path.GetPointAtDistance(distanceSpawn);
+        spawnPos.y += spawnYOffset + 1.0f;
+        transform.position = spawnPos;
 
-        // "path (transform)" magically supply "all of its children" when it is in a situation such as a foreach
-        foreach (Transform child in path)
-        {
-            Waypoints.Add(child);
-        }
-
-        //Vector3 waypoint = Waypoints[currentPoint].position;
-        //transform.position = waypoint;
-
-        transform.position = pathCreator.path.localPoints[0] + pathCreator.transform.position + new Vector3(0, 1f, 0);
-
-        #endregion
+        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
     }
 
     // Update is called once per frame
     void Update()
     {
         VirtualCamUpdate();
-        CalculatePlayerDirection();
-        CheckPlayerOnPath();
 
         GroundCheck();
         Stamina();
@@ -217,6 +205,7 @@ public class PlayerMovement : MonoBehaviour
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
 
+            distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
             Quaternion targetRot = GetPathRotation();
 
             float speed = isFox ? foxSpeed : humanSpeed;
@@ -224,6 +213,7 @@ public class PlayerMovement : MonoBehaviour
             // If player is moving
             if (direction.magnitude > 0.1f)
             {
+                #region Player Rotation
                 if (camera3D)
                 {
                     // Player movement/rotation direction
@@ -232,26 +222,29 @@ public class PlayerMovement : MonoBehaviour
                 }
                 else
                 {
-                    #region Path Position
-                    //returns if its positive = 1, negative = -1
-                    if (Mathf.Sign(direction.x) < 0f)
-                    {
-                        distanceOnPath -= speed * Time.deltaTime;
-                    }
-                    else
-                    {
-                        distanceOnPath += speed * Time.deltaTime;
-                    }
-                    #endregion
-
-                    #region Player Rotation
                     if (direction.x < 0f)
                     {
                         Vector3 rot = targetRot.eulerAngles;
                         targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
                     }
+
                     transform.rotation = targetRot;
-                    #endregion
+                }
+                #endregion
+
+                if (direction.x < 0f)
+                {
+                    if (distanceOnPath <= 0)
+                    {
+                        speed = 0f;
+                    }
+                }
+                else if (direction.x > 0f)
+                {
+                    if (distanceOnPath >= pathCreator.path.length)
+                    {
+                        speed = 0f;
+                    }
                 }
             }
 
@@ -304,14 +297,12 @@ public class PlayerMovement : MonoBehaviour
                 // Keeps player on the path
                 if (distance > maxDistancePath)
                 {
-                    Vector3 dirTowardPath = (pathPos - transform.position.IgnoreYAxis()).normalized;
+                    Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
                     rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
                 }
 
                 #endregion
             }
-
-
         }
 
     }
@@ -670,41 +661,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void CheckPlayerOnPath()
-    {
-        if (!camera3D)
-        {
-            Vector3 waypoint1 = new Vector3(Waypoints[currentPoint].position.x, 0f, Waypoints[currentPoint].position.z);
-            Vector3 waypoint2 = new Vector3(Waypoints[currentPoint + 1].position.x, 0f, Waypoints[currentPoint + 1].position.z);
-            Vector3 playerPos = new Vector3(transform.position.x, 0f, transform.position.z);
-
-            float maxDistance = Vector3.Distance(waypoint1, waypoint2);
-
-            // Going right
-            float rightDis = Vector3.Distance(waypoint1, playerPos);
-
-            // Going Left
-            float leftDis = Vector3.Distance(waypoint2, playerPos);
-
-            if (leftDis > maxDistance && rightDis < maxDistance)
-            {
-                // Going left
-                if (currentPoint > 0)
-                {
-                    currentPoint--;
-                }
-            }
-            else if (rightDis > maxDistance && leftDis < maxDistance)
-            {
-                // Going Right
-                if (currentPoint < Waypoints.Count - 2)
-                {
-                    currentPoint++;
-                }
-            }
-        }
-    }
-
     void ShowLedgeRaycast()
     {
         Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
@@ -716,11 +672,23 @@ public class PlayerMovement : MonoBehaviour
         return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
     }
 
-    void CalculatePlayerDirection()
+    public void ChangePath(PathCreator path)
     {
-        rightDir = (Waypoints[currentPoint + 1].position - Waypoints[currentPoint].position).normalized;
-        leftDir = (Waypoints[currentPoint].position - Waypoints[currentPoint + 1].position).normalized;
+        pathCreator = path;
+        distanceOnPath = 0f;
     }
 
     #endregion
+
+    private void OnDrawGizmos()
+    {
+        if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
+        {
+            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
+            spawnPosition.y += spawnYOffset;
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(spawnPosition, 0.5f);
+        }
+    }
 }

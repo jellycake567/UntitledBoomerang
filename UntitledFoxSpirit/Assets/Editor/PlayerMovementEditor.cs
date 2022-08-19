@@ -94,6 +94,8 @@ public class PlayerMovementEditor : Editor
         // Path
         EditorGUILayout.PropertyField(serializedObject.FindProperty("pathCreator"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxDistancePath"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceSpawn"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("spawnYOffset"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("adjustVelocity"));
 
         // References
