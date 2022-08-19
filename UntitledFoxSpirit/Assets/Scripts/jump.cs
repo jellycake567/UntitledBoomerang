@@ -12,6 +12,7 @@ public class jump : MonoBehaviour
     float gravity = -6;
     float gravityScale = 1;
     float fallGravityMultiplier = 2;
+    float lowFallGravityMultiplier = 1.5f;
 
     Rigidbody rb;
 
@@ -128,14 +129,15 @@ public class jump : MonoBehaviour
 
     void ApplyGravity()
     {
-       
+        rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+
         if (rb.velocity.y < 0f)//if falling, multiply gravity
         {
             rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
         }
-        else//if jumping
+        else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space))//if jumping and not holding the jump button
         {
-            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * lowFallGravityMultiplier);
         }
         
     }
