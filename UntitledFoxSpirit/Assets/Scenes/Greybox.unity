@@ -3100,6 +3100,7 @@ MonoBehaviour:
   gravity: -9.81
   gravityScale: 5
   fallGravityMultiplier: 1.5
+  lowFallGravityMultiplier: 0.1
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256

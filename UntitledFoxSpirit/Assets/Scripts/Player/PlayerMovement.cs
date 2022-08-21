@@ -74,6 +74,7 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = -9.81f;
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
+    public float lowFallGravityMultiplier = 0.1f;
     public LayerMask ignorePlayerMask;
     private bool isGrounded;
 
@@ -105,6 +106,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isDashing;
     private bool isWallClimbing;
     private bool canClimbWall;
+    private bool isHoldingJump = false;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -155,7 +157,18 @@ public class PlayerMovement : MonoBehaviour
         WallClimb();
         LedgeClimb();
         ShowLedgeRaycast();
-        
+
+
+        if (Input.GetKey(KeyCode.Space)) //if space is held
+        {
+            isHoldingJump = true;
+
+        }
+        else
+        {
+            isHoldingJump = false;
+        }
+
         if (!isWallClimbing && !canClimbLedge)
         {
             // Player Input Functions
@@ -170,7 +183,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!isWallClimbing && !canClimbLedge)
         {
-            Gravity();
+            ApplyGravity();
             Movement();
         }
     }
@@ -464,14 +477,19 @@ public class PlayerMovement : MonoBehaviour
 
     #region Gravity
 
-    void Gravity()
+    void ApplyGravity()
     {
         if (!isDashing)
         {
-            if (rb.velocity.y < 0f)
+            if (rb.velocity.y <= 0f)
             {
                 // Player Falling
                 rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
+            }
+            else if (rb.velocity.y > 0f && !isHoldingJump) // while jumping and not holding jump
+            {
+                rb.AddForce(new Vector3(0, -100, 0));
+
             }
             else
             {
