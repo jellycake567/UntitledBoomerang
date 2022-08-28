@@ -501,7 +501,7 @@ public class PlayerMovement : MonoBehaviour
     void GroundCheck()
     {
         Vector3 point = transform.position + Vector3.down;
-        Vector3 size = isFox ? new Vector3(0.6f, 0.1f, 0.6f) : new Vector3(0.9f, 0.1f, 1.9f);
+        Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.6f, 0.1f, 0.6f);
 
         bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
 
