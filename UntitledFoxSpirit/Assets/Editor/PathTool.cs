@@ -20,6 +20,7 @@ public class PathTool : Editor
                 Vector3 point = pathCreator.bezierPath.GetPoint(i);
 
                 pathCreator.bezierPath.SetPoint(i, new Vector3(point.x, 0f, point.z));
+
             }
         }
         else
