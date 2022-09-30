@@ -59,6 +59,17 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeCheck"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("groundLayer"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("climbAnim"));
+
+        // Knockback
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("invulnerableTime"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("horizontalKnockback"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("verticalKnockback"));
+
+        float currentValue = serializedObject.FindProperty("regainMovement").floatValue;
+        float rightValue = serializedObject.FindProperty("invulnerableTime").floatValue;
+
+        currentValue = EditorGUILayout.Slider("Regain Movement", currentValue, 0f, rightValue);
+        serializedObject.FindProperty("regainMovement").floatValue = currentValue;
     }
 
     void DisplayFoxInfo()

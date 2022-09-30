@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using Cinemachine;
 using PathCreation;
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -33,6 +32,14 @@ public class PlayerMovement : MonoBehaviour
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
+
+    [Header("Damage")]
+    public float invulnerableTime = 1f;
+    public float regainMovement = 0.5f;
+    public float horizontalKnockback = 10f;
+    public float verticalKnockback = 10f;
+    private float currentInvulnerableCooldown;
+    [HideInInspector] public bool isInvulnerable = false;
 
     #endregion
 
@@ -65,9 +72,9 @@ public class PlayerMovement : MonoBehaviour
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
     public float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
+    private float jumpBufferCounter;
     public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
     private float jumpCoyoteCounter;
-    private float jumpBufferCounter;
     private bool canDoubleJump;
 
     [Header("Gravity")]
@@ -103,10 +110,11 @@ public class PlayerMovement : MonoBehaviour
     #region Internal Variables
 
     private bool isFox;
-    private bool isDashing;
+    private bool disableMovement;
     private bool isWallClimbing;
     private bool canClimbWall;
     private bool isHoldingJump = false;
+    private bool disableGravity = false;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -151,13 +159,11 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         VirtualCamUpdate();
-
         GroundCheck();
         Stamina();
         WallClimb();
-        LedgeClimb();
         ShowLedgeRaycast();
-
+        CheckInvulnerableTime();
 
         if (Input.GetKey(KeyCode.Space)) //if space is held
         {
@@ -169,13 +175,14 @@ public class PlayerMovement : MonoBehaviour
             isHoldingJump = false;
         }
 
-        if (!isWallClimbing && !canClimbLedge)
+        if (!isWallClimbing && !canClimbLedge && !disableMovement)
         {
             // Player Input Functions
             Jump();
             DashInput();
             ChangeForm();
             Attack();
+            LedgeClimb();
         }
     }
 
@@ -189,7 +196,6 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #endregion
-
 
     #region Player Movement
     void Movement()
@@ -212,7 +218,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 targetVelocity = camera3D ? targetVelocity3D : targetVelocity2D;
         Vector3 direction = targetVelocity.normalized;
 
-        if (!isDashing)
+        if (!disableMovement)
         {
             // Calculate player rotation
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
@@ -386,7 +392,7 @@ public class PlayerMovement : MonoBehaviour
         if (!isFox && currentStamina >= staminaConsumption || isFox)
         {
             // Dash input
-            if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing)
+            if (Input.GetKeyDown(KeyCode.LeftShift))
             {
                 // If player is moving left or right
                 if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
@@ -402,7 +408,8 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator Dash(bool isFacingRight)
     {
-        isDashing = true;
+        disableMovement = true;
+        disableGravity = true;
 
         // Set Y velocity to 0
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
@@ -461,9 +468,8 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        
-
-        isDashing = false;
+        disableMovement = false;
+        disableGravity = false;
 
         if (!isFox)
         {
@@ -479,7 +485,7 @@ public class PlayerMovement : MonoBehaviour
 
     void ApplyGravity()
     {
-        if (!isDashing)
+        if (!disableGravity)
         {
             if (rb.velocity.y <= 0f)
             {
@@ -512,6 +518,43 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             isGrounded = false;
+        }
+    }
+
+    #endregion
+
+    #region Take Damage
+    public void TakeDamage(Vector3 direction)
+    {
+        if (!isInvulnerable)
+        {
+            isInvulnerable = true;
+            disableMovement = true;
+            currentInvulnerableCooldown = invulnerableTime;
+             
+            rb.velocity = new Vector3(direction.x * horizontalKnockback, verticalKnockback, direction.z * horizontalKnockback);
+        }
+    }
+
+    void CheckInvulnerableTime()
+    {
+        if (isInvulnerable)
+        {
+            // Player regain control
+            if (currentInvulnerableCooldown <= invulnerableTime - regainMovement && disableMovement)
+            {
+                disableMovement = false;
+            }
+
+            // Invulnerable Timer
+            if (currentInvulnerableCooldown <= 0f)
+            {
+                isInvulnerable = false;
+            }
+            else
+            {
+                currentInvulnerableCooldown -= Time.deltaTime;
+            }
         }
     }
 
@@ -643,20 +686,23 @@ public class PlayerMovement : MonoBehaviour
 
     void LedgeClimb()
     {
-        // Raycasts
-        isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
-        isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
-
-        Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
-
-        // Check if there is floor
-        if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
+        if (rb.velocity.y > 0f)
         {
-            if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
+            // Raycasts
+            isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
+            isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
+
+            Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
+
+            // Check if there is floor
+            if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
             {
-                canClimbLedge = true;
-                climbAnim.Play();
-                rb.velocity = Vector3.zero;
+                if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
+                {
+                    canClimbLedge = true;
+                    climbAnim.Play();
+                    rb.velocity = Vector3.zero;
+                }
             }
         }
     }
