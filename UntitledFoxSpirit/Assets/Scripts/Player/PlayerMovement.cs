@@ -33,13 +33,7 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask groundLayer;
     public Animation climbAnim;
 
-    [Header("Damage")]
-    public float invulnerableTime = 1f;
-    public float regainMovement = 0.5f;
-    public float horizontalKnockback = 10f;
-    public float verticalKnockback = 10f;
-    private float currentInvulnerableCooldown;
-    [HideInInspector] public bool isInvulnerable = false;
+    
 
     #endregion
 
@@ -84,6 +78,14 @@ public class PlayerMovement : MonoBehaviour
     public float lowFallGravityMultiplier = 0.1f;
     public LayerMask ignorePlayerMask;
     private bool isGrounded;
+
+    [Header("Damage")]
+    public float invulnerableTime = 1f;
+    public float regainMovement = 0.5f;
+    public float horizontalKnockback = 10f;
+    public float verticalKnockback = 10f;
+    private float currentInvulnerableCooldown;
+    [HideInInspector] public bool isInvulnerable = false;
 
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
@@ -241,6 +243,7 @@ public class PlayerMovement : MonoBehaviour
                 }
                 else
                 {
+                    // Flipping player
                     if (direction.x < 0f)
                     {
                         Vector3 rot = targetRot.eulerAngles;

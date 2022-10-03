@@ -22,4 +22,12 @@ public class EndBugDash : MonoBehaviour
         transform.localPosition = new Vector3(0, 0, 0);
     }
 
+    void OnTriggerStay(Collider other)
+    {
+        // Get dir from AI to player
+        Vector3 facingDir = (other.ClosestPointOnBounds(enemyNav.target.position) - transform.position).IgnoreYAxis();
+        Vector3 dir = enemyNav.CalculatePathFacingDir(transform.position, facingDir);
+
+        enemyNav.target.gameObject.GetComponent<PlayerMovement>().TakeDamage(dir.normalized);
+    }
 }
