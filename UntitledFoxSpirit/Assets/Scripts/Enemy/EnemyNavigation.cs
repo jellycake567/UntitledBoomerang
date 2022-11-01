@@ -3,29 +3,46 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using PathCreation;
+using System.ComponentModel;
+using NUnit.Framework.Internal;
+
+enum State
+{
+    Chase,
+    Attack
+}
 
 public class EnemyNavigation : MonoBehaviour
 {
-    // Path
-    public float maxDistancePath = 30.0f;
-    public float adjustVelocity = 1.0f;
-    public bool followPath = false;
+    [Header("Enemy")]
+    [SerializeField] float rotationAngle = 30.0f;
+    [SerializeField] State state = State.Chase;
 
-    // Rotation
-    public float rotationAngle = 30.0f;
+    [Header("Attack")]
+    [SerializeField] float attackRadius = 3f;
+    [SerializeField] float attackCooldown = 3f;
+    private float currentAttackDuration;
+    private bool isAttacking = false;
+    private BoxCollider hitbox;
 
-    // Attack
-    public float attackRadius = 3f;
-    public float attackCooldown = 3f;
-    float currentAttackCooldown;
-    [HideInInspector]public bool isDashing = false;
+    [Header("Path")]
+    [SerializeField] float maxDistancePath = 30.0f;
+    [SerializeField] float adjustVelocity = 1.0f;
+    [SerializeField] bool followPath = false;
 
-    // References
-    NavMeshAgent agent;
-    public Transform target;
-    public PathCreator pathCreator;
-    public LayerMask groundMask;
-    [HideInInspector] public Animation attackAnim;
+    [Header("References")]
+    [SerializeField] Transform target;
+    [SerializeField] PathCreator pathCreator;
+    [SerializeField] LayerMask groundMask;
+    private NavMeshAgent agent;
+    private Animator animController;
+
+    #region Internal Variables
+
+    private bool canMove = true;
+    
+
+    #endregion
 
     // Start is called before the first frame update
     void Start()
@@ -33,27 +50,33 @@ public class EnemyNavigation : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
 
-        attackAnim = GetComponentInChildren<Animation>();
+        animController = GetComponent<Animator>();
+        hitbox = GetComponentInChildren<BoxCollider>();
+
+        ChangeState(state);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!isDashing)
+        if (state == State.Chase)
             Chase();
 
-        Attack();
+        if (state == State.Attack)
+            Attack();
     }
 
     void Chase()
     {
+        #region Behaviour
+
         RaycastHit hit;
         Physics.Raycast(target.position, Vector3.down, out hit, 100f, groundMask);
 
         // Create a path and set it based on a target position.
         NavMeshPath path = new NavMeshPath();
         NavMesh.CalculatePath(transform.position, hit.point, NavMesh.AllAreas, path);
-        
+
 
         if (path.corners.Length > 1)
         {
@@ -83,39 +106,71 @@ public class EnemyNavigation : MonoBehaviour
             }
         }
 
+        #endregion
+
+        #region Condition
+
         // If Ai is near player stop chasing
         float distance = Vector3.Distance(transform.position, target.position);
         if (distance > attackRadius)
         {
+            animController.SetBool("isMoving", true);
             agent.SetDestination(target.position);
         }
-        else
+        else if (distance <= attackRadius)
         {
-            agent.ResetPath();
+            
+            ChangeState(State.Attack);
+            return;
         }
+
+        currentAttackDuration -= Time.deltaTime;
+
+        #endregion
     }
 
     void Attack()
     {
-        if (currentAttackCooldown <= 0f && !isDashing)
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
-            float distance = Vector3.Distance(transform.position, target.position);
-            if (distance < attackRadius)
-            {
-                isDashing = true;
-
-                currentAttackCooldown = attackCooldown;
-                attackAnim.Play();
-            }
+            if (!isAttacking)
+                isAttacking = true;
         }
         else
         {
-            currentAttackCooldown -= Time.deltaTime;
+            if (isAttacking)
+                ChangeState(State.Chase);
         }
     }
 
+    void ChangeState(State stateToChange)
+    {
+        // Initialize state
+        if (stateToChange == State.Chase)
+        {
+            
+        }
+        else if (stateToChange == State.Attack)
+        {
+            animController.SetTrigger("Attack");
+            hitbox.enabled = true;
+        }
 
+        // Reset state
+        if (state == State.Chase)
+        {
+            agent.ResetPath(); // Stop moving
+            agent.velocity = Vector3.zero; // Reset velocity
+            animController.SetBool("isMoving", false);
+        }
+        else if (state == State.Attack)
+        {
+            isAttacking = false;
+            hitbox.enabled = false;
+        }
 
+        state = stateToChange;
+    }
 
     public Vector3 CalculatePathFacingDir(Vector3 posOnPath, Vector3 directionToFace)
     {

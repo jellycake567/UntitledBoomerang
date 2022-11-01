@@ -9,14 +9,14 @@ public class EndBugDash : MonoBehaviour
 
     void Start()
     {
-        enemyNav = GetComponentInParent<EnemyNavigation>();
+        //enemyNav = GetComponentInParent<EnemyNavigation>();
     }
 
     public void EndAttack()
     {
-        enemyNav.attackAnim.Stop();
+        //enemyNav.attackAnim.Stop();
 
-        enemyNav.isDashing = false;
+        //enemyNav.isAttacking = false;
 
         transform.parent.position = transform.position;
         transform.localPosition = new Vector3(0, 0, 0);
@@ -25,9 +25,9 @@ public class EndBugDash : MonoBehaviour
     void OnTriggerStay(Collider other)
     {
         // Get dir from AI to player
-        Vector3 facingDir = (other.ClosestPointOnBounds(enemyNav.target.position) - transform.position).IgnoreYAxis();
-        Vector3 dir = enemyNav.CalculatePathFacingDir(transform.position, facingDir);
+        //Vector3 facingDir = (other.ClosestPointOnBounds(enemyNav.target.position) - transform.position).IgnoreYAxis();
+        //Vector3 dir = enemyNav.CalculatePathFacingDir(transform.position, facingDir);
 
-        enemyNav.target.gameObject.GetComponent<PlayerMovement>().TakeDamage(dir.normalized);
+        //enemyNav.target.gameObject.GetComponent<PlayerMovement>().TakeDamage(dir.normalized);
     }
 }

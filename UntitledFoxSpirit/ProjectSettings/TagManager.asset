@@ -6,6 +6,7 @@ TagManager:
   tags:
   - WallClimb
   - Enemy
+  - Hitbox
   layers:
   - Default
   - TransparentFX
