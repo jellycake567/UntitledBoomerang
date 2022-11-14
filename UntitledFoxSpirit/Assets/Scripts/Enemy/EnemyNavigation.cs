@@ -152,6 +152,7 @@ public class EnemyNavigation : MonoBehaviour
         }
         else if (stateToChange == State.Attack)
         {
+            agent.enabled = false;
             animController.SetTrigger("Attack");
             hitbox.enabled = true;
         }
@@ -165,6 +166,7 @@ public class EnemyNavigation : MonoBehaviour
         }
         else if (state == State.Attack)
         {
+            agent.enabled = true;
             isAttacking = false;
             hitbox.enabled = false;
         }
