@@ -134,6 +134,7 @@ public class PlayerMovement : MonoBehaviour
 
     // References
     Rigidbody rb;
+    Animator controller;
 
     #endregion
 
@@ -143,6 +144,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        controller = GetComponent<Animator>();
 
         currentStamina = maxStamina;
 
@@ -234,6 +236,8 @@ public class PlayerMovement : MonoBehaviour
             // If player is moving
             if (direction.magnitude > 0.1f)
             {
+                controller.SetBool("isMoving", true);
+
                 #region Player Rotation
                 if (camera3D)
                 {
@@ -254,6 +258,7 @@ public class PlayerMovement : MonoBehaviour
                 }
                 #endregion
 
+                // Reached end of path
                 if (direction.x < 0f)
                 {
                     if (distanceOnPath <= 0)
@@ -268,6 +273,10 @@ public class PlayerMovement : MonoBehaviour
                         speed = 0f;
                     }
                 }
+            }
+            else
+            {
+                controller.SetBool("isMoving", false);
             }
 
             #region Calculate Velocity
