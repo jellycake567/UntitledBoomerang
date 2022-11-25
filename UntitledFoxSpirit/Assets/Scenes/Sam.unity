@@ -1800,7 +1800,8 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 6848cb70a548cff419917db76fd21702, type: 2}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5866666021909216657, guid: 14ea1be62f2ea414d905391677540b83, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 14ea1be62f2ea414d905391677540b83, type: 3}
 --- !u!1 &198470839
 GameObject:
@@ -3020,7 +3021,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067231, y: -0.000000016953926, z: 0.0000000029366534, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067231, y: 0.000000016953926, z: -0.0000000029366534, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -3777,7 +3778,6 @@ MonoBehaviour:
   virtualCam3D: {fileID: 1605981670}
   human: {fileID: 146605466}
   fox: {fileID: 480017276}
-  attack: {fileID: 991893239}
   canClimbLedge: 0
   ledgeDetected: 0
 --- !u!54 &1054373033
@@ -4718,7 +4718,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1337856846}
-  m_LocalRotation: {x: 0.1347677, y: 0.000000008524705, z: -0.0000000011594323, w: 0.9908773}
+  m_LocalRotation: {x: 0.1347677, y: -0.000000008524705, z: 0.0000000011594323, w: 0.9908773}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -6167,7 +6167,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2004943258}
-  m_LocalRotation: {x: 0.15272148, y: -0.000000008502268, z: 0.0000000013138921, w: 0.98826927}
+  m_LocalRotation: {x: 0.15272148, y: 0.000000008502269, z: -0.0000000013138919, w: 0.98826927}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:

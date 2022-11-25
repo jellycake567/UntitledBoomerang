@@ -105,7 +105,6 @@ public class PlayerMovement : MonoBehaviour
     public CinemachineFreeLook virtualCam3D;
     public GameObject human;
     public GameObject fox;
-    public Animation attack;
 
     #endregion
 
@@ -117,6 +116,7 @@ public class PlayerMovement : MonoBehaviour
     private bool canClimbWall;
     private bool isHoldingJump = false;
     private bool disableGravity = false;
+    private bool isAttacking = false;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -134,7 +134,7 @@ public class PlayerMovement : MonoBehaviour
 
     // References
     Rigidbody rb;
-    Animator controller;
+    Animator animController;
 
     #endregion
 
@@ -144,7 +144,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        controller = GetComponent<Animator>();
+        animController = GetComponent<Animator>();
 
         currentStamina = maxStamina;
 
@@ -185,8 +185,12 @@ public class PlayerMovement : MonoBehaviour
             Jump();
             DashInput();
             ChangeForm();
-            Attack();
             LedgeClimb();
+        }
+
+        if (!disableMovement || isAttacking)
+        {
+            Attack();
         }
     }
 
@@ -222,6 +226,13 @@ public class PlayerMovement : MonoBehaviour
         Vector3 targetVelocity = camera3D ? targetVelocity3D : targetVelocity2D;
         Vector3 direction = targetVelocity.normalized;
 
+        #region Detect animation player input
+        if (direction.magnitude > 0.1f)
+            animController.SetBool("isMoving", true);
+        else
+            animController.SetBool("isMoving", false);
+        #endregion
+
         if (!disableMovement)
         {
             // Calculate player rotation
@@ -236,8 +247,6 @@ public class PlayerMovement : MonoBehaviour
             // If player is moving
             if (direction.magnitude > 0.1f)
             {
-                controller.SetBool("isMoving", true);
-
                 #region Player Rotation
                 if (camera3D)
                 {
@@ -273,10 +282,6 @@ public class PlayerMovement : MonoBehaviour
                         speed = 0f;
                     }
                 }
-            }
-            else
-            {
-                controller.SetBool("isMoving", false);
             }
 
             #region Calculate Velocity
@@ -653,9 +658,28 @@ public class PlayerMovement : MonoBehaviour
 
     void Attack()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        // Is currently playing attack animation
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
-            attack.Play();
+            if (!isAttacking)
+            {
+                rb.velocity = Vector3.zero;
+                disableMovement = true;
+                isAttacking = true;
+            }
+        }
+        else
+        {
+            if (isAttacking)
+            {
+                disableMovement = false;
+                isAttacking = false;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Mouse0))
+            {
+                animController.SetTrigger("Attack");
+            }
         }
     }
 
