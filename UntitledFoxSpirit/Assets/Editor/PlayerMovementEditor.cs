@@ -87,6 +87,17 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("fallGravityMultiplier"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ignorePlayerMask"));
 
+        // Take Damage
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("invulnerableTime"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("horizontalKnockback"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("verticalKnockback"));
+
+        float currentValue = serializedObject.FindProperty("regainMovement").floatValue;
+        float rightValue = serializedObject.FindProperty("invulnerableTime").floatValue;
+
+        currentValue = EditorGUILayout.Slider("Regain Movement", currentValue, 0f, rightValue);
+        serializedObject.FindProperty("regainMovement").floatValue = currentValue;
+
         // Camera
         EditorGUILayout.PropertyField(serializedObject.FindProperty("camRotationSpeed2D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("mainCamera"));
@@ -105,7 +116,6 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("human"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("fox"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("attack"));
 
     }
 }
