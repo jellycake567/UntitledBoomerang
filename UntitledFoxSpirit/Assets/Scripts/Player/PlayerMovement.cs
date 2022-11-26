@@ -2,6 +2,7 @@ using Cinemachine;
 using PathCreation;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
@@ -411,16 +412,22 @@ public class PlayerMovement : MonoBehaviour
             // Dash input
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
+                
+                animController.SetTrigger("Dash");
+                disableMovement = false;
+
                 // If player is moving left or right
                 if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
                 {
                     //currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
-                    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
+                    //bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
 
-                    StartCoroutine(Dash(isFacingRight));
+                    // StartCoroutine(Dash(isFacingRight));
                 }
             }
         }
+
+        
     }
 
     IEnumerator Dash(bool isFacingRight)
