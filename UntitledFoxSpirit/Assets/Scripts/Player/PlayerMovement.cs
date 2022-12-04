@@ -1,6 +1,7 @@
 using Cinemachine;
 using PathCreation;
 using System.Collections;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -33,8 +34,6 @@ public class PlayerMovement : MonoBehaviour
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
-
-    
 
     #endregion
 
@@ -77,6 +76,8 @@ public class PlayerMovement : MonoBehaviour
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
     public float lowFallGravityMultiplier = 0.1f;
+    [SerializeField] public Vector3 groundCheckOffset;
+    [SerializeField] public Vector3 groundCheckSize;
     public LayerMask ignorePlayerMask;
     private bool isGrounded;
 
@@ -118,6 +119,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isHoldingJump = false;
     private bool disableGravity = false;
     private bool isAttacking = false;
+    private bool isDashing = false;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -184,15 +186,12 @@ public class PlayerMovement : MonoBehaviour
         {
             // Player Input Functions
             Jump();
-            DashInput();
             ChangeForm();
             LedgeClimb();
         }
 
-        if (!disableMovement || isAttacking)
-        {
-            Attack();
-        }
+        DashInput();
+        Attack();
     }
 
     void FixedUpdate()
@@ -387,6 +386,8 @@ public class PlayerMovement : MonoBehaviour
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
+            animController.SetTrigger("Jump");
+
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
@@ -407,27 +408,43 @@ public class PlayerMovement : MonoBehaviour
 
     void DashInput()
     {
-        if (!isFox && currentStamina >= staminaConsumption || isFox)
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Dash"))
         {
-            // Dash input
-            if (Input.GetKeyDown(KeyCode.LeftShift))
+            // Wait for animation transition
+            if (!isDashing)
             {
-                
-                animController.SetTrigger("Dash");
-                disableMovement = false;
+                isDashing = true;
+            }
+        }
+        else
+        {
+            if (isDashing)
+            {
+                isDashing = false;
+                //disableMovement = false;
+                //animController.applyRootMotion = false;
+            }
 
-                // If player is moving left or right
-                if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+            if (!isFox && currentStamina >= staminaConsumption || isFox)
+            {
+                // Dash input
+                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
                 {
-                    //currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
-                    //bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
+                    animController.SetTrigger("Dash");
+                    animController.applyRootMotion = true;
+                    disableMovement = true;
 
-                    // StartCoroutine(Dash(isFacingRight));
+                    // If player is moving left or right
+                    //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+                    //{
+                    //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
+                    //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
+
+                    //    StartCoroutine(Dash(isFacingRight));
+                    //}
                 }
             }
         }
-
-        
     }
 
     IEnumerator Dash(bool isFacingRight)
@@ -530,10 +547,10 @@ public class PlayerMovement : MonoBehaviour
 
     void GroundCheck()
     {
-        Vector3 point = transform.position + Vector3.down;
-        Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.6f, 0.1f, 0.6f);
+        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+        //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(point, size, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(point, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
 
         if (overlap && rb.velocity.y <= 0f)
         {
@@ -668,12 +685,29 @@ public class PlayerMovement : MonoBehaviour
         // Is currently playing attack animation
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
+            // Attack animation has started!
             if (!isAttacking)
             {
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
                 isAttacking = true;
             }
+
+            // Allow animation transition to jog cycle
+            float time = animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
+            animController.SetFloat("NormalisedTime", time);
+
+            if (time >= 0.4f && time < 0.8f)
+            {
+                if (disableMovement)
+                    disableMovement = false;
+            }
+            else
+            {
+                if (!disableMovement)
+                    disableMovement = true;
+            }
+
         }
         else
         {
@@ -683,7 +717,7 @@ public class PlayerMovement : MonoBehaviour
                 isAttacking = false;
             }
 
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking)
             {
                 animController.SetTrigger("Attack");
             }
@@ -773,6 +807,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        // Spawn player position
         if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
         {
             Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
@@ -781,6 +816,14 @@ public class PlayerMovement : MonoBehaviour
             Gizmos.color = Color.cyan;
             Gizmos.DrawSphere(spawnPosition, 0.5f);
         }
+
+        // Player ground check
+        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(point, groundCheckSize);
+
+
     }
 
     private void OnTriggerEnter(Collider other)

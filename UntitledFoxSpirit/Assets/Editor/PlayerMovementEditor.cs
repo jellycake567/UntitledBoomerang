@@ -82,10 +82,15 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCooldown"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpBufferTime"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCoyoteTime"));
+
+        // Gravity
         EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityScale"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("fallGravityMultiplier"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("groundCheckOffset"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("groundCheckSize"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ignorePlayerMask"));
+
 
         // Take Damage
         EditorGUILayout.PropertyField(serializedObject.FindProperty("invulnerableTime"));
