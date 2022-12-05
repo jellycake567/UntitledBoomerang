@@ -532,6 +532,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 // Player Falling
                 rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
+                animController.SetTrigger("Fall");
             }
             else if (rb.velocity.y > 0f && !isHoldingJump) // while jumping and not holding jump
             {
@@ -555,6 +556,7 @@ public class PlayerMovement : MonoBehaviour
         if (overlap && rb.velocity.y <= 0f)
         {
             isGrounded = true;
+            animController.SetTrigger("Grounded");
         }
         else
         {
