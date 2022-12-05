@@ -12203,7 +12203,7 @@ MonoBehaviour:
   frictionAmount: 0.5
   camera3D: 0
   jumpCooldown: 0.2
-  jumpBufferTime: 0.1
+  jumpBufferTime: 0.05
   jumpCoyoteTime: 0.2
   gravity: -9.81
   gravityScale: 5

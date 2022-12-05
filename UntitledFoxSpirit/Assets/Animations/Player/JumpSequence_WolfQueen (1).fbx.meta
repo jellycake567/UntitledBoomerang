@@ -24,6 +24,9 @@ ModelImporter:
   - first:
       74: 7407446543453923068
     second: DeathLanding
+  - first:
+      74: -7813635296899823279
+    second: Crouch
   externalObjects: {}
   materials:
     materialImportMode: 1
@@ -85,7 +88,7 @@ ModelImporter:
       name: Jump
       takeName: Jump1
       internalID: 0
-      firstFrame: 16
+      firstFrame: 10
       lastFrame: 54
       wrapMode: 0
       orientationOffsetY: 0
@@ -232,6 +235,35 @@ ModelImporter:
       internalID: 0
       firstFrame: 413
       lastFrame: 427
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Crouch
+      takeName: Jump1
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 10
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

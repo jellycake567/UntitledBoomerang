@@ -120,6 +120,7 @@ public class PlayerMovement : MonoBehaviour
     private bool disableGravity = false;
     private bool isAttacking = false;
     private bool isDashing = false;
+    private bool isWindingUp = false;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -345,6 +346,43 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Crouch"))
+        {
+            
+            if (!isWindingUp)
+            {
+                isWindingUp = true;
+            }
+
+            
+
+        }
+        else
+        {
+            //Wait for crouch/windup to finish
+            if (isWindingUp)
+            {
+                
+                isWindingUp = false;
+                jumpBufferCounter = jumpBufferTime;
+            }
+            else
+            {
+                jumpBufferCounter -= Time.deltaTime;
+            }
+
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                animController.SetTrigger("Jump");
+            }
+
+            
+        }
+
+
+
+
+
         #region Coyote and Jump Buffer Timers
 
         // Coyote Time
@@ -363,19 +401,19 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump Buffer
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            jumpBufferCounter = jumpBufferTime;
-        }
-        else
-        {
-            jumpBufferCounter -= Time.deltaTime;
-        }
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    jumpBufferCounter = jumpBufferTime;
+        //}
+        //else
+        //{
+        //    jumpBufferCounter -= Time.deltaTime;
+        //}
 
         #endregion
 
         // Player jump input
-        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
+        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
         {
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
@@ -386,7 +424,7 @@ public class PlayerMovement : MonoBehaviour
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
-            animController.SetTrigger("Jump");
+            
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
