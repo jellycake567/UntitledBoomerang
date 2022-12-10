@@ -78,11 +78,12 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = -9.81f;
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
-    public float lowFallGravityMultiplier = 0.1f;
+    public float reduceVelocity = 5f;
     [SerializeField] public Vector3 groundCheckOffset;
     [SerializeField] public Vector3 groundCheckSize;
     public LayerMask ignorePlayerMask;
     private bool isGrounded;
+    private float updateMaxHeight = 100000f;
 
     [Header("Damage")]
     public float invulnerableTime = 1f;
@@ -144,10 +145,8 @@ public class PlayerMovement : MonoBehaviour
     Animator animController;
 
 
-    //testing shit
-    private Vector3 peakPosition;
-    private float peakHeight;
-    private float updatedMaxHuHeight = 1000000f;
+    float currentMaxHeight = 0f;
+    private Vector3 velocity;
 
     #endregion
 
@@ -175,13 +174,12 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        velocity = rb.velocity;
 
-        //test
-        if(!isGrounded && rb.velocity.y >= 0)
-        {           
-            peakHeight = this.transform.position.y;
-            Debug.Log(peakHeight);
+        if (rb.velocity.y > 0)
+        {
+            currentMaxHeight = transform.position.y;
+            //Debug.Log(currentMaxHeight);
         }
 
 
@@ -367,14 +365,10 @@ public class PlayerMovement : MonoBehaviour
     {
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Crouch"))
         {
-            
             if (!isWindingUp)
             {
                 isWindingUp = true;
             }
-
-            
-
         }
         else
         {
@@ -394,13 +388,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetTrigger("Jump");
             }
-
-            
         }
-
-
-
-
 
         #region Coyote and Jump Buffer Timers
 
@@ -437,16 +425,17 @@ public class PlayerMovement : MonoBehaviour
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
             // Calculate Velocity
-            float velocity = Mathf.Sqrt(jumpHeight * - 2 * (gravity * gravityScale));
+            float velocity = Mathf.Sqrt(-2 * gravity * jumpForce);
             velocity += -rb.velocity.y; // Cancel out current velocity
             
             //temporary
-            updatedMaxHuHeight = transform.position.y + humanJumpHeight;
-            Debug.Log("updated height: " + updatedMaxHuHeight);
+            updateMaxHeight = transform.position.y + humanJumpHeight;
+            Debug.Log("updated height: " + updateMaxHeight);
+
+            updateMaxHeight = transform.position.y + jumpHeight;
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
-
             
 
             // Set jump cooldown
@@ -477,34 +466,34 @@ public class PlayerMovement : MonoBehaviour
                 isDashing = true;
             }
         }
-        else
-        {
-            if (isDashing)
-            {
-                isDashing = false;
-                //disableMovement = false;
-                //animController.applyRootMotion = false;
-            }
-
-            if (!isFox && currentStamina >= staminaConsumption || isFox)
-            {
-                // Dash input
-                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
-                {
-                    animController.SetTrigger("Dash");
-                    animController.applyRootMotion = true;
-                    disableMovement = true;
-
-                    // If player is moving left or right
-                    //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-                    //{
-                    //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
-                    //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
-
-                    //    StartCoroutine(Dash(isFacingRight));
-                    //}
-                }
-            }
+        else
+        {
+            if (isDashing)
+            {
+                isDashing = false;
+                disableMovement = false;
+                animController.applyRootMotion = false;
+            }
+
+            if (!isFox && currentStamina >= staminaConsumption || isFox)
+            {
+                // Dash input
+                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
+                {
+                    animController.SetTrigger("Dash");
+                    animController.applyRootMotion = true;
+                    disableMovement = true;
+
+                    // If player is moving left or right
+                    //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+                    //{
+                    //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
+                    //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
+
+                    //    StartCoroutine(Dash(isFacingRight));
+                    //}
+                }
+            }
         }
     }
 
@@ -587,50 +576,52 @@ public class PlayerMovement : MonoBehaviour
 
     void ApplyGravity()
     {
-
-
         if (!disableGravity)
         {
-
-            //if (transform.position.y >= updatedMaxHuHeight && !isGrounded)
-            //{
-            //    rb.AddForce(new Vector3(0, -rb.velocity.y, 0), ForceMode.Impulse);
-            //    
-            //}
-
+            // Reached max height, positive velocity
+            if (transform.position.y >= updateMaxHeight && rb.velocity.y > 0f && !isGrounded)
+            {
+                rb.AddForce(new Vector3(0, gravity * reduceVelocity, 0));
+            }
+            
             if (rb.velocity.y <= 0f)
             {
                 // Player Falling
-                rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
-                animController.SetTrigger("Fall");
+                rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * fallGravityMultiplier);
+
+                if (!isGrounded)
+                    animController.SetBool("Fall", true);
             }
             else if (rb.velocity.y > 0f && !isHoldingJump) // while jumping and not holding jump
             {
-                rb.AddForce(new Vector3(0, -25, 0) * rb.mass * gravityScale);//fall faster
-
-            }
-            else //jumping and holding jump
+                rb.AddForce(new Vector3(0, -100, 0));
+            }   
+            else
             {
-                rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+                // Jumping while holding jump input
+                rb.AddForce(new Vector3(0, gravity, 0));
             }
         }
     }
 
     void GroundCheck()
     {
-        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+        Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(point, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(centerPos, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
 
         if (overlap && rb.velocity.y <= 0f)
         {
             isGrounded = true;
-            animController.SetTrigger("Grounded");
+            animController.SetBool("Grounded", true);
+            animController.SetBool("Fall", false);
+            
         }
         else
         {
             isGrounded = false;
+            animController.SetBool("Grounded", false);
         }
     }
 
