@@ -15,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
+    public float jumpForce = 20f;
 
     [Header("Dash")]
     public float humanDashTime = 5.0f;
@@ -70,6 +71,8 @@ public class PlayerMovement : MonoBehaviour
     public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
     private float jumpCoyoteCounter;
     private bool canDoubleJump;
+    public float jumpMultiplier = 1.0f;
+    private float currentY;
 
     [Header("Gravity")]
     public float gravity = -9.81f;
@@ -140,6 +143,12 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
     Animator animController;
 
+
+    //testing shit
+    private Vector3 peakPosition;
+    private float peakHeight;
+    private float updatedMaxHuHeight = 1000000f;
+
     #endregion
 
     #region Unity Functions
@@ -166,6 +175,16 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+
+        //test
+        if(!isGrounded && rb.velocity.y >= 0)
+        {           
+            peakHeight = this.transform.position.y;
+            Debug.Log(peakHeight);
+        }
+
+
         VirtualCamUpdate();
         GroundCheck();
         Stamina();
@@ -418,8 +437,12 @@ public class PlayerMovement : MonoBehaviour
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
             // Calculate Velocity
-            float velocity = Mathf.Sqrt(-2 * gravity * gravityScale * jumpHeight);
+            float velocity = Mathf.Sqrt(jumpHeight * - 2 * (gravity * gravityScale));
             velocity += -rb.velocity.y; // Cancel out current velocity
+            
+            //temporary
+            updatedMaxHuHeight = transform.position.y + humanJumpHeight;
+            Debug.Log("updated height: " + updatedMaxHuHeight);
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
@@ -564,8 +587,17 @@ public class PlayerMovement : MonoBehaviour
 
     void ApplyGravity()
     {
+
+
         if (!disableGravity)
         {
+
+            //if (transform.position.y >= updatedMaxHuHeight && !isGrounded)
+            //{
+            //    rb.AddForce(new Vector3(0, -rb.velocity.y, 0), ForceMode.Impulse);
+            //    
+            //}
+
             if (rb.velocity.y <= 0f)
             {
                 // Player Falling
@@ -574,10 +606,10 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (rb.velocity.y > 0f && !isHoldingJump) // while jumping and not holding jump
             {
-                rb.AddForce(new Vector3(0, -100, 0));
+                rb.AddForce(new Vector3(0, -25, 0) * rb.mass * gravityScale);//fall faster
 
             }
-            else
+            else //jumping and holding jump
             {
                 rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
             }

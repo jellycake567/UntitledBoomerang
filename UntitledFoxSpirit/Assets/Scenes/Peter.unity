@@ -12179,7 +12179,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   humanSpeed: 7
-  humanJumpHeight: 3
+  humanJumpHeight: 10
   humanDashTime: 0.2
   humanDashDistance: 4
   staminaConsumption: 20
