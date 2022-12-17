@@ -72,7 +72,8 @@ public class PlayerMovement : MonoBehaviour
     private float jumpCoyoteCounter;
     private bool canDoubleJump;
     public float jumpMultiplier = 1.0f;
-    private float currentY;
+    private float newGroundY = 1000000f;
+    public float doubleJumpHeightPercent = 0.5f;
 
     [Header("Gravity")]
     public float gravity = -9.81f;
@@ -84,6 +85,7 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask ignorePlayerMask;
     private bool isGrounded;
     private float updateMaxHeight = 100000f;
+    private float updateMaxHeight2 = 100000f;
 
     [Header("Damage")]
     public float invulnerableTime = 1f;
@@ -176,10 +178,14 @@ public class PlayerMovement : MonoBehaviour
     {
         velocity = rb.velocity;
 
-        if (rb.velocity.y > 0)
-        {
-            currentMaxHeight = transform.position.y;
-            //Debug.Log(currentMaxHeight);
+        if (rb.velocity.y > 0)
+
+        {
+
+            currentMaxHeight = transform.position.y;
+
+            //Debug.Log(currentMaxHeight);
+
         }
 
 
@@ -372,6 +378,12 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                animController.SetTrigger("Jump");
+                isWindingUp = true;//temp
+            }
+
             //Wait for crouch/windup to finish
             if (isWindingUp)
             {
@@ -384,11 +396,9 @@ public class PlayerMovement : MonoBehaviour
                 jumpBufferCounter -= Time.deltaTime;
             }
 
-            if(Input.GetKeyDown(KeyCode.Space))
-            {
-                animController.SetTrigger("Jump");
-            }
+        
         }
+        
 
         #region Coyote and Jump Buffer Timers
 
@@ -420,19 +430,19 @@ public class PlayerMovement : MonoBehaviour
         #endregion
 
         // Player jump input
-        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
+        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
         {
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
             // Calculate Velocity
-            float velocity = Mathf.Sqrt(-2 * gravity * jumpForce);
+            float velocity = Mathf.Sqrt(-2 * gravity * jumpHeight * gravityScale);
             velocity += -rb.velocity.y; // Cancel out current velocity
             
             //temporary
-            updateMaxHeight = transform.position.y + humanJumpHeight;
-            Debug.Log("updated height: " + updateMaxHeight);
+            updateMaxHeight = newGroundY + humanJumpHeight;
+            Debug.Log("updated height 1: " + updateMaxHeight);
 
-            updateMaxHeight = transform.position.y + jumpHeight;
+            //updateMaxHeight = transform.position.y + jumpHeight;
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
@@ -449,7 +459,45 @@ public class PlayerMovement : MonoBehaviour
             {
                 jumpCoyoteCounter = 0f; // So you don't triple jump
             }
+
         }
+
+        //2nd jump
+        if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
+        {
+            //doubleJumpHeight = humanJumpHeight / 3;//the three is a magic number 
+            float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
+
+            // Calculate Velocity
+            float velocity = Mathf.Sqrt(-2 * gravity * (jumpHeight * doubleJumpHeightPercent) * gravityScale);
+            velocity += -rb.velocity.y; // Cancel out current velocity
+
+            //temporary
+            updateMaxHeight2 = transform.position.y + humanJumpHeight * doubleJumpHeightPercent;
+            Debug.Log("updated height 1+2=: " + (updateMaxHeight2));
+            Debug.Log("updated height 2 only: " + (updateMaxHeight2 - updateMaxHeight));
+
+            //updateMaxHeight = transform.position.y + jumpHeight;
+
+            // Jump
+            rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
+
+
+            // Set jump cooldown
+            jumpCounter = jumpCooldown;
+
+            if (jumpCoyoteCounter <= 0f && !isGrounded && canDoubleJump)
+            {
+                canDoubleJump = false;
+            }
+            if (jumpCoyoteCounter > 0f)
+            {
+                jumpCoyoteCounter = 0f; // So you don't triple jump
+            }
+
+        }
+
+
     }
 
     #endregion
@@ -466,34 +514,62 @@ public class PlayerMovement : MonoBehaviour
                 isDashing = true;
             }
         }
-        else
-        {
-            if (isDashing)
-            {
-                isDashing = false;
-                disableMovement = false;
-                animController.applyRootMotion = false;
-            }
-
-            if (!isFox && currentStamina >= staminaConsumption || isFox)
-            {
-                // Dash input
-                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
-                {
-                    animController.SetTrigger("Dash");
-                    animController.applyRootMotion = true;
-                    disableMovement = true;
-
-                    // If player is moving left or right
-                    //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-                    //{
-                    //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
-                    //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
-
-                    //    StartCoroutine(Dash(isFacingRight));
-                    //}
-                }
-            }
+        else
+
+        {
+
+            if (isDashing)
+
+            {
+
+                isDashing = false;
+
+                disableMovement = false;
+
+                animController.applyRootMotion = false;
+
+            }
+
+
+
+            if (!isFox && currentStamina >= staminaConsumption || isFox)
+
+            {
+
+                // Dash input
+
+                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
+
+                {
+
+                    animController.SetTrigger("Dash");
+
+                    animController.applyRootMotion = true;
+
+                    disableMovement = true;
+
+
+
+                    // If player is moving left or right
+
+                    //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+
+                    //{
+
+                    //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
+
+                    //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
+
+
+
+                    //    StartCoroutine(Dash(isFacingRight));
+
+                    //}
+
+                }
+
+            }
+
         }
     }
 
@@ -616,12 +692,21 @@ public class PlayerMovement : MonoBehaviour
             isGrounded = true;
             animController.SetBool("Grounded", true);
             animController.SetBool("Fall", false);
-            
+            newGroundY = transform.position.y;
         }
         else
         {
             isGrounded = false;
             animController.SetBool("Grounded", false);
+        }
+
+        if(!isGrounded && rb.velocity.y <= 0f && transform.position.y - newGroundY <= 1)
+        {
+            animController.SetBool("BeforeGrounded", true);
+        }
+        else
+        {
+            animController.SetBool("BeforeGrounded", false);
         }
     }
 
