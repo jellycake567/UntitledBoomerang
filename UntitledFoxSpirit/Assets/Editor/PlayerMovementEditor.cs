@@ -90,6 +90,7 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpBufferTime"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCoyoteTime"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpMultiplier"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("doubleJumpHeightPercent"));
 
         // Gravity
         EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"));
