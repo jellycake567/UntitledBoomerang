@@ -39,6 +39,13 @@ public class PlayerMovementEditor : Editor
     {
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("accelTimeToMaxSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("decelTimeToZeroSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogAccelSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogDecelSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("acceleration"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("deceleration"));
 
         // Dash
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanDashTime"));
@@ -124,6 +131,7 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("human"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("fox"));
+
 
     }
 }

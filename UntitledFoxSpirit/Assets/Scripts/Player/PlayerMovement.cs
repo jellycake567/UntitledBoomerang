@@ -1,7 +1,9 @@
 using Cinemachine;
 using PathCreation;
 using System.Collections;
+using System.Reflection;
 using UnityEditor.Animations;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -11,7 +13,17 @@ public class PlayerMovement : MonoBehaviour
     #region Human Settings
 
     [Header("Movement")]
-    public float humanSpeed = 5.0f;
+    [SerializeField] public float humanSpeed = 5.0f;
+    [SerializeField] public float accelTimeToMaxSpeed = 2.0f;
+    [SerializeField] public float decelTimeToZeroSpeed = 1.0f;
+    [SerializeField] public float animJogSpeed = 1.17f;
+    [SerializeField] public float animJogAccelSpeed = 0.8f;
+    [SerializeField] public float animJogDecelSpeed = 0.8f;
+    [SerializeField] public AnimationCurve acceleration;
+    [SerializeField] public AnimationCurve deceleration;
+    private bool startAccel = false;
+    private bool startDecel = false;
+    
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
@@ -25,8 +37,8 @@ public class PlayerMovement : MonoBehaviour
     public float staminaConsumption = 20f;
     public float staminaRecovery = 5f;
     public float staminaCooldown = 1f;
-    private float currentStaminaCooldown = 0f;
     public float maxStamina = 100f;
+    private float currentStaminaCooldown = 0f;
     private float currentStamina;
 
     [Header("Wall Climb")]
@@ -62,7 +74,11 @@ public class PlayerMovement : MonoBehaviour
     public float maxVelocityChange = 10f;
     public float frictionAmount = 0.2f;
     public bool camera3D = false;
-    
+    private float accelRatePerSec;
+    private float decelRatePerSec;
+    private float currentSpeed;
+    private float maxSpeed;
+
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
@@ -137,6 +153,9 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 rightDir;
     private Vector3 leftDir;
 
+    // Save current rotation when input is pressed
+    private Quaternion previousRotation;
+
     const float REDUCE_SPEED = 1.414214f;
     private float distanceOnPath;
 
@@ -144,7 +163,7 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
     Animator animController;
 
-
+    // Debug
     float currentMaxHeight = 0f;
     private Vector3 velocity;
 
@@ -160,10 +179,12 @@ public class PlayerMovement : MonoBehaviour
 
         currentStamina = maxStamina;
 
+        
+
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
 
-        
+
         Vector3 spawnPos = pathCreator.path.GetPointAtDistance(distanceSpawn);
         spawnPos.y += spawnYOffset + 1.0f;
         transform.position = spawnPos;
@@ -174,7 +195,14 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Check in debug inspector
         velocity = rb.velocity;
+
+        // Acceleration / Deceleration Calculation
+        float maxSpeed = isFox ? foxSpeed : humanSpeed;
+        accelRatePerSec = maxSpeed / accelTimeToMaxSpeed;
+        decelRatePerSec = -maxSpeed / decelTimeToZeroSpeed;
+
 
         if (rb.velocity.y > 0)
         {
@@ -224,6 +252,30 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Player Movement
+    IEnumerator Deceleration ()
+    {
+        float time = 0f;
+        float timeToZero = decelTimeToZeroSpeed * currentSpeed;
+
+        while (time < timeToZero)
+        {
+            time += -decelRatePerSec * Time.deltaTime;
+
+            //Debug.Log(time);
+
+            if (!startDecel)
+                break;
+
+            yield return new WaitForEndOfFrame();
+        }
+
+        if (startDecel)
+        {
+            // Transition to idle
+            animController.SetBool("isMoving", false);
+        }
+    }
+
     void Movement()
     {
         // Get Path direction
@@ -246,24 +298,72 @@ public class PlayerMovement : MonoBehaviour
 
         #region Detect animation player input
         if (direction.magnitude > 0.1f)
+        {
+            // Currently decelerating, but input is pressed
+            if (!startAccel && startDecel)
+            {
+                startDecel = false;
+            }
+
             animController.SetBool("isMoving", true);
+
+        }
         else
-            animController.SetBool("isMoving", false);
+        {
+            // If currently moving, but input is released
+            if (startAccel)
+            {
+                startAccel = false;
+                startDecel = true;
+
+                animController.speed = animJogDecelSpeed;
+                //animController.SetBool("isMoving", false);
+                StartCoroutine(Deceleration());
+            }
+            else if (!startAccel && !startDecel)
+            {
+                // Not in jog state
+                //animController.SetBool("isMoving", false);
+            }
+        }
+        #endregion
+
+        #region Acceleraction / Deceleration
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_JogCycle"))
+        {
+            // Start acceleration when entering state
+            if (!startAccel && !startDecel)
+            {
+                startAccel = true;
+                animController.speed = animJogAccelSpeed;
+            }
+            else if (currentSpeed >= maxSpeed && !startDecel)
+            {
+                animController.speed = animJogSpeed;
+            }
+        }
+
+
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_IdleBase"))
+        {
+            animController.speed = 1f;
+        }
         #endregion
 
         if (!disableMovement)
         {
-            // Calculate player rotation
+            // Calculate player 3D rotation
             float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
 
+            // Calculate player 2D rotation
             distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
             Quaternion targetRot = GetPathRotation();
 
-            float speed = isFox ? foxSpeed : humanSpeed;
+            maxSpeed = isFox ? foxSpeed : humanSpeed;
 
             // If player is moving
-            if (direction.magnitude > 0.1f)
+            if (direction.magnitude > 0.01f)
             {
                 #region Player Rotation
                 if (camera3D)
@@ -285,21 +385,40 @@ public class PlayerMovement : MonoBehaviour
                 }
                 #endregion
 
-                // Reached end of path
+                // Saved for deceleration
+                previousRotation = targetRot;
+
+                #region Reached end of path
                 if (direction.x < 0f)
                 {
                     if (distanceOnPath <= 0)
                     {
-                        speed = 0f;
+                        maxSpeed = 0f;
                     }
                 }
                 else if (direction.x > 0f)
                 {
                     if (distanceOnPath >= pathCreator.path.length)
                     {
-                        speed = 0f;
+                        maxSpeed = 0f;
                     }
                 }
+                #endregion
+
+                // Acceleration
+                currentSpeed += accelRatePerSec * Time.deltaTime;
+                currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
+
+                if (currentSpeed >= maxSpeed)
+                    animController.SetTrigger("AccelMax");
+            }
+            else
+            {
+                currentSpeed += decelRatePerSec * Time.deltaTime;
+                currentSpeed = Mathf.Max(currentSpeed, 0);
+
+                if (currentSpeed <= 0f)
+                    animController.SetTrigger("DecelMax");
             }
 
             #region Calculate Velocity
@@ -308,19 +427,26 @@ public class PlayerMovement : MonoBehaviour
             Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
 
             // Rotation Debug Line for path
-            //Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
+            Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
 
             Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
-            Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+            //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
 
-            // Player is moving diagonally
+            
             if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
             {
-                targetVelocity = desiredDir * targetVelocity.magnitude * speed / REDUCE_SPEED;
+                // Player is moving diagonally
+                targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed / REDUCE_SPEED;
+            }
+            else if (targetVelocity.magnitude > 0f)
+            {
+                // Player currently apply input
+                targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed;
             }
             else
             {
-                targetVelocity = desiredDir * targetVelocity.magnitude * speed;
+                // No input
+                targetVelocity = previousRotation * Vector3.forward * currentSpeed;
             }
 
             // Get rigidbody x and y velocity
