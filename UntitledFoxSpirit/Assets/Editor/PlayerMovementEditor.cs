@@ -44,8 +44,6 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogSpeed"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogAccelSpeed"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogDecelSpeed"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("acceleration"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("deceleration"));
 
         // Dash
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanDashTime"));
@@ -126,7 +124,6 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("adjustVelocity"));
 
         // References
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("path"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaBar"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam2D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam3D"));

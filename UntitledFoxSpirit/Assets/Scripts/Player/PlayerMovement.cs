@@ -19,10 +19,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] public float animJogSpeed = 1.17f;
     [SerializeField] public float animJogAccelSpeed = 0.8f;
     [SerializeField] public float animJogDecelSpeed = 0.8f;
-    [SerializeField] public AnimationCurve acceleration;
-    [SerializeField] public AnimationCurve deceleration;
-    private bool startAccel = false;
-    private bool startDecel = false;
+    private bool isAccel = false;
+    private bool isDecel = false;
     
 
     [Header("Jump")]
@@ -123,7 +121,6 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Velocity to push player towards the path")] public float adjustVelocity = 1.0f;
 
     [Header("References")]
-    public Transform path;
     public Slider staminaBar;
     public CinemachineVirtualCamera virtualCam2D;
     public CinemachineFreeLook virtualCam3D;
@@ -143,6 +140,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isAttacking = false;
     private bool isDashing = false;
     private bool isWindingUp = false;
+    private float prevInputDirection;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -205,11 +203,9 @@ public class PlayerMovement : MonoBehaviour
         accelRatePerSec = maxSpeed / accelTimeToMaxSpeed;
         decelRatePerSec = -maxSpeed / decelTimeToZeroSpeed;
 
-
-        if (rb.velocity.y > 0)
-        {
-            currentMaxHeight = transform.position.y;
-            //Debug.Log(currentMaxHeight);
+        if (rb.velocity.y > 0)
+        {
+            currentMaxHeight = transform.position.y;
         }
 
 
@@ -259,19 +255,20 @@ public class PlayerMovement : MonoBehaviour
         float time = 0f;
         float timeToZero = decelTimeToZeroSpeed * currentSpeed;
 
+        // Waiting for deceleration to reach zero (Match decel anim with player movement)
         while (time < timeToZero)
         {
             time += -decelRatePerSec * Time.deltaTime;
 
             //Debug.Log(time);
 
-            if (!startDecel)
+            if (!isDecel)
                 break;
 
             yield return new WaitForEndOfFrame();
         }
 
-        if (startDecel)
+        if (isDecel)
         {
             // Transition to idle
             animController.SetBool("isMoving", false);
@@ -301,51 +298,53 @@ public class PlayerMovement : MonoBehaviour
         #region Detect animation player input
         if (direction.magnitude > 0.1f)
         {
-            // Currently decelerating, but input is pressed
-            if (!startAccel && startDecel)
+            // Currently decelerating, but if input is pressed, stop decel and start accel
+            if (!isAccel && isDecel)
             {
-                startDecel = false;
+                isDecel = false;
             }
 
             animController.SetBool("isMoving", true);
 
+            // Store when player presses left or right
+            if (prevInputDirection != targetVelocity.x)
+            {
+                // Reset speed when turning around
+                currentSpeed = 1f;
+                prevInputDirection = targetVelocity.x;
+            }
         }
         else
         {
-            // If currently moving, but input is released
-            if (startAccel)
+            // If currently accelerating, but input is released, stop accel and start decel
+            if (isAccel)
             {
-                startAccel = false;
-                startDecel = true;
+                isAccel = false;
+                isDecel = true;
 
                 animController.speed = animJogDecelSpeed;
-                //animController.SetBool("isMoving", false);
                 StartCoroutine(Deceleration());
-            }
-            else if (!startAccel && !startDecel)
-            {
-                // Not in jog state
-                //animController.SetBool("isMoving", false);
             }
         }
         #endregion
 
-        #region Acceleraction / Deceleration
+        #region Acceleraction / Deceleration Animation
+        // If player is currently in jogging state
         if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_JogCycle"))
         {
             // Start acceleration when entering state
-            if (!startAccel && !startDecel)
+            if (!isAccel && !isDecel)
             {
-                startAccel = true;
-                animController.speed = animJogAccelSpeed;
+                isAccel = true;
+                animController.speed = animJogAccelSpeed; // Set to accel jogging speed
             }
-            else if (currentSpeed >= maxSpeed && !startDecel)
-            {
+            else if (currentSpeed >= maxSpeed && !isDecel)
+            { // If reached max speed, set anim speed to normal jogging speed
                 animController.speed = animJogSpeed;
             }
         }
 
-
+        // If not moving, reset anim speed
         if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_IdleBase"))
         {
             animController.speed = 1f;
@@ -367,6 +366,7 @@ public class PlayerMovement : MonoBehaviour
             // If player is moving
             if (direction.magnitude > 0.01f)
             {
+
                 #region Player Rotation
                 if (camera3D)
                 {
@@ -410,17 +410,12 @@ public class PlayerMovement : MonoBehaviour
                 // Acceleration
                 currentSpeed += accelRatePerSec * Time.deltaTime;
                 currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
-
-                if (currentSpeed >= maxSpeed)
-                    animController.SetTrigger("AccelMax");
             }
             else
             {
+                // Deceleration
                 currentSpeed += decelRatePerSec * Time.deltaTime;
                 currentSpeed = Mathf.Max(currentSpeed, 0);
-
-                if (currentSpeed <= 0f)
-                    animController.SetTrigger("DecelMax");
             }
 
             #region Calculate Velocity
