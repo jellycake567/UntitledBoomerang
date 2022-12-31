@@ -222,7 +222,7 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25
+  m_TransitionDuration: 0.1
   m_TransitionOffset: 0
   m_ExitTime: 0.75
   m_HasExitTime: 0
@@ -513,7 +513,7 @@ AnimatorStateTransition:
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 7788945375603669977}
-  m_Solo: 1
+  m_Solo: 0
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
@@ -596,10 +596,10 @@ AnimatorStateMachine:
     m_Position: {x: 340, y: 170, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 2135209413901279546}
-    m_Position: {x: 470, y: 350, z: 0}
+    m_Position: {x: 500, y: 260, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -4237678946449431650}
-    m_Position: {x: 460, y: 410, z: 0}
+    m_Position: {x: 500, y: 310, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -1980996010023830352}
     m_Position: {x: -180, y: 400, z: 0}
@@ -635,10 +635,10 @@ AnimatorStateMachine:
     m_Position: {x: 330, y: 730, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1515928611536053702}
-    m_Position: {x: 250, y: 410, z: 0}
+    m_Position: {x: 250, y: 390, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 2154010162969003021}
-    m_Position: {x: 340, y: 590, z: 0}
+    m_Position: {x: 340, y: 600, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: 149120780332673892}
@@ -755,7 +755,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 2252446093888382186, guid: 0fd09848965ab2b49a8c55208ac1054f,
+  m_Motion: {fileID: 6480610267109901665, guid: f515a9fafd3648c438aa7aebe11b2b53,
     type: 3}
   m_Tag: 
   m_SpeedParameter: 
@@ -858,7 +858,7 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.2
+  m_TransitionDuration: 0.1
   m_TransitionOffset: 0
   m_ExitTime: 0.8700572
   m_HasExitTime: 0
@@ -977,7 +977,7 @@ AnimatorStateTransition:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 
+  m_Name: BeforeGrounded
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: BeforeGrounded
@@ -1045,7 +1045,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: DodgeRollToRun
-  m_Speed: 1.1
+  m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -1295010160595963555}
@@ -1058,7 +1058,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: a1947f81cb83bf54e9d2d37b2a786b08, type: 2}
+  m_Motion: {fileID: 7400000, guid: 566baa20565afbd4191582bbb1df3c48, type: 2}
   m_Tag: Dash
   m_SpeedParameter: 
   m_MirrorParameter: 

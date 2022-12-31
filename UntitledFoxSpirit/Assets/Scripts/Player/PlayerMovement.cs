@@ -494,37 +494,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
-        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Crouch"))
-        {
-            if (!isWindingUp)
-            {
-                isWindingUp = true;
-            }
-        }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                animController.SetTrigger("Jump");
-                isWindingUp = true;//temp
-            }
-
-            //Wait for crouch/windup to finish
-            if (isWindingUp)
-            {
-                
-                isWindingUp = false;
-                jumpBufferCounter = jumpBufferTime;
-            }
-            else
-            {
-                jumpBufferCounter -= Time.deltaTime;
-            }
-
-        
-        }
-        
-
         #region Coyote and Jump Buffer Timers
 
         // Coyote Time
@@ -542,15 +511,15 @@ public class PlayerMovement : MonoBehaviour
             jumpCounter -= Time.deltaTime;
         }
 
-        // Jump Buffer
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    jumpBufferCounter = jumpBufferTime;
-        //}
-        //else
-        //{
-        //    jumpBufferCounter -= Time.deltaTime;
-        //}
+        //Jump Buffer
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            jumpBufferCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
 
         #endregion
 
@@ -571,7 +540,8 @@ public class PlayerMovement : MonoBehaviour
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
-            
+
+            animController.SetTrigger("Jump");
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
