@@ -39,6 +39,7 @@ public class PlayerMovementEditor : Editor
     {
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("humanRunSpeed"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("accelTimeToMaxSpeed"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("decelTimeToZeroSpeed"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogSpeed"));

@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Movement")]
     [SerializeField] public float humanSpeed = 5.0f;
+    [SerializeField] public float humanRunSpeed = 10.0f;
     [SerializeField] public float accelTimeToMaxSpeed = 2.0f;
     [SerializeField] public float decelTimeToZeroSpeed = 1.0f;
     [SerializeField] public float animJogSpeed = 1.17f;
@@ -310,7 +311,7 @@ public class PlayerMovement : MonoBehaviour
             if (prevInputDirection != targetVelocity.x)
             {
                 // Reset speed when turning around
-                currentSpeed = 1f;
+                currentSpeed = 2f;
                 prevInputDirection = targetVelocity.x;
             }
         }
@@ -330,7 +331,7 @@ public class PlayerMovement : MonoBehaviour
 
         #region Acceleraction / Deceleration Animation
         // If player is currently in jogging state
-        if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_JogCycle"))
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
         {
             // Start acceleration when entering state
             if (!isAccel && !isDecel)
@@ -345,11 +346,12 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // If not moving, reset anim speed
-        if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_IdleBase"))
+        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
         {
             animController.speed = 1f;
         }
         #endregion
+
 
         if (!disableMovement)
         {
@@ -366,7 +368,6 @@ public class PlayerMovement : MonoBehaviour
             // If player is moving
             if (direction.magnitude > 0.01f)
             {
-
                 #region Player Rotation
                 if (camera3D)
                 {
@@ -410,6 +411,11 @@ public class PlayerMovement : MonoBehaviour
                 // Acceleration
                 currentSpeed += accelRatePerSec * Time.deltaTime;
                 currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
+
+                if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_RunCycle"))
+                {
+                    currentSpeed = humanRunSpeed;
+                }
             }
             else
             {
@@ -418,10 +424,12 @@ public class PlayerMovement : MonoBehaviour
                 currentSpeed = Mathf.Max(currentSpeed, 0);
             }
 
+            
+
             #region Calculate Velocity
 
-            // Where we want to player to face/walk towards
-            Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
+                // Where we want to player to face/walk towards
+                Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
 
             // Rotation Debug Line for path
             Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
@@ -632,61 +640,32 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         else
-
         {
-
             if (isDashing)
-
             {
-
                 isDashing = false;
-
                 disableMovement = false;
-
                 animController.applyRootMotion = false;
-
             }
-
-
 
             if (!isFox && currentStamina >= staminaConsumption || isFox)
-
             {
-
                 // Dash input
-
                 if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
-
                 {
-
                     animController.SetTrigger("Dash");
-
                     animController.applyRootMotion = true;
-
                     disableMovement = true;
 
-
-
                     // If player is moving left or right
-
                     //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-
                     //{
-
                     //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
-
                     //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
-
-
-
                     //    StartCoroutine(Dash(isFacingRight));
-
                     //}
-
                 }
-
             }
-
         }
     }
 
