@@ -412,7 +412,7 @@ public class PlayerMovement : MonoBehaviour
                 currentSpeed += accelRatePerSec * Time.deltaTime;
                 currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
 
-                if (animController.GetCurrentAnimatorStateInfo(0).IsName("Anim_WolfQueen_RunCycle"))
+                if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running"))
                 {
                     currentSpeed = humanRunSpeed;
                 }
