@@ -616,6 +616,7 @@ public class PlayerMovement : MonoBehaviour
                 isDashing = false;
                 disableMovement = false;
                 animController.applyRootMotion = false;
+                currentSpeed = 0f;
             }
 
             if (!isFox && currentStamina >= staminaConsumption || isFox)
