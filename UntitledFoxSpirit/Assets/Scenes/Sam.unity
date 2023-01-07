@@ -3924,6 +3924,8 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
+  attackCooldown: 2
+  resetComboDelay: 1
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
@@ -4998,7 +5000,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1337856846}
-  m_LocalRotation: {x: 0.1347677, y: -0.000000008524705, z: 0.0000000011594323, w: 0.9908773}
+  m_LocalRotation: {x: 0.1347677, y: 0.000000008524705, z: -0.0000000011594323, w: 0.9908773}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -9177,6 +9179,8 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
+  attackCooldown: 0.1
+  resetComboDelay: 2
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10

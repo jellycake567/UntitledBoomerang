@@ -77,6 +77,11 @@ public class PlayerMovementEditor : Editor
 
     void DisplayOtherInfo()
     {
+
+        // Attack
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCooldown"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("resetComboDelay"));
+
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime2D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime3D"));

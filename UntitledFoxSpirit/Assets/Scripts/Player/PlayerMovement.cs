@@ -66,6 +66,13 @@ public class PlayerMovement : MonoBehaviour
 
     #region Other Settings
 
+    [Header("Attack")]
+    [SerializeField] public float attackCooldown = 2f;
+    [SerializeField] public float resetComboDelay = 1f;
+    private float currentAttackCooldown;
+    private float lastTimeClicked;
+    private int noOfClicks;
+
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
@@ -897,45 +904,110 @@ public class PlayerMovement : MonoBehaviour
 
     void Attack()
     {
-        // Is currently playing attack animation
-        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        //// Is currently playing attack animation
+        //if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        //{
+        //    // Attack animation has started!
+        //    if (!isAttacking)
+        //    {
+        //        rb.velocity = Vector3.zero;
+        //        disableMovement = true;
+        //        isAttacking = true;
+        //    }
+
+        //    // Allow animation transition to jog cycle
+        //    float time = animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
+        //    animController.SetFloat("NormalisedTime", time);
+
+        //    if (time >= 0.4f && time < 0.8f)
+        //    {
+        //        if (disableMovement)
+        //            disableMovement = false;
+        //    }
+        //    else
+        //    {
+        //        if (!disableMovement)
+        //            disableMovement = true;
+        //    }
+
+        //}
+        //else
+        //{ // Not playing attacking animation
+        //    if (isAttacking)
+        //    {
+        //        disableMovement = false;
+        //        isAttacking = false;
+        //    }
+
+        //    if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking)
+        //    {
+        //        animController.SetTrigger("Attack");
+        //    }
+        //}
+
+        // End animation combo
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
         {
-            // Attack animation has started!
-            if (!isAttacking)
-            {
-                rb.velocity = Vector3.zero;
-                disableMovement = true;
-                isAttacking = true;
-            }
-
-            // Allow animation transition to jog cycle
-            float time = animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
-            animController.SetFloat("NormalisedTime", time);
-
-            if (time >= 0.4f && time < 0.8f)
-            {
-                if (disableMovement)
-                    disableMovement = false;
-            }
-            else
-            {
-                if (!disableMovement)
-                    disableMovement = true;
-            }
-
+            animController.SetBool("Attack1", false);
         }
-        else
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
         {
-            if (isAttacking)
-            {
-                disableMovement = false;
-                isAttacking = false;
-            }
+            animController.SetBool("Attack2", false);
+        }
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3"))
+        {
+            animController.SetBool("Attack3", false);
 
-            if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking)
+            if (noOfClicks == 3)
+                noOfClicks = 0; // so we can loop combo
+        }
+
+        if (Time.time - lastTimeClicked > resetComboDelay)
+        {
+            noOfClicks = 0;
+
+            Debug.Log("Reset");
+        }
+
+        // Cooldown to click again
+        if (currentAttackCooldown <= 0f)
+        {
+            if (Input.GetKeyDown(KeyCode.Mouse0))
             {
-                animController.SetTrigger("Attack");
+                OnClick();
             }
+        }
+
+        if (currentAttackCooldown > 0f)
+            currentAttackCooldown -= Time.deltaTime;
+    }
+
+    void OnClick()
+    {
+        // Set time
+        currentAttackCooldown = attackCooldown;
+        lastTimeClicked = Time.time;
+
+        // Increase combo count
+        noOfClicks++;
+        if (noOfClicks == 1)
+        {
+            animController.SetBool("Attack1", true);
+        }
+        noOfClicks = Mathf.Clamp(noOfClicks, 0, 3);
+        
+        // Transitions to next combo animation
+        if (noOfClicks >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        {
+            animController.SetBool("Attack1", false);
+            animController.SetBool("Attack2", true);
+
+            Debug.Log("Attack2");
+        }
+        if (noOfClicks >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+        {
+            animController.SetBool("Attack2", false);
+            animController.SetBool("Attack3", true);
         }
     }
 
