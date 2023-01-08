@@ -904,46 +904,46 @@ public class PlayerMovement : MonoBehaviour
 
     void Attack()
     {
-        //// Is currently playing attack animation
-        //if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
-        //{
-        //    // Attack animation has started!
-        //    if (!isAttacking)
-        //    {
-        //        rb.velocity = Vector3.zero;
-        //        disableMovement = true;
-        //        isAttacking = true;
-        //    }
+        // Is currently playing attack animation
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        {
+            // Attack animation has started!
+            if (!isAttacking)
+            {
+                rb.velocity = Vector3.zero;
+                disableMovement = true;
+                isAttacking = true;
 
-        //    // Allow animation transition to jog cycle
-        //    float time = animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
-        //    animController.SetFloat("NormalisedTime", time);
+                animController.applyRootMotion = true;
+            }
 
-        //    if (time >= 0.4f && time < 0.8f)
-        //    {
-        //        if (disableMovement)
-        //            disableMovement = false;
-        //    }
-        //    else
-        //    {
-        //        if (!disableMovement)
-        //            disableMovement = true;
-        //    }
+            //Allow animation transition to jog cycle
+            //float time = animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
+            //animController.SetFloat("NormalisedTime", time);
 
-        //}
-        //else
-        //{ // Not playing attacking animation
-        //    if (isAttacking)
-        //    {
-        //        disableMovement = false;
-        //        isAttacking = false;
-        //    }
+            //if (time >= 0.9f)
+            //{
+            //    if (disableMovement)
+            //        disableMovement = false;
+            //}
 
-        //    if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking)
-        //    {
-        //        animController.SetTrigger("Attack");
-        //    }
-        //}
+        }
+        else
+        { // Not playing attacking animation
+            if (isAttacking)
+            {
+                disableMovement = false;
+                isAttacking = false;
+                noOfClicks = 0;
+
+                animController.applyRootMotion = false;
+
+                animController.SetBool("Attack1", false);
+                animController.SetBool("Attack2", false);
+                animController.SetBool("Attack3", false);
+            }
+        }
+
 
         // End animation combo
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
@@ -992,19 +992,20 @@ public class PlayerMovement : MonoBehaviour
         noOfClicks++;
         if (noOfClicks == 1)
         {
-            animController.SetBool("Attack1", true);
+            if (!animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+                animController.SetBool("Attack1", true);
         }
+
+        // Clamp combo
         noOfClicks = Mathf.Clamp(noOfClicks, 0, 3);
         
         // Transitions to next combo animation
-        if (noOfClicks >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        if (noOfClicks >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.1f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
         {
             animController.SetBool("Attack1", false);
             animController.SetBool("Attack2", true);
-
-            Debug.Log("Attack2");
         }
-        if (noOfClicks >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+        if (noOfClicks >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.3f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
         {
             animController.SetBool("Attack2", false);
             animController.SetBool("Attack3", true);
