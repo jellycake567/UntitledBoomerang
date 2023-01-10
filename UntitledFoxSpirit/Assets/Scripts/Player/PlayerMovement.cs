@@ -565,7 +565,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //2nd jump
-        if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded && !animController.GetBool("BeforeGrounded"))
         {
             //doubleJumpHeight = humanJumpHeight / 3;//the three is a magic number 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
@@ -584,6 +584,7 @@ public class PlayerMovement : MonoBehaviour
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
+            animController.SetTrigger("DoubleJump");
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
