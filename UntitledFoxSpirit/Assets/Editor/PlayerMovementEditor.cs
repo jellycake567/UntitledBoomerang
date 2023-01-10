@@ -37,6 +37,15 @@ public class PlayerMovementEditor : Editor
 
     void DisplayHumanInfo()
     {
+        // Attack
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCooldown"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("resetComboDelay"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attack1AllowInputTime"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attack2AllowInputTime"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attack1ResetComboTime"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attack2ResetComboTime"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attack3ResetComboTime"));
+
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanSpeed"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanRunSpeed"));
@@ -78,9 +87,7 @@ public class PlayerMovementEditor : Editor
     void DisplayOtherInfo()
     {
 
-        // Attack
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCooldown"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("resetComboDelay"));
+        
 
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime2D"));

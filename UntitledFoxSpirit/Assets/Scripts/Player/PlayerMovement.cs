@@ -12,6 +12,18 @@ public class PlayerMovement : MonoBehaviour
 {
     #region Human Settings
 
+    [Header("Attack")]
+    [SerializeField] public float attackCooldown = 2f;
+    [SerializeField] public float resetComboDelay = 1f;
+    [SerializeField] [Range(0, 1)] public float attack1AllowInputTime = 0.1f; // Eg: After 0.1s of normalised animation time, allow attack input
+    [SerializeField] [Range(0, 1)] public float attack2AllowInputTime = 0.1f;
+    [SerializeField] [Range(0, 1)] public float attack1ResetComboTime = 0.3f; 
+    [SerializeField] [Range(0, 1)] public float attack2ResetComboTime = 0.3f;
+    [SerializeField] [Range(0, 1)] public float attack3ResetComboTime = 0.3f;
+    private float currentAttackCooldown;
+    private float lastTimeClicked;
+    private int comboCounter;
+
     [Header("Movement")]
     [SerializeField] public float humanSpeed = 5.0f;
     [SerializeField] public float humanRunSpeed = 10.0f;
@@ -23,7 +35,6 @@ public class PlayerMovement : MonoBehaviour
     private bool isAccel = false;
     private bool isDecel = false;
     
-
     [Header("Jump")]
     public float humanJumpHeight = 5f;
     public float jumpForce = 20f;
@@ -65,13 +76,6 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Other Settings
-
-    [Header("Attack")]
-    [SerializeField] public float attackCooldown = 2f;
-    [SerializeField] public float resetComboDelay = 1f;
-    private float currentAttackCooldown;
-    private float lastTimeClicked;
-    private int noOfClicks;
 
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
@@ -935,7 +939,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 disableMovement = false;
                 isAttacking = false;
-                noOfClicks = 0;
+                comboCounter = 0;
 
                 animController.applyRootMotion = false;
 
@@ -947,27 +951,30 @@ public class PlayerMovement : MonoBehaviour
 
 
         // End animation combo
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > attack1ResetComboTime && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
         {
-            animController.SetBool("Attack1", false);
+            if (!animController.IsInTransition(0))
+                comboCounter = 0;
         }
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > attack2ResetComboTime && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
         {
             animController.SetBool("Attack2", false);
+
+            if (!animController.IsInTransition(0))
+                comboCounter = 0;
         }
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3"))
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > attack3ResetComboTime && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3"))
         {
             animController.SetBool("Attack3", false);
 
-            if (noOfClicks == 3)
-                noOfClicks = 0; // so we can loop combo
+            if (!animController.IsInTransition(0))
+                comboCounter = 0;
         }
 
+        // Cooldown to reset combo
         if (Time.time - lastTimeClicked > resetComboDelay)
         {
-            noOfClicks = 0;
-
-            Debug.Log("Reset");
+            comboCounter = 0;
         }
 
         // Cooldown to click again
@@ -990,23 +997,22 @@ public class PlayerMovement : MonoBehaviour
         lastTimeClicked = Time.time;
 
         // Increase combo count
-        noOfClicks++;
-        if (noOfClicks == 1)
+        comboCounter++;
+        if (comboCounter == 1)
         {
-            if (!animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
-                animController.SetBool("Attack1", true);
+            animController.SetTrigger("Attack");
         }
 
         // Clamp combo
-        noOfClicks = Mathf.Clamp(noOfClicks, 0, 3);
+        comboCounter = Mathf.Clamp(comboCounter, 0, 3);
         
         // Transitions to next combo animation
-        if (noOfClicks >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.1f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        if (comboCounter >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > attack1AllowInputTime && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
         {
-            animController.SetBool("Attack1", false);
+            animController.SetBool("Attack1", true);
             animController.SetBool("Attack2", true);
         }
-        if (noOfClicks >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.3f && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+        if (comboCounter >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > attack2AllowInputTime && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
         {
             animController.SetBool("Attack2", false);
             animController.SetBool("Attack3", true);

@@ -3898,6 +3898,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d4577d9795ee3f4db4883727f97d0c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackCooldown: 2
+  resetComboDelay: 1
+  attack1AllowInputTime: 0.1
+  attack2AllowInputTime: 0.1
+  attack1ResetComboTime: 0.3
+  attack2ResetComboTime: 0.3
+  attack3ResetComboTime: 0.3
   humanSpeed: 7
   humanRunSpeed: 10
   accelTimeToMaxSpeed: 2
@@ -3924,8 +3931,6 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
-  attackCooldown: 2
-  resetComboDelay: 1
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
@@ -5000,7 +5005,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1337856846}
-  m_LocalRotation: {x: 0.1347677, y: 0.000000008524705, z: -0.0000000011594323, w: 0.9908773}
+  m_LocalRotation: {x: 0.1347677, y: -0.000000008524705, z: 0.0000000011594323, w: 0.9908773}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -6449,7 +6454,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2004943258}
-  m_LocalRotation: {x: 0.15272148, y: 0.000000008502269, z: -0.0000000013138919, w: 0.98826927}
+  m_LocalRotation: {x: 0.15272148, y: -0.000000008502268, z: 0.0000000013138921, w: 0.98826927}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -9153,6 +9158,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d4577d9795ee3f4db4883727f97d0c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackCooldown: 0.1
+  resetComboDelay: 2
+  attack1AllowInputTime: 0.1
+  attack2AllowInputTime: 0.1
+  attack1ResetComboTime: 0.5
+  attack2ResetComboTime: 0.6
+  attack3ResetComboTime: 0.5
   humanSpeed: 7
   humanRunSpeed: 10
   accelTimeToMaxSpeed: 0.59
@@ -9179,8 +9191,6 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
-  attackCooldown: 0.1
-  resetComboDelay: 2
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
