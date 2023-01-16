@@ -310,7 +310,8 @@ public class PlayerMovement : MonoBehaviour
                 isDecel = false;
             }
 
-            animController.SetBool("isMoving", true);
+            if (!disableMovement)
+                animController.SetBool("isMoving", true);
 
             // Store when player presses left or right
             if (prevInputDirection != targetVelocity.x)
@@ -906,14 +907,17 @@ public class PlayerMovement : MonoBehaviour
         // Is currently playing attack animation
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
+            
+
             // Attack animation has started!
             if (!isAttacking)
             {
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
                 isAttacking = true;
-
                 animController.applyRootMotion = true;
+                currentSpeed = 0f;
+
             }
 
             //Allow animation transition to jog cycle
@@ -937,8 +941,11 @@ public class PlayerMovement : MonoBehaviour
 
                 animController.applyRootMotion = false;
 
+                animController.SetBool("Attack1", false);
                 animController.SetBool("Attack2", false);
                 animController.SetBool("Attack3", false);
+
+                
             }
         }
 
@@ -946,22 +953,30 @@ public class PlayerMovement : MonoBehaviour
         // End animation combo
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
         {
-            if (!animController.IsInTransition(0))
+            if (!animController.IsInTransition(0)) // Check if not in transiton, so it doesn't reset run during transition
+            {
+                animController.SetBool("Attack1", false);
+                disableMovement = false;
                 comboCounter = 0;
+            }
         }
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
         {
-            animController.SetBool("Attack2", false);
-
             if (!animController.IsInTransition(0))
+            {
+                animController.SetBool("Attack2", false);
+                disableMovement = false;
                 comboCounter = 0;
+            }
         }
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3"))
         {
-            animController.SetBool("Attack3", false);
-
             if (!animController.IsInTransition(0))
+            {
+                animController.SetBool("Attack3", false);
+                disableMovement = false;
                 comboCounter = 0;
+            }
         }
 
         // Cooldown to click again
@@ -990,11 +1005,13 @@ public class PlayerMovement : MonoBehaviour
         if (comboCounter == 1)
         {
             animController.SetTrigger("Attack");
+            animController.SetBool("Attack1", true);
         }
         
         // Transitions to next combo animation
         if (comboCounter >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
         {
+            animController.SetBool("Attack1", false);
             animController.SetBool("Attack2", true);
         }
         if (comboCounter >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
