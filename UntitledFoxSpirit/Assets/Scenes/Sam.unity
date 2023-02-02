@@ -3086,7 +3086,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067231, y: -0.000000016953926, z: 0.0000000029366534, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067231, y: 0.000000016953926, z: -0.0000000029366534, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -3900,11 +3900,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackCooldown: 2
   resetComboDelay: 1
-  attack1AllowInputTime: 0.1
-  attack2AllowInputTime: 0.1
-  attack1ResetComboTime: 0.3
-  attack2ResetComboTime: 0.3
-  attack3ResetComboTime: 0.3
   humanSpeed: 7
   humanRunSpeed: 10
   accelTimeToMaxSpeed: 2
@@ -5005,7 +5000,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1337856846}
-  m_LocalRotation: {x: 0.1347677, y: -0.000000008524705, z: 0.0000000011594323, w: 0.9908773}
+  m_LocalRotation: {x: 0.1347677, y: 0.000000008524705, z: -0.0000000011594323, w: 0.9908773}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -9160,11 +9155,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackCooldown: 0.1
   resetComboDelay: 2
-  attack1AllowInputTime: 0.1
-  attack2AllowInputTime: 0.1
-  attack1ResetComboTime: 0.5
-  attack2ResetComboTime: 0.6
-  attack3ResetComboTime: 0.5
   humanSpeed: 7
   humanRunSpeed: 10
   accelTimeToMaxSpeed: 0.59
@@ -9174,7 +9164,7 @@ MonoBehaviour:
   animJogDecelSpeed: 0.7
   humanJumpHeight: 8
   jumpForce: 25
-  humanDashTime: 0.2
+  humanDashTime: 0.5
   humanDashDistance: 4
   staminaConsumption: 20
   staminaRecovery: 1
@@ -9219,7 +9209,7 @@ MonoBehaviour:
   mainCamera: {fileID: 1865382425}
   pathCreator: {fileID: 988442859}
   maxDistancePath: 0.1
-  distanceSpawn: 19.2
+  distanceSpawn: 20.51
   spawnYOffset: 0
   adjustVelocity: 5
   staminaBar: {fileID: 1558228989}

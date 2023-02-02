@@ -26,6 +26,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] public float animJogSpeed = 1.17f;
     [SerializeField] public float animJogAccelSpeed = 0.8f;
     [SerializeField] public float animJogDecelSpeed = 0.8f;
+    private float accelRatePerSec;
+    private float decelRatePerSec;
     private bool isAccel = false;
     private bool isDecel = false;
     
@@ -36,6 +38,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash")]
     public float humanDashTime = 5.0f;
     public float humanDashDistance = 4.0f;
+    private bool isDashing = false;
+    private bool disableDashing = false;
 
     [Header("Stamina")]
     public float staminaConsumption = 20f;
@@ -78,8 +82,6 @@ public class PlayerMovement : MonoBehaviour
     public float maxVelocityChange = 10f;
     public float frictionAmount = 0.2f;
     public bool camera3D = false;
-    private float accelRatePerSec;
-    private float decelRatePerSec;
     private float currentSpeed;
     private float maxSpeed;
 
@@ -144,7 +146,6 @@ public class PlayerMovement : MonoBehaviour
     private bool isHoldingJump = false;
     private bool disableGravity = false;
     private bool isAttacking = false;
-    private bool isDashing = false;
     private bool isWindingUp = false;
     private float prevInputDirection;
 
@@ -201,9 +202,6 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Check in debug inspector
-        velocity = rb.velocity;
-
         // Acceleration / Deceleration Calculation
         float maxSpeed = isFox ? foxSpeed : humanSpeed;
         accelRatePerSec = maxSpeed / accelTimeToMaxSpeed;
@@ -266,8 +264,6 @@ public class PlayerMovement : MonoBehaviour
         {
             time += -decelRatePerSec * Time.deltaTime;
 
-            //Debug.Log(time);
-
             if (!isDecel)
                 break;
 
@@ -276,7 +272,6 @@ public class PlayerMovement : MonoBehaviour
 
         if (isDecel)
         {
-            // Transition to idle
             animController.SetBool("isMoving", false);
         }
     }
@@ -286,7 +281,6 @@ public class PlayerMovement : MonoBehaviour
         // Get Path direction
         float pathAngle = GetPathRotation().eulerAngles.y - 90f;
 
-        // Is 2d camera on
         if (!camera3D)
         {
             // Rotate camera
@@ -294,7 +288,6 @@ public class PlayerMovement : MonoBehaviour
             virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
         }
 
-        // Get input
         Vector3 targetVelocity3D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
         Vector3 targetVelocity2D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0);
 
@@ -394,9 +387,6 @@ public class PlayerMovement : MonoBehaviour
                 }
                 #endregion
 
-                // Saved for deceleration
-                previousRotation = targetRot;
-
                 #region Reached end of path
                 if (direction.x < 0f)
                 {
@@ -414,6 +404,10 @@ public class PlayerMovement : MonoBehaviour
                 }
                 #endregion
 
+
+                // Saved for deceleration
+                previousRotation = targetRot;
+
                 // Acceleration
                 currentSpeed += accelRatePerSec * Time.deltaTime;
                 currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
@@ -430,12 +424,10 @@ public class PlayerMovement : MonoBehaviour
                 currentSpeed = Mathf.Max(currentSpeed, 0);
             }
 
-            
-
             #region Calculate Velocity
 
-                // Where we want to player to face/walk towards
-                Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
+            // Where we want to player to face/walk towards
+            Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
 
             // Rotation Debug Line for path
             Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
@@ -460,7 +452,6 @@ public class PlayerMovement : MonoBehaviour
                 targetVelocity = previousRotation * Vector3.forward * currentSpeed;
             }
 
-            // Get rigidbody x and y velocity
             Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
             // Apply a force that attempts to reach our target velocity
@@ -622,26 +613,26 @@ public class PlayerMovement : MonoBehaviour
             {
                 isDashing = false;
                 disableMovement = false;
-                animController.applyRootMotion = false;
+                disableDashing = false;
                 currentSpeed = 0f;
             }
 
             if (!isFox && currentStamina >= staminaConsumption || isFox)
             {
                 // Dash input
-                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
+                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableDashing)
                 {
-                    animController.SetTrigger("Dash");
-                    animController.applyRootMotion = true;
-                    disableMovement = true;
+                    //If player is moving left or right
+                    if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+                    {
+                        animController.SetTrigger("Dash");
+                        disableMovement = true;
+                        disableDashing = true;
 
-                    // If player is moving left or right
-                    //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-                    //{
-                    //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
-                    //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
-                    //    StartCoroutine(Dash(isFacingRight));
-                    //}
+                        currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
+                        bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
+                        StartCoroutine(Dash(isFacingRight));
+                    }
                 }
             }
         }
@@ -649,8 +640,15 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator Dash(bool isFacingRight)
     {
+        if (!isFox)
+        {
+            // Stamina
+            currentStamina -= staminaConsumption;
+            currentStaminaCooldown = staminaCooldown;
+        }
+
         disableMovement = true;
-        disableGravity = true;
+        //disableGravity = true;
 
         // Set Y velocity to 0
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
@@ -712,12 +710,7 @@ public class PlayerMovement : MonoBehaviour
         disableMovement = false;
         disableGravity = false;
 
-        if (!isFox)
-        {
-            // Stamina
-            currentStamina -= staminaConsumption;
-            currentStaminaCooldown = staminaCooldown;
-        }
+        
     }
 
     #endregion
@@ -907,8 +900,6 @@ public class PlayerMovement : MonoBehaviour
         // Is currently playing attack animation
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
-            
-
             // Attack animation has started!
             if (!isAttacking)
             {
@@ -917,18 +908,7 @@ public class PlayerMovement : MonoBehaviour
                 isAttacking = true;
                 animController.applyRootMotion = true;
                 currentSpeed = 0f;
-
             }
-
-            //Allow animation transition to jog cycle
-            //float time = animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
-            //animController.SetFloat("NormalisedTime", time);
-
-            //if (time >= 0.9f)
-            //{
-            //    if (disableMovement)
-            //        disableMovement = false;
-            //}
 
         }
         else
@@ -939,14 +919,18 @@ public class PlayerMovement : MonoBehaviour
                 isAttacking = false;
                 comboCounter = 0;
 
-                animController.applyRootMotion = false;
+                if (!disableDashing)
+                    animController.applyRootMotion = false;
 
                 animController.SetBool("Attack1", false);
                 animController.SetBool("Attack2", false);
                 animController.SetBool("Attack3", false);
-
-                
             }
+        }
+
+        if (animController.GetAnimatorTransitionInfo(0).IsUserName("AttackTransition"))
+        {
+            Debug.Log("true");
         }
 
 
