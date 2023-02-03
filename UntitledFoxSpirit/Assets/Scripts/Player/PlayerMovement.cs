@@ -81,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
     private float turnSmoothVelocity;
     public float maxVelocityChange = 10f;
     public float frictionAmount = 0.2f;
-    public bool camera3D = false;
+    public bool mode3D = false;
     private float currentSpeed;
     private float maxSpeed;
 
@@ -254,54 +254,15 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Player Movement
-    IEnumerator Deceleration ()
+   
+    void DetectAnimAcceleration(Vector3 targetVelocity, Vector3 direction)
     {
-        float time = 0f;
-        float timeToZero = decelTimeToZeroSpeed * currentSpeed;
-
-        // Waiting for deceleration to reach zero (Match decel anim with player movement)
-        while (time < timeToZero)
-        {
-            time += -decelRatePerSec * Time.deltaTime;
-
-            if (!isDecel)
-                break;
-
-            yield return new WaitForEndOfFrame();
-        }
-
-        if (isDecel)
-        {
-            animController.SetBool("isMoving", false);
-        }
-    }
-
-    void Movement()
-    {
-        // Get Path direction
-        float pathAngle = GetPathRotation().eulerAngles.y - 90f;
-
-        if (!camera3D)
-        {
-            // Rotate camera
-            Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
-            virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
-        }
-
-        Vector3 targetVelocity3D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
-        Vector3 targetVelocity2D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0);
-
-        Vector3 targetVelocity = camera3D ? targetVelocity3D : targetVelocity2D;
-        Vector3 direction = targetVelocity.normalized;
-
         #region Detect animation player input
         if (direction.magnitude > 0.1f)
         {
             // Currently decelerating, but if input is pressed, stop decel and start accel
             if (!isAccel && isDecel)
-            {
                 isDecel = false;
-            }
 
             if (!disableMovement)
                 animController.SetBool("isMoving", true);
@@ -329,6 +290,7 @@ public class PlayerMovement : MonoBehaviour
         #endregion
 
         #region Acceleraction / Deceleration Animation
+
         // If player is currently in jogging state
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
         {
@@ -338,54 +300,98 @@ public class PlayerMovement : MonoBehaviour
                 isAccel = true;
                 animController.speed = animJogAccelSpeed; // Set to accel jogging speed
             }
-            else if (currentSpeed >= maxSpeed && !isDecel)
-            { // If reached max speed, set anim speed to normal jogging speed
+            else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
                 animController.speed = animJogSpeed;
-            }
+
         }
 
         // If not moving, reset anim speed
         if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
-        {
             animController.speed = 1f;
-        }
+
         #endregion
+    }
+
+    IEnumerator Deceleration()
+    {
+        float time = 0f;
+        float timeToZero = decelTimeToZeroSpeed * currentSpeed;
+
+        // Waiting for deceleration to reach zero (Match decel anim with player movement)
+        while (time < timeToZero)
+        {
+            time += -decelRatePerSec * Time.deltaTime;
+
+            if (!isDecel)
+                break;
+
+            yield return new WaitForEndOfFrame();
+        }
+
+        if (isDecel)
+            animController.SetBool("isMoving", false);
+    }
+
+    void Rotation3D(float targetAngle3D, Vector3 direction)
+    {
+        // Player movement/rotation direction
+        float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle3D, ref turnSmoothVelocity, turnSmoothTime3D);
+        transform.rotation = Quaternion.Euler(0f, angle, 0f);
+    }
+
+    Quaternion Rotation2D(Quaternion targetRot2D, Vector3 direction)
+    {
+        // Flipping player
+        if (direction.x < 0f)
+        {
+            Vector3 rot = targetRot2D.eulerAngles;
+            targetRot2D = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
+        }
+
+        transform.rotation = targetRot2D;
+
+        // Saved for deceleration
+        previousRotation = targetRot2D;
+
+        return targetRot2D;
+    }
+
+    void Movement()
+    {
+        if (!mode3D)
+        {
+            // Rotate camera 2d
+            Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
+            virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, GetPathRotation().eulerAngles.y - 90f, camEulerAngle.z), camRotationSpeed2D);
+        }
+
+        Vector3 targetVelocity3D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        Vector3 targetVelocity2D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0);
+
+        Vector3 targetVelocity = mode3D ? targetVelocity3D : targetVelocity2D;
+        Vector3 direction = targetVelocity.normalized;
+
+        DetectAnimAcceleration(targetVelocity, direction);
 
 
         if (!disableMovement)
         {
             // Calculate player 3D rotation
-            float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
+            float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
 
             // Calculate player 2D rotation
             distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
-            Quaternion targetRot = GetPathRotation();
+            Quaternion targetRot2D = GetPathRotation();
 
             maxSpeed = isFox ? foxSpeed : humanSpeed;
 
             // If player is moving
             if (direction.magnitude > 0.01f)
             {
-                #region Player Rotation
-                if (camera3D)
-                {
-                    // Player movement/rotation direction
-                    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime3D);
-                    transform.rotation = Quaternion.Euler(0f, angle, 0f);
-                }
+                if (mode3D)
+                    Rotation3D(targetAngle3D, direction);
                 else
-                {
-                    // Flipping player
-                    if (direction.x < 0f)
-                    {
-                        Vector3 rot = targetRot.eulerAngles;
-                        targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
-                    }
-
-                    transform.rotation = targetRot;
-                }
-                #endregion
+                    targetRot2D = Rotation2D(targetRot2D, direction);
 
                 #region Reached end of path
                 if (direction.x < 0f)
@@ -404,18 +410,12 @@ public class PlayerMovement : MonoBehaviour
                 }
                 #endregion
 
-
-                // Saved for deceleration
-                previousRotation = targetRot;
-
                 // Acceleration
                 currentSpeed += accelRatePerSec * Time.deltaTime;
                 currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
 
                 if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running"))
-                {
                     currentSpeed = humanRunSpeed;
-                }
             }
             else
             {
@@ -427,13 +427,10 @@ public class PlayerMovement : MonoBehaviour
             #region Calculate Velocity
 
             // Where we want to player to face/walk towards
-            Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
+            Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
 
             // Rotation Debug Line for path
-            Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
-
-            Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
-            //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+            Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
 
             
             if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
@@ -465,9 +462,12 @@ public class PlayerMovement : MonoBehaviour
 
             #endregion
 
-            if (!camera3D)
+            if (!mode3D)
             {
                 #region Adjust Player on Path
+
+                Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+                //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
 
                 // Distance between path and player
                 float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
@@ -1055,7 +1055,7 @@ public class PlayerMovement : MonoBehaviour
 
     void VirtualCamUpdate()
     {
-        if (camera3D)
+        if (mode3D)
         {
             virtualCam3D.Priority = 10;
             virtualCam2D.Priority = 0;

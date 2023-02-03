@@ -89,7 +89,7 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxVelocityChange"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionAmount"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("camera3D"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("mode3d"));
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCooldown"));
