@@ -155,11 +155,6 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool canClimbLedge = false;
     [HideInInspector] public bool ledgeDetected;
 
-    // Direction
-    private Vector3 currentPathFacingDir;
-    private Vector3 rightDir;
-    private Vector3 leftDir;
-
     // Save current rotation when input is pressed
     private Quaternion previousRotation;
 
@@ -277,6 +272,11 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            if (isDashing)
+            {
+                animController.SetBool("isMoving", false);
+            }
+
             // If currently accelerating, but input is released, stop accel and start decel
             if (isAccel)
             {
@@ -629,7 +629,6 @@ public class PlayerMovement : MonoBehaviour
                         disableMovement = true;
                         disableDashing = true;
 
-                        currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
                         bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
                         StartCoroutine(Dash(isFacingRight));
                     }
