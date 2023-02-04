@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class EnemyHuman : MonoBehaviour
 {
+    public GameManager GM;
+    private Vector3 playerPos;
     float detectionLength = 5;
     float decisionTimer = 0;
     
     int optionCount = 0;
     int choice = 0;
-
+    Vector3 moveSpeed = new Vector3(0,0,5);
+    Rigidbody rb;
+    public float speed;
     public enum State
     {
         Standing,
@@ -23,7 +27,7 @@ public class EnemyHuman : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        rb = GetComponent<Rigidbody>();
     }
 
 
@@ -53,7 +57,7 @@ public class EnemyHuman : MonoBehaviour
     }
     void Standing()
     {
-        decisionTimer = Random.Range(2, 6);
+        
         decisionTimer -= Time.deltaTime;
         if (decisionTimer <= 0)
         {
@@ -62,23 +66,47 @@ public class EnemyHuman : MonoBehaviour
             choice = decideRandomly(optionCount);
             if (choice == 0)
             {
-            //move
+                //move
+                //optionCount = 2;
+                choice = decideRandomly(optionCount);
+                //does AI turn around?
+                if (choice == 0) //yes
+                {
+                    //turn around
+                    Flip();
+                }
+
+                rb.AddForce(moveSpeed, ForceMode.VelocityChange);
             }
             else if (choice == 1)
             {
-            //dont move
-
+                //dont move
+                rb.AddForce(-moveSpeed, ForceMode.VelocityChange);
             }
+
+            decisionTimer = Random.Range(2, 6);
         }
+       
        
 
     }
 
     void Attack()
     {
+        playerPos = GM.playerPos;
+        Vector3 dirToPlayer = (playerPos - transform.position).normalized;
+        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+
+        if (angle > 100f)
+        {
+            Flip();
+        }
+
+        //move towards player using force
+        Move(dirToPlayer);
+
 
     }
-
     void Wander()
     {
 
@@ -87,8 +115,8 @@ public class EnemyHuman : MonoBehaviour
     int decideRandomly(int optionCount)
     {
         int decision = 0;
-        decision = Random.Range(0, optionCount - 1);
-
+        decision = Random.Range(0, optionCount);
+        //Debug.Log(decision);
         return decision;  
     }
 
@@ -113,7 +141,19 @@ public class EnemyHuman : MonoBehaviour
         yield return 1;
     }
 
-    
+    void Flip()
+    {
+        Vector3 rotation = transform.eulerAngles + Quaternion.Euler(new Vector3(0, 180f, 0)).eulerAngles;
+        transform.rotation = Quaternion.Euler(rotation);
+    }
+
+    void Move(Vector3 direction)
+    {
+        Vector3 targetVelocity = direction * speed;
+
+        // Move AI
+        rb.AddForce(targetVelocity, ForceMode.VelocityChange);
+    }
 }
 
 
