@@ -750,7 +750,9 @@ public class PlayerMovement : MonoBehaviour
         {
             isGrounded = true;
             animController.SetBool("Grounded", true);
-            animController.SetBool("Fall", false);
+
+            if (rb.velocity.y <= 1f)
+                animController.SetBool("Fall", false);
         }
         else
         {
@@ -758,7 +760,7 @@ public class PlayerMovement : MonoBehaviour
             animController.SetBool("Grounded", false);
         }
 
-        if(!isGrounded && rb.velocity.y <= 0f && transform.position.y - newGroundY <= 1)
+        if(transform.position.y - newGroundY <= 1)
         {
             animController.SetBool("BeforeGrounded", true);
         }
