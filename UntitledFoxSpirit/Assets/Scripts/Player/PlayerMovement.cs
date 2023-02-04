@@ -543,19 +543,13 @@ public class PlayerMovement : MonoBehaviour
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
-            if (jumpCoyoteCounter <= 0f && !isGrounded && canDoubleJump)
-            {
-                canDoubleJump = false;
-            }
             if (jumpCoyoteCounter > 0f)
             {
                 jumpCoyoteCounter = 0f; // So you don't triple jump
             }
 
-        }
-
-        //2nd jump
-        if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded && !animController.GetBool("BeforeGrounded"))
+        } //2nd jump
+        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded && !animController.GetBool("BeforeGrounded"))
         {
             //doubleJumpHeight = humanJumpHeight / 3;//the three is a magic number 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
@@ -579,18 +573,11 @@ public class PlayerMovement : MonoBehaviour
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
-            if (jumpCoyoteCounter <= 0f && !isGrounded && canDoubleJump)
+            if (!isGrounded && canDoubleJump)
             {
                 canDoubleJump = false;
             }
-            if (jumpCoyoteCounter > 0f)
-            {
-                jumpCoyoteCounter = 0f; // So you don't triple jump
-            }
-
         }
-
-
     }
 
     #endregion
@@ -752,14 +739,18 @@ public class PlayerMovement : MonoBehaviour
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
         bool overlap = Physics.CheckBox(centerPos, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
-        bool raycast = Physics.Raycast(centerPos, Vector3.down, 0.1f, ~ignorePlayerMask);
 
-        if (overlap && raycast && rb.velocity.y <= 0f)
+        RaycastHit hit;
+        if(Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
+        {
+            newGroundY = hit.point.y;
+        }
+
+        if (overlap && rb.velocity.y <= 0f)
         {
             isGrounded = true;
             animController.SetBool("Grounded", true);
             animController.SetBool("Fall", false);
-            newGroundY = transform.position.y;
         }
         else
         {
