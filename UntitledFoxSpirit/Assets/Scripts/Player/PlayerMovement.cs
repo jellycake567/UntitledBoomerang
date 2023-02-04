@@ -752,8 +752,9 @@ public class PlayerMovement : MonoBehaviour
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
         bool overlap = Physics.CheckBox(centerPos, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
+        bool raycast = Physics.Raycast(centerPos, Vector3.down, 0.1f, ~ignorePlayerMask);
 
-        if (overlap && rb.velocity.y <= 0f)
+        if (overlap && raycast && rb.velocity.y <= 0f)
         {
             isGrounded = true;
             animController.SetBool("Grounded", true);
