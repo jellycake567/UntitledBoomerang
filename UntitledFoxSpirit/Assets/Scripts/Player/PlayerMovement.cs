@@ -249,7 +249,9 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Player Movement
-   
+
+    #region Movement Other Functions
+
     void DetectAnimAcceleration(Vector3 targetVelocity, Vector3 direction)
     {
         #region Detect animation player input
@@ -355,6 +357,8 @@ public class PlayerMovement : MonoBehaviour
 
         return targetRot2D;
     }
+
+    #endregion
 
     void Movement()
     {
@@ -491,6 +495,14 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump"))
+        {
+            if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
+            {
+                animController.SetBool("DoubleJump", false);
+            }
+        }
+
         #region Coyote and Jump Buffer Timers
 
         // Coyote Time
@@ -579,6 +591,8 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
+
 
     #endregion
 
