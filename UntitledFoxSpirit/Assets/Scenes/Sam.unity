@@ -167,7 +167,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 50839492}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.13, y: -6.937, z: 5.52}
+  m_LocalPosition: {x: 4.79, y: -6.937, z: 5.52}
   m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_Children: []
   m_Father: {fileID: 1056748305}
@@ -2148,7 +2148,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 299422573}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.73, y: -6.831, z: 5.52}
+  m_LocalPosition: {x: 15.389999, y: -6.831, z: 5.52}
   m_LocalScale: {x: 0.1, y: 0.3, z: 1}
   m_Children: []
   m_Father: {fileID: 1056748305}
@@ -3046,7 +3046,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 687469177}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.48, y: -6.896, z: 5.52}
+  m_LocalPosition: {x: 10.139999, y: -6.896, z: 5.52}
   m_LocalScale: {x: 0.1, y: 0.2, z: 1}
   m_Children: []
   m_Father: {fileID: 1056748305}
@@ -3232,7 +3232,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 722725987}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.5, y: -6.896, z: 5.52}
+  m_LocalPosition: {x: 12.16, y: -6.896, z: 5.52}
   m_LocalScale: {x: 0.1, y: 0.2, z: 1}
   m_Children: []
   m_Father: {fileID: 1056748305}
@@ -3533,7 +3533,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 919132148925683449}
-  m_Material: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
+  m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.25
@@ -4039,7 +4039,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 988442858}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.5976954, y: 0, z: 5.55}
+  m_LocalPosition: {x: 7.5976954, y: 0, z: 0.39}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -4464,6 +4464,7 @@ MonoBehaviour:
   virtualCam3D: {fileID: 1605981670}
   human: {fileID: 146605466}
   fox: {fileID: 480017276}
+  friction: {fileID: 0}
   canClimbLedge: 0
   ledgeDetected: 0
 --- !u!54 &1054373033
@@ -6612,7 +6613,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1623080909}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.26, y: -6.937, z: 5.52}
+  m_LocalPosition: {x: 6.92, y: -6.937, z: 5.52}
   m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_Children: []
   m_Father: {fileID: 1056748305}
@@ -6883,7 +6884,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1881075142}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.58, y: -6.937, z: 5.52}
+  m_LocalPosition: {x: 8.24, y: -6.937, z: 5.52}
   m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_Children: []
   m_Father: {fileID: 1056748305}
@@ -7174,7 +7175,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2004943258}
-  m_LocalRotation: {x: 0.15272148, y: 0.000000008502269, z: -0.0000000013138919, w: 0.98826927}
+  m_LocalRotation: {x: 0.15272148, y: -0.000000008502268, z: 0.0000000013138921, w: 0.98826927}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -9951,6 +9952,7 @@ MonoBehaviour:
   virtualCam3D: {fileID: 1605981670}
   human: {fileID: 146605466}
   fox: {fileID: 480017276}
+  friction: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
   canClimbLedge: 0
   ledgeDetected: 0
 --- !u!95 &919132148925683451

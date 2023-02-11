@@ -677,7 +677,7 @@ public class PlayerMovement : MonoBehaviour
             if (!isFox && currentStamina >= staminaConsumption || isFox)
             {
                 // Dash input
-                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableDashing)
+                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableDashing && isGrounded)
                 {
                     //If player is moving left or right
                     if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
@@ -830,7 +830,7 @@ public class PlayerMovement : MonoBehaviour
             animController.SetBool("Grounded", false);
         }
 
-        if(transform.position.y - newGroundY <= 1)
+        if(transform.position.y - newGroundY <= 1 && rb.velocity.y <= 1f)
         {
             animController.SetBool("BeforeGrounded", true);
         }
@@ -981,9 +981,7 @@ public class PlayerMovement : MonoBehaviour
                 disableMovement = false;
                 isAttacking = false;
                 comboCounter = 0;
-
-                if (!disableDashing)
-                    animController.applyRootMotion = false;
+                animController.applyRootMotion = false;
 
                 animController.SetBool("Attack1", false);
                 animController.SetBool("Attack2", false);
