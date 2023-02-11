@@ -85,6 +85,15 @@ public class PlayerMovement : MonoBehaviour
     private float currentSpeed;
     private float maxSpeed;
 
+    [Header("Step Climb")]
+    [SerializeField] GameObject stepRayUpper;
+    [SerializeField] float stepRayUpperDistance = 0.7f;
+    [SerializeField] GameObject stepRayLower;
+    [SerializeField] float stepRayLowerDistance = 0.5f;
+    [SerializeField] float stepHeight = 0.7f;
+    [SerializeField] float stepSmooth = 1.5f;
+    [SerializeField] bool stepDebug = false;
+
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
@@ -102,8 +111,8 @@ public class PlayerMovement : MonoBehaviour
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
     public float reduceVelocity = 5f;
-    [SerializeField] public Vector3 groundCheckOffset;
-    [SerializeField] public Vector3 groundCheckSize;
+    [SerializeField] Vector3 groundCheckOffset;
+    [SerializeField] Vector3 groundCheckSize;
     public LayerMask ignorePlayerMask;
     private bool isGrounded;
     private float updateMaxHeight = 100000f;
@@ -197,6 +206,8 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        stepRayUpper.transform.position = new Vector3(stepRayUpper.transform.position.x, stepRayLower.transform.position.y + stepHeight, stepRayUpper.transform.position.z);
+
         // Acceleration / Deceleration Calculation
         float maxSpeed = isFox ? foxSpeed : humanSpeed;
         accelRatePerSec = maxSpeed / accelTimeToMaxSpeed;
@@ -434,7 +445,7 @@ public class PlayerMovement : MonoBehaviour
             Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
 
             // Rotation Debug Line for path
-            Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
+            //Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
 
             
             if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
@@ -489,8 +500,11 @@ public class PlayerMovement : MonoBehaviour
 
                 #endregion
             }
+
+            StepClimb(desiredDir); // After movement
         }
 
+        
     }
 
     void Jump()
@@ -592,7 +606,42 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void StepClimb(Vector3 direction)
+    {
+        if (!animController.GetBool("isMoving"))
+            return;
 
+        if (stepDebug)
+        {
+            Debug.DrawRay(stepRayLower.transform.position, direction * stepRayLowerDistance, Color.red);
+
+            Debug.DrawRay(stepRayUpper.transform.position, direction * stepRayUpperDistance, Color.blue);
+        }
+
+        // Forward
+        if (Physics.Raycast(stepRayLower.transform.position, direction, stepRayLowerDistance, ~ignorePlayerMask))
+        {
+            if (!Physics.Raycast(stepRayUpper.transform.position, direction, stepRayUpperDistance, ~ignorePlayerMask))
+            {
+                rb.position += new Vector3(0f, stepSmooth * Time.deltaTime, 0f);
+
+                //Vector3 velocityY = new Vector3(0f, rb.velocity.y, 0f);
+
+                //// Apply a force that attempts to reach our target velocity
+                //Vector3 velocity = velocityY;
+                //Vector3 velocityChange = (targetVelocity - velocity);
+                //velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+                //velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+                //velocityChange.y = 0;
+
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+                Vector3 velocity = new Vector3(0f, stepSmooth, 0f);
+
+                rb.AddForce(velocity);
+            }
+        }
+    }
 
     #endregion
 

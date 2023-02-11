@@ -81,15 +81,21 @@ public class PlayerMovementEditor : Editor
 
     void DisplayOtherInfo()
     {
-
-        
-
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime2D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxVelocityChange"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionAmount"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("mode3d"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("mode3D"));
+
+        // Step Climb
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayUpper"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayUpperDistance"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayLower"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayLowerDistance"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepHeight"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepSmooth"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepDebug"));
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCooldown"));
