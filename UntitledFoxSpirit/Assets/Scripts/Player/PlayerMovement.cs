@@ -143,6 +143,7 @@ public class PlayerMovement : MonoBehaviour
     public CinemachineFreeLook virtualCam3D;
     public GameObject human;
     public GameObject fox;
+    [SerializeField] PhysicMaterial friction;
 
     #endregion
 
@@ -173,6 +174,7 @@ public class PlayerMovement : MonoBehaviour
     // References
     Rigidbody rb;
     Animator animController;
+    CapsuleCollider capsuleCollider;
 
     // Debug
     float currentMaxHeight = 0f;
@@ -187,6 +189,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
 
         currentStamina = maxStamina;
 
@@ -431,12 +434,16 @@ public class PlayerMovement : MonoBehaviour
 
                 if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running"))
                     currentSpeed = humanRunSpeed;
+
+                capsuleCollider.material = null;
             }
             else
             {
                 // Deceleration
                 currentSpeed += decelRatePerSec * Time.deltaTime;
                 currentSpeed = Mathf.Max(currentSpeed, 0);
+
+                capsuleCollider.material = friction;
             }
 
             #region Calculate Velocity
