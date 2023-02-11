@@ -568,7 +568,7 @@ public class PlayerMovement : MonoBehaviour
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
-            animController.SetTrigger("DoubleJump");
+            animController.SetBool("DoubleJump", true);
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
@@ -746,7 +746,7 @@ public class PlayerMovement : MonoBehaviour
             newGroundY = hit.point.y;
         }
 
-        if (overlap && rb.velocity.y <= 0f)
+        if (overlap)
         {
             isGrounded = true;
             animController.SetBool("Grounded", true);
@@ -1096,8 +1096,6 @@ public class PlayerMovement : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(point, groundCheckSize);
-
-
     }
 
     private void OnTriggerEnter(Collider other)
