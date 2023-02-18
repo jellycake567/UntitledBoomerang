@@ -1,5 +1,6 @@
 using Cinemachine;
 using PathCreation;
+using System;
 using System.Collections;
 using System.Reflection;
 using UnityEditor.Animations;
@@ -242,11 +243,12 @@ public class PlayerMovement : MonoBehaviour
         if (!isWallClimbing && !canClimbLedge && !disableMovement)
         {
             // Player Input Functions
-            Jump();
+            
             ChangeForm();
             LedgeClimb();
         }
 
+        Jump();
         DashInput();
         Attack();
     }
@@ -516,6 +518,13 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
+        if (isDashing)
+        {
+            return;
+        }
+
+        
+
         if (animController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump"))
         {
             if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
@@ -556,6 +565,8 @@ public class PlayerMovement : MonoBehaviour
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
         {
+            animController.applyRootMotion = false;
+
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
             // Calculate Velocity
@@ -668,6 +679,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (isDashing)
             {
+                animController.SetBool("Dash", false);
                 isDashing = false;
                 disableMovement = false;
                 disableDashing = false;
@@ -682,7 +694,8 @@ public class PlayerMovement : MonoBehaviour
                     //If player is moving left or right
                     if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
                     {
-                        animController.SetTrigger("Dash");
+                        animController.applyRootMotion = false;
+                        animController.SetBool("Dash", true);
                         disableMovement = true;
                         disableDashing = true;
 
