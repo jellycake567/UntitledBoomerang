@@ -248,7 +248,11 @@ public class PlayerMovement : MonoBehaviour
             LedgeClimb();
         }
 
-        Jump();
+        if (!isDashing)
+        {
+            Jump();
+        }
+        
         DashInput();
         Attack();
     }
@@ -374,6 +378,26 @@ public class PlayerMovement : MonoBehaviour
         return targetRot2D;
     }
 
+    void AdjustPlayerOnPath()
+    {
+        Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+        //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+
+        // Distance between path and player
+        float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
+
+        // Direction from path towards player
+        Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
+        Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
+
+        // Keeps player on the path
+        if (distance > maxDistancePath)
+        {
+            Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
+            rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
+        }
+    }
+
     #endregion
 
     void Movement()
@@ -391,140 +415,117 @@ public class PlayerMovement : MonoBehaviour
         Vector3 targetVelocity = mode3D ? targetVelocity3D : targetVelocity2D;
         Vector3 direction = targetVelocity.normalized;
 
-        DetectAnimAcceleration(targetVelocity, direction);
+
+        maxSpeed = isFox ? foxSpeed : humanSpeed;
+
+        DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
 
 
-        if (!disableMovement)
+        if (disableMovement)
+            return;
+
+        // Calculate player 3D rotation
+        float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
+
+        // Calculate player 2D rotation
+        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        Quaternion targetRot2D = GetPathRotation();
+
+
+        // If player is moving
+        if (direction.magnitude > 0.01f)
         {
-            // Calculate player 3D rotation
-            float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
-
-            // Calculate player 2D rotation
-            distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
-            Quaternion targetRot2D = GetPathRotation();
-
-            maxSpeed = isFox ? foxSpeed : humanSpeed;
-
-            // If player is moving
-            if (direction.magnitude > 0.01f)
-            {
-                if (mode3D)
-                    Rotation3D(targetAngle3D, direction);
-                else
-                    targetRot2D = Rotation2D(targetRot2D, direction);
-
-                #region Reached end of path
-                if (direction.x < 0f)
-                {
-                    if (distanceOnPath <= 0)
-                    {
-                        maxSpeed = 0f;
-                    }
-                }
-                else if (direction.x > 0f)
-                {
-                    if (distanceOnPath >= pathCreator.path.length)
-                    {
-                        maxSpeed = 0f;
-                    }
-                }
-                #endregion
-
-                // Acceleration
-                currentSpeed += accelRatePerSec * Time.deltaTime;
-                currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
-
-                if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running"))
-                    currentSpeed = humanRunSpeed;
-
-                capsuleCollider.material = null;
-            }
+            if (mode3D)
+                Rotation3D(targetAngle3D, direction);
             else
+                targetRot2D = Rotation2D(targetRot2D, direction);
+
+            #region Reached end of path
+            if (direction.x < 0f)
             {
-                // Deceleration
-                currentSpeed += decelRatePerSec * Time.deltaTime;
-                currentSpeed = Mathf.Max(currentSpeed, 0);
-
-                capsuleCollider.material = friction;
+                if (distanceOnPath <= 0)
+                {
+                    maxSpeed = 0f;
+                }
             }
-
-            #region Calculate Velocity
-
-            // Where we want to player to face/walk towards
-            Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
-
-            // Rotation Debug Line for path
-            //Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
-
-            
-            if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
+            else if (direction.x > 0f)
             {
-                // Player is moving diagonally
-                targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed / REDUCE_SPEED;
+                if (distanceOnPath >= pathCreator.path.length)
+                {
+                    maxSpeed = 0f;
+                }
             }
-            else if (targetVelocity.magnitude > 0f)
-            {
-                // Player currently apply input
-                targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed;
-            }
-            else
-            {
-                // No input
-                targetVelocity = previousRotation * Vector3.forward * currentSpeed;
-            }
-
-            Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-            // Apply a force that attempts to reach our target velocity
-            Vector3 velocity = rbVelocity;
-            Vector3 velocityChange = (targetVelocity - velocity);
-            velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-            velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-            velocityChange.y = 0;
-
-            rb.AddForce(velocityChange, ForceMode.VelocityChange);
-
             #endregion
 
-            if (!mode3D)
-            {
-                #region Adjust Player on Path
+            // Acceleration
+            currentSpeed += accelRatePerSec * Time.deltaTime;
+            currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
 
-                Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
-                //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running"))
+                currentSpeed = humanRunSpeed;
 
-                // Distance between path and player
-                float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
+            capsuleCollider.material = null;
+        }
+        else
+        {
+            // Deceleration
+            currentSpeed += decelRatePerSec * Time.deltaTime;
+            currentSpeed = Mathf.Max(currentSpeed, 0);
 
-                // Direction from path towards player
-                Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
-                Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
+            capsuleCollider.material = friction;
+        }
+        
 
-                // Keeps player on the path
-                if (distance > maxDistancePath)
-                {
-                    Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
-                    rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
-                }
+        #region Calculate Velocity
 
-                #endregion
-            }
+        // Where we want to player to face/walk towards
+        Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
 
-            StepClimb(desiredDir); // After movement
+        // Rotation Debug Line for path
+        //Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
+
+
+        if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
+        {
+            // Player is moving diagonally
+            targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed / REDUCE_SPEED;
+        }
+        else if (targetVelocity.magnitude > 0f)
+        {
+            // Player currently apply input
+            targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed;
+        }
+        else
+        {
+            // No input
+            targetVelocity = previousRotation * Vector3.forward * currentSpeed;
         }
 
-        
+        Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        // Apply a force that attempts to reach our target velocity
+        Vector3 velocity = rbVelocity;
+        Vector3 velocityChange = (targetVelocity - velocity);
+        velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+        velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+        velocityChange.y = 0;
+
+        rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+        #endregion
+
+
+        StepClimb(desiredDir); // After movement
+
+        if (!mode3D)
+        {
+            AdjustPlayerOnPath();
+        }
+
     }
 
     void Jump()
     {
-        if (isDashing)
-        {
-            return;
-        }
-
-        
-
         if (animController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump"))
         {
             if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
