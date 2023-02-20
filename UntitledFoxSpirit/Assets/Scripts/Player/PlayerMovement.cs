@@ -14,24 +14,25 @@ public class PlayerMovement : MonoBehaviour
     #region Human Settings
 
     [Header("Attack")]
-    [SerializeField] public float attackCooldown = 2f;
-    [SerializeField] public float resetComboDelay = 1f;
+    [SerializeField] float attackCooldown = 2f;
+    [SerializeField] float resetComboDelay = 1f;
     private float currentAttackCooldown;
     private int comboCounter;
 
     [Header("Movement")]
-    [SerializeField] public float humanSpeed = 5.0f;
-    [SerializeField] public float humanRunSpeed = 10.0f;
-    [SerializeField] public float accelTimeToMaxSpeed = 2.0f;
-    [SerializeField] public float decelTimeToZeroSpeed = 1.0f;
-    [SerializeField] public float animJogSpeed = 1.17f;
-    [SerializeField] public float animJogAccelSpeed = 0.8f;
-    [SerializeField] public float animJogDecelSpeed = 0.8f;
+    [SerializeField] float humanSpeed = 5.0f;
+    [SerializeField] float humanRunSpeed = 10.0f;
+    [SerializeField] float accelTimeToMaxSpeed = 2.0f;
+    [SerializeField] float decelTimeToZeroSpeed = 1.0f;
+    [SerializeField] float animJogSpeed = 1.17f;
+    [SerializeField] float animJogAccelSpeed = 0.8f;
+    [SerializeField] float animJogDecelSpeed = 0.8f;
     private float accelRatePerSec;
     private float decelRatePerSec;
     private bool isAccel = false;
     private bool isDecel = false;
-    
+    private bool isRunning = false;
+
     [Header("Jump")]
     public float humanJumpHeight = 5f;
     public float jumpForce = 20f;
@@ -313,18 +314,19 @@ public class PlayerMovement : MonoBehaviour
 
         #region Acceleraction / Deceleration Animation
 
-        // If player is currently in jogging state
-        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
-        {
-            // Start acceleration when entering state
-            if (!isAccel && !isDecel)
-            {
-                isAccel = true;
-                animController.speed = animJogAccelSpeed; // Set to accel jogging speed
-            }
-            else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
-                animController.speed = animJogSpeed;
+        // Is player currently in jogging state
+        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
+            return;
 
+        // Start acceleration when entering state
+        if (!isAccel && !isDecel)
+        {
+            isAccel = true;
+            animController.speed = animJogAccelSpeed; // Set to accel jogging speed
+        }
+        else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
+        {
+            animController.speed = animJogSpeed;
         }
 
         // If not moving, reset anim speed
@@ -461,8 +463,16 @@ public class PlayerMovement : MonoBehaviour
             currentSpeed += accelRatePerSec * Time.deltaTime;
             currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
 
-            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running"))
+            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || isRunning)
+            {
                 currentSpeed = humanRunSpeed;
+                isRunning = true;
+            }
+
+            if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Land"))
+            {
+                isRunning = false;
+            }
 
             capsuleCollider.material = null;
         }
@@ -473,6 +483,8 @@ public class PlayerMovement : MonoBehaviour
             currentSpeed = Mathf.Max(currentSpeed, 0);
 
             capsuleCollider.material = friction;
+
+            isRunning = false;
         }
         
 
