@@ -997,6 +997,7 @@ public class PlayerMovement : MonoBehaviour
                 isAttacking = true;
                 animController.applyRootMotion = true;
                 currentSpeed = 0f;
+                animController.speed = 1f;
             }
 
         }
@@ -1015,12 +1016,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        if (animController.GetAnimatorTransitionInfo(0).IsUserName("AttackTransition"))
-        {
-            Debug.Log("true");
-        }
-
-
         // End animation combo
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
         {
@@ -1031,24 +1026,18 @@ public class PlayerMovement : MonoBehaviour
                 comboCounter = 0;
             }
         }
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
-        {
-            if (!animController.IsInTransition(0))
-            {
-                animController.SetBool("Attack2", false);
-                disableMovement = false;
-                comboCounter = 0;
-            }
-        }
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3"))
-        {
-            if (!animController.IsInTransition(0))
-            {
-                animController.SetBool("Attack3", false);
-                disableMovement = false;
-                comboCounter = 0;
-            }
-        }
+        //if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2") && !animController.IsInTransition(0))
+        //{
+        //    animController.SetBool("Attack2", false);
+        //    disableMovement = false;
+        //    comboCounter = 0;
+        //}
+        //if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3") && !animController.IsInTransition(0))
+        //{
+        //    animController.SetBool("Attack3", false);
+        //    disableMovement = false;
+        //    comboCounter = 0;
+        //}
 
         // Cooldown to click again
         if (currentAttackCooldown <= 0f)
@@ -1065,31 +1054,33 @@ public class PlayerMovement : MonoBehaviour
 
     void OnClick()
     {
+        isAttacking = false;
+
         // Set time
         currentAttackCooldown = attackCooldown;
 
         // Increase combo count
         comboCounter++;
         // Clamp combo
-        comboCounter = Mathf.Clamp(comboCounter, 0, 3);
+        comboCounter = Mathf.Clamp(comboCounter, 0, 1);
 
-        if (comboCounter == 1)
+        if (comboCounter == 1 && !animController.GetBool("Attack1"))
         {
             animController.SetTrigger("Attack");
             animController.SetBool("Attack1", true);
         }
         
-        // Transitions to next combo animation
-        if (comboCounter >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
-        {
-            animController.SetBool("Attack1", false);
-            animController.SetBool("Attack2", true);
-        }
-        if (comboCounter >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
-        {
-            animController.SetBool("Attack2", false);
-            animController.SetBool("Attack3", true);
-        }
+        //// Transitions to next combo animation
+        //if (comboCounter >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        //{
+        //    animController.SetBool("Attack1", false);
+        //    animController.SetBool("Attack2", true);
+        //}
+        //if (comboCounter >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+        //{
+        //    animController.SetBool("Attack2", false);
+        //    animController.SetBool("Attack3", true);
+        //}
     }
 
     void ChangeForm()
