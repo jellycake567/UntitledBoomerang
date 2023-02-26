@@ -299,6 +299,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetBool("isMoving", false);
             }
+            animController.SetBool("isSprinting", false);
 
             // If currently accelerating, but input is released, stop accel and start decel
             if (isAccel)
@@ -637,47 +638,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void StepClimb(Vector3 direction)
-    {
-        if (!animController.GetBool("isMoving"))
-            return;
-
-        if (stepDebug)
-        {
-            Debug.DrawRay(stepRayLower.transform.position, direction * stepRayLowerDistance, Color.red);
-
-            Debug.DrawRay(stepRayUpper.transform.position, direction * stepRayUpperDistance, Color.blue);
-        }
-
-        // Forward
-        if (Physics.Raycast(stepRayLower.transform.position, direction, stepRayLowerDistance, ~ignorePlayerMask))
-        {
-            if (!Physics.Raycast(stepRayUpper.transform.position, direction, stepRayUpperDistance, ~ignorePlayerMask))
-            {
-                rb.position += new Vector3(0f, stepSmooth * Time.deltaTime, 0f);
-
-                //Vector3 velocityY = new Vector3(0f, rb.velocity.y, 0f);
-
-                //// Apply a force that attempts to reach our target velocity
-                //Vector3 velocity = velocityY;
-                //Vector3 velocityChange = (targetVelocity - velocity);
-                //velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-                //velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-                //velocityChange.y = 0;
-
-                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-                Vector3 velocity = new Vector3(0f, stepSmooth, 0f);
-
-                rb.AddForce(velocity);
-            }
-        }
-    }
-
-    #endregion
-
-    #region Dash
-
     void DashInput()
     {
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Dash"))
@@ -791,8 +751,44 @@ public class PlayerMovement : MonoBehaviour
 
         disableMovement = false;
         disableGravity = false;
+        animController.SetBool("isSprinting", true);
+    }
 
-        
+    void StepClimb(Vector3 direction)
+    {
+        if (!animController.GetBool("isMoving"))
+            return;
+
+        if (stepDebug)
+        {
+            Debug.DrawRay(stepRayLower.transform.position, direction * stepRayLowerDistance, Color.red);
+
+            Debug.DrawRay(stepRayUpper.transform.position, direction * stepRayUpperDistance, Color.blue);
+        }
+
+        // Forward
+        if (Physics.Raycast(stepRayLower.transform.position, direction, stepRayLowerDistance, ~ignorePlayerMask))
+        {
+            if (!Physics.Raycast(stepRayUpper.transform.position, direction, stepRayUpperDistance, ~ignorePlayerMask))
+            {
+                rb.position += new Vector3(0f, stepSmooth * Time.deltaTime, 0f);
+
+                //Vector3 velocityY = new Vector3(0f, rb.velocity.y, 0f);
+
+                //// Apply a force that attempts to reach our target velocity
+                //Vector3 velocity = velocityY;
+                //Vector3 velocityChange = (targetVelocity - velocity);
+                //velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+                //velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+                //velocityChange.y = 0;
+
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+                Vector3 velocity = new Vector3(0f, stepSmooth, 0f);
+
+                rb.AddForce(velocity);
+            }
+        }
     }
 
     #endregion
@@ -992,12 +988,18 @@ public class PlayerMovement : MonoBehaviour
             // Attack animation has started!
             if (!isAttacking)
             {
+                animController.applyRootMotion = true;
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
                 isAttacking = true;
-                animController.applyRootMotion = true;
                 currentSpeed = 0f;
                 animController.speed = 1f;
+            }
+
+            // Move after attacking
+            if (animController.IsInTransition(0) && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f)
+            {
+                disableMovement = false;
             }
 
         }
