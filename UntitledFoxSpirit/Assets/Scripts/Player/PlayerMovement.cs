@@ -694,7 +694,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetBool("Dash", false);
                 isDashing = false;
-                disableMovement = false;
                 disableDashing = false;
                 currentSpeed = 0f;
             }
@@ -711,6 +710,7 @@ public class PlayerMovement : MonoBehaviour
                         animController.SetBool("Dash", true);
                         disableMovement = true;
                         disableDashing = true;
+                        animController.speed = 1f;
 
                         bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
                         StartCoroutine(Dash(isFacingRight));
