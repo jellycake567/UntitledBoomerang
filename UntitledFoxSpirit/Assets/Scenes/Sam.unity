@@ -9885,10 +9885,10 @@ MonoBehaviour:
   resetComboDelay: 2
   humanSpeed: 7
   humanRunSpeed: 10
-  accelTimeToMaxSpeed: 0.59
-  decelTimeToZeroSpeed: 0.34
+  accelTimeToMaxSpeed: 0.4
+  decelTimeToZeroSpeed: 0.2
   animJogSpeed: 1.17
-  animJogAccelSpeed: 0.8
+  animJogAccelSpeed: 0.9
   animJogDecelSpeed: 0.7
   humanJumpHeight: 8
   jumpForce: 25
@@ -9966,8 +9966,8 @@ Animator:
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 2bab76560a018e445950b18def3290ab, type: 3}
   m_Controller: {fileID: 9100000, guid: 6848cb70a548cff419917db76fd21702, type: 2}
-  m_CullingMode: 1
-  m_UpdateMode: 0
+  m_CullingMode: 0
+  m_UpdateMode: 1
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
