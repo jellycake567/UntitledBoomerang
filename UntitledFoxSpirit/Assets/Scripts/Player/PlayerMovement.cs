@@ -487,7 +487,8 @@ public class PlayerMovement : MonoBehaviour
 
             isRunning = false;
         }
-        
+
+        animController.SetFloat("ForwardSpeed", currentSpeed);
 
         #region Calculate Velocity
 
@@ -993,7 +994,6 @@ public class PlayerMovement : MonoBehaviour
                 disableMovement = true;
                 isAttacking = true;
                 currentSpeed = 0f;
-                animController.speed = 1f;
             }
 
             // Move after attacking
@@ -1057,6 +1057,7 @@ public class PlayerMovement : MonoBehaviour
     void OnClick()
     {
         isAttacking = false;
+        animController.speed = 1f;
 
         // Set time
         currentAttackCooldown = attackCooldown;
