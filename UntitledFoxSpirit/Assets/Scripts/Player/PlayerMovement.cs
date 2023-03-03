@@ -562,8 +562,13 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded && jumpCounter <= 0f)
         {
             canDoubleJump = true;
+            
 
             jumpCoyoteCounter = jumpCoyoteTime;
+        }
+        else if (jumpCounter <= 0f)
+        {
+            animController.SetBool("Jump", false);
         }
         else
         {
@@ -605,7 +610,7 @@ public class PlayerMovement : MonoBehaviour
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
-            animController.SetBool("isJumping", true);
+            animController.SetBool("Jump", true);
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
