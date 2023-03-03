@@ -16,6 +16,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Attack")]
     [SerializeField] float attackCooldown = 2f;
     [SerializeField] float resetComboDelay = 1f;
+    [SerializeField] float attackCancellingTimer = 1f;
+    private float currentAttackCancellingTimer = 1f;
     private float currentAttackCooldown;
     private int comboCounter;
 
@@ -160,6 +162,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isAttacking = false;
     private bool isWindingUp = false;
     private float prevInputDirection;
+    private bool disableRootMotion = false;
+    
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -269,9 +273,18 @@ public class PlayerMovement : MonoBehaviour
 
     void OnAnimatorMove()
     {
-        if (isAttacking)
+        if (isAttacking && !disableRootMotion && !animController.IsInTransition(0))
         {
+            if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.4f)
+            {
+
+                Debug.Log("test");
+                disableRootMotion = true;
+                return;
+            }
+
             transform.position += animController.deltaPosition;
+            Debug.Log("Move");
         }
     }
 
@@ -590,6 +603,9 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
+        if (currentAttackCancellingTimer > 0f)
+            return;
+
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
         {
@@ -654,6 +670,9 @@ public class PlayerMovement : MonoBehaviour
 
     void DashInput()
     {
+        if (currentAttackCancellingTimer > 0f)
+            return;
+
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Dash"))
         {
             // Wait for animation transition
@@ -1007,6 +1026,7 @@ public class PlayerMovement : MonoBehaviour
                 disableMovement = true;
                 isAttacking = true;
                 currentSpeed = 0f;
+                disableRootMotion = false;
             }
 
             // Move after attacking
@@ -1065,6 +1085,9 @@ public class PlayerMovement : MonoBehaviour
 
         if (currentAttackCooldown > 0f)
             currentAttackCooldown -= Time.deltaTime;
+
+        if (currentAttackCancellingTimer > 0f)
+            currentAttackCancellingTimer -= Time.deltaTime;
     }
 
     void OnClick()
@@ -1084,6 +1107,7 @@ public class PlayerMovement : MonoBehaviour
         {
             animController.SetTrigger("Attack");
             animController.SetBool("Attack1", true);
+            currentAttackCancellingTimer = attackCancellingTimer;
         }
         
         // Transitions to next combo animation
