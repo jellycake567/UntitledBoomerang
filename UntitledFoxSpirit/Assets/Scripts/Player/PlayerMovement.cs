@@ -17,6 +17,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float attackCooldown = 2f;
     [SerializeField] float resetComboDelay = 1f;
     [SerializeField] float rootMotionSpeed = 2f;
+    private bool isAttacking = false;
     private float currentAttackCooldown;
     private int comboCounter;
 
@@ -33,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isAccel = false;
     private bool isDecel = false;
     private bool isRunning = false;
+    private bool disableMovement;
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
@@ -120,6 +122,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isGrounded;
     private float updateMaxHeight = 100000f;
     private float updateMaxHeight2 = 100000f;
+    private bool disableGravity = false;
 
     [Header("Damage")]
     public float invulnerableTime = 1f;
@@ -153,13 +156,9 @@ public class PlayerMovement : MonoBehaviour
     #region Internal Variables
 
     private bool isFox;
-    private bool disableMovement;
     private bool isWallClimbing;
     private bool canClimbWall;
     private bool isHoldingJump = false;
-    private bool disableGravity = false;
-    private bool isAttacking = false;
-    private bool isWindingUp = false;
     private float prevInputDirection;
     
 
