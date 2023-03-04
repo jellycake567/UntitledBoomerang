@@ -16,8 +16,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Attack")]
     [SerializeField] float attackCooldown = 2f;
     [SerializeField] float resetComboDelay = 1f;
-    [SerializeField] float attackCancellingTimer = 1f;
-    private float currentAttackCancellingTimer = 1f;
+    [SerializeField] float rootMotionSpeed = 2f;
     private float currentAttackCooldown;
     private int comboCounter;
 
@@ -162,7 +161,6 @@ public class PlayerMovement : MonoBehaviour
     private bool isAttacking = false;
     private bool isWindingUp = false;
     private float prevInputDirection;
-    private bool disableRootMotion = false;
     
 
     // Ledge Climbing
@@ -253,10 +251,9 @@ public class PlayerMovement : MonoBehaviour
             LedgeClimb();
         }
 
-        if (!isDashing)
-        {
-            Jump();
-        }
+
+        Jump();
+        
         
         DashInput();
         Attack();
@@ -273,18 +270,13 @@ public class PlayerMovement : MonoBehaviour
 
     void OnAnimatorMove()
     {
-        if (isAttacking && !disableRootMotion && !animController.IsInTransition(0))
+        if (isAttacking && !disableDashing && !animController.IsInTransition(0))
         {
-            if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.4f)
-            {
+            float y = rb.velocity.y;
 
-                Debug.Log("test");
-                disableRootMotion = true;
-                return;
-            }
+            rb.velocity = animController.deltaPosition * rootMotionSpeed / Time.deltaTime;
 
-            transform.position += animController.deltaPosition;
-            Debug.Log("Move");
+            rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
         }
     }
 
@@ -571,6 +563,11 @@ public class PlayerMovement : MonoBehaviour
 
         #region Coyote and Jump Buffer Timers
 
+        if (jumpCounter <= 0f)
+        {
+            animController.SetBool("Jump", false);
+        }
+
         // Coyote Time
         if (isGrounded && jumpCounter <= 0f)
         {
@@ -578,10 +575,6 @@ public class PlayerMovement : MonoBehaviour
             
 
             jumpCoyoteCounter = jumpCoyoteTime;
-        }
-        else if (jumpCounter <= 0f)
-        {
-            animController.SetBool("Jump", false);
         }
         else
         {
@@ -603,14 +596,12 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (currentAttackCancellingTimer > 0f)
+        if (isDashing)
             return;
 
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
         {
-            animController.applyRootMotion = true;
-
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
             // Calculate Velocity
@@ -670,9 +661,6 @@ public class PlayerMovement : MonoBehaviour
 
     void DashInput()
     {
-        if (currentAttackCancellingTimer > 0f)
-            return;
-
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Dash"))
         {
             // Wait for animation transition
@@ -688,7 +676,6 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("Dash", false);
                 isDashing = false;
                 disableDashing = false;
-                currentSpeed = 0f;
             }
 
             if (!isFox && currentStamina >= staminaConsumption || isFox)
@@ -699,7 +686,6 @@ public class PlayerMovement : MonoBehaviour
                     //If player is moving left or right
                     if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
                     {
-                        animController.applyRootMotion = false;
                         animController.SetBool("Dash", true);
                         disableMovement = true;
                         disableDashing = true;
@@ -715,6 +701,8 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator Dash(bool isFacingRight)
     {
+        float tempSpeed = currentSpeed;
+
         if (!isFox)
         {
             // Stamina
@@ -723,7 +711,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
         disableMovement = true;
-        //disableGravity = true;
 
         // Set Y velocity to 0
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
@@ -782,9 +769,9 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
+        currentSpeed = tempSpeed;
         disableMovement = false;
-        disableGravity = false;
-        animController.SetBool("isSprinting", true);
+        //animController.SetBool("isSprinting", true);
     }
 
     void StepClimb(Vector3 direction)
@@ -1021,12 +1008,10 @@ public class PlayerMovement : MonoBehaviour
             // Attack animation has started!
             if (!isAttacking)
             {
-                animController.applyRootMotion = true;
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
                 isAttacking = true;
                 currentSpeed = 0f;
-                disableRootMotion = false;
             }
 
             // Move after attacking
@@ -1043,7 +1028,6 @@ public class PlayerMovement : MonoBehaviour
                 disableMovement = false;
                 isAttacking = false;
                 comboCounter = 0;
-                animController.applyRootMotion = false;
 
                 animController.SetBool("Attack1", false);
                 animController.SetBool("Attack2", false);
@@ -1080,19 +1064,19 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded)
             {
                 OnClick();
+                Debug.Log("Click");
             }
         }
 
         if (currentAttackCooldown > 0f)
             currentAttackCooldown -= Time.deltaTime;
-
-        if (currentAttackCancellingTimer > 0f)
-            currentAttackCancellingTimer -= Time.deltaTime;
     }
 
     void OnClick()
     {
-        isAttacking = false;
+        if (comboCounter == 0)
+            isAttacking = true;
+
         animController.speed = 1f;
 
         // Set time
@@ -1101,13 +1085,12 @@ public class PlayerMovement : MonoBehaviour
         // Increase combo count
         comboCounter++;
         // Clamp combo
-        comboCounter = Mathf.Clamp(comboCounter, 0, 3);
+        comboCounter = Mathf.Clamp(comboCounter, 0, 1);
 
         if (comboCounter == 1 && !animController.GetBool("Attack1"))
         {
             animController.SetTrigger("Attack");
             animController.SetBool("Attack1", true);
-            currentAttackCancellingTimer = attackCancellingTimer;
         }
         
         // Transitions to next combo animation

@@ -40,7 +40,7 @@ public class PlayerMovementEditor : Editor
         // Attack
         EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCooldown"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("resetComboDelay"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCancellingTimer"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootMotionSpeed"));
 
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanSpeed"));
