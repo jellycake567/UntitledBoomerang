@@ -3488,7 +3488,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067231, y: -0.000000016953926, z: 0.0000000029366534, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067231, y: 0.000000016953926, z: -0.0000000029366534, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -4039,7 +4039,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 988442858}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.5976954, y: 0, z: 5.8}
+  m_LocalPosition: {x: 7.5976954, y: 0, z: -0.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -4395,7 +4395,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackCooldown: 2
   resetComboDelay: 1
-  attackCancellingTimer: 1
   rootMotionSpeed: 2
   humanSpeed: 7
   humanRunSpeed: 10
@@ -9885,7 +9884,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackCooldown: 0.1
   resetComboDelay: 2
-  attackCancellingTimer: 0
   rootMotionSpeed: 2
   humanSpeed: 7
   humanRunSpeed: 10
@@ -9935,7 +9933,7 @@ MonoBehaviour:
   fallGravityMultiplier: 2
   reduceVelocity: 2
   groundCheckOffset: {x: 0, y: 1, z: 0}
-  groundCheckSize: {x: 0.6, y: 0.1, z: 0.6}
+  groundCheckSize: {x: 0.45, y: 0.05, z: 0.45}
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256

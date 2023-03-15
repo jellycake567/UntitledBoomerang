@@ -540,8 +540,8 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-
-        //StepClimb(desiredDir); // After movement
+        if (isGrounded)
+            //StepClimb(desiredDir); // After movement
 
         if (!mode3D)
         {
@@ -770,7 +770,7 @@ public class PlayerMovement : MonoBehaviour
 
         currentSpeed = tempSpeed;
         disableMovement = false;
-        //animController.SetBool("isSprinting", true);
+        animController.SetBool("isSprinting", true);
     }
 
     void StepClimb(Vector3 direction)
@@ -791,15 +791,6 @@ public class PlayerMovement : MonoBehaviour
             if (!Physics.Raycast(stepRayUpper.transform.position, direction, stepRayUpperDistance, ~ignorePlayerMask))
             {
                 rb.position += new Vector3(0f, stepSmooth * Time.deltaTime, 0f);
-
-                //Vector3 velocityY = new Vector3(0f, rb.velocity.y, 0f);
-
-                //// Apply a force that attempts to reach our target velocity
-                //Vector3 velocity = velocityY;
-                //Vector3 velocityChange = (targetVelocity - velocity);
-                //velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-                //velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-                //velocityChange.y = 0;
 
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
@@ -849,7 +840,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(centerPos, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, Quaternion.identity, ~ignorePlayerMask);
 
         RaycastHit hit;
         if(Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
