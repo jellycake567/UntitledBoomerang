@@ -677,28 +677,32 @@ public class PlayerMovement : MonoBehaviour
                 disableDashing = false;
             }
 
-            if (!isFox && currentStamina >= staminaConsumption || isFox)
+            if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded)
             {
-                // Dash input
-                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableDashing && isGrounded)
-                {
-                    //If player is moving left or right
-                    if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-                    {
-                        animController.SetBool("Dash", true);
-                        disableMovement = true;
-                        disableDashing = true;
-                        animController.speed = 1f;
+                return;
+            }
 
-                        bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
-                        StartCoroutine(Dash(isFacingRight));
-                    }
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                animController.SetBool("Dash", true);
+                disableMovement = true;
+                disableDashing = true;
+                animController.speed = 1f;
+
+                float angle = Quaternion.Angle(GetPathRotation(), transform.rotation);
+                if (angle > 30f)
+                {
+                    StartCoroutine(Dash(false));
+                }
+                else
+                {
+                    StartCoroutine(Dash(true));
                 }
             }
         }
     }
 
-    IEnumerator Dash(bool isFacingRight)
+    IEnumerator Dash(bool usePathRotation)
     {
         float tempSpeed = currentSpeed;
 
@@ -730,7 +734,7 @@ public class PlayerMovement : MonoBehaviour
             #region Rotation
 
             Quaternion targetRot = GetPathRotation();
-            if (isFacingRight)
+            if (usePathRotation)
             {
                 distanceOnPath += speed * Time.deltaTime;
             }

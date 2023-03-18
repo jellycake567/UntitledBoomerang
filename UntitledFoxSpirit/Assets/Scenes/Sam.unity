@@ -3488,7 +3488,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067231, y: 0.000000016953926, z: -0.0000000029366534, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067231, y: -0.000000016953926, z: 0.0000000029366534, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -3536,10 +3536,10 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.25
+  m_Radius: 0.3
   m_Height: 1.56
   m_Direction: 1
-  m_Center: {x: 0, y: 0.74, z: -0.04}
+  m_Center: {x: 0, y: 0.74, z: 0}
 --- !u!1 &848763420
 GameObject:
   m_ObjectHideFlags: 0
@@ -4039,7 +4039,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 988442858}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.5976954, y: 0, z: -0.04}
+  m_LocalPosition: {x: 7.5976954, y: 0, z: 5.71}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -5511,7 +5511,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1337856846}
-  m_LocalRotation: {x: 0.1347677, y: 0.000000008524705, z: -0.0000000011594323, w: 0.9908773}
+  m_LocalRotation: {x: 0.1347677, y: -0.000000008524705, z: 0.0000000011594323, w: 0.9908773}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -7176,7 +7176,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2004943258}
-  m_LocalRotation: {x: 0.15272148, y: 0.000000008502269, z: -0.0000000013138919, w: 0.98826927}
+  m_LocalRotation: {x: 0.15272148, y: -0.000000008502268, z: 0.0000000013138921, w: 0.98826927}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -9933,7 +9933,7 @@ MonoBehaviour:
   fallGravityMultiplier: 2
   reduceVelocity: 2
   groundCheckOffset: {x: 0, y: 1, z: 0}
-  groundCheckSize: {x: 0.45, y: 0.05, z: 0.45}
+  groundCheckSize: {x: 0.45, y: 0.1, z: 0.45}
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
