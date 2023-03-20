@@ -433,7 +433,16 @@ public class PlayerMovement : MonoBehaviour
 
         maxSpeed = isFox ? foxSpeed : humanSpeed;
 
-        DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
+        //DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed\
+
+        if (direction.magnitude > 0.1f)
+        {
+            animController.SetBool("isMoving", true);
+        }
+        else
+        {
+            animController.SetBool("isMoving", false);
+        }
 
 
         if (disableMovement)
