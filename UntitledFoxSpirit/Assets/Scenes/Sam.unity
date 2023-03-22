@@ -3488,7 +3488,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067231, y: -0.000000016953926, z: 0.0000000029366534, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067231, y: 0.000000016953926, z: -0.0000000029366534, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -5511,7 +5511,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1337856846}
-  m_LocalRotation: {x: 0.1347677, y: 0.000000008524705, z: -0.0000000011594323, w: 0.9908773}
+  m_LocalRotation: {x: 0.1347677, y: -0.000000008524705, z: 0.0000000011594323, w: 0.9908773}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -9895,7 +9895,7 @@ MonoBehaviour:
   humanJumpHeight: 8
   jumpForce: 25
   humanDashTime: 0.5
-  humanDashDistance: 4
+  humanDashDistance: 6
   staminaConsumption: 20
   staminaRecovery: 1
   staminaCooldown: 1
@@ -9968,7 +9968,7 @@ Animator:
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 2bab76560a018e445950b18def3290ab, type: 3}
   m_Controller: {fileID: 9100000, guid: 6848cb70a548cff419917db76fd21702, type: 2}
-  m_CullingMode: 0
+  m_CullingMode: 1
   m_UpdateMode: 1
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0

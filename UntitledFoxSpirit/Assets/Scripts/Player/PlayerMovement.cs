@@ -433,16 +433,7 @@ public class PlayerMovement : MonoBehaviour
 
         maxSpeed = isFox ? foxSpeed : humanSpeed;
 
-        //DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed\
-
-        if (direction.magnitude > 0.1f)
-        {
-            animController.SetBool("isMoving", true);
-        }
-        else
-        {
-            animController.SetBool("isMoving", false);
-        }
+        DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
 
 
         if (disableMovement)
@@ -738,6 +729,8 @@ public class PlayerMovement : MonoBehaviour
 
         while (currentDashTime > 0f)
         {
+            Debug.Log("dashing");
+
             currentDashTime -= Time.deltaTime;
 
             #region Rotation
