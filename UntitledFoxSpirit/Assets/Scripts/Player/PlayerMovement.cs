@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
+    [SerializeField] float jumpRollVelocity = -5f;
     [SerializeField] float rootMotionJumpRollSpeed = 2f;
     private bool isLanding = false;
 
@@ -281,7 +282,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump Roll root motion
-        if (rb.velocity.y < -1f && animController.GetBool("BeforeGrounded") && !isLanding)
+        if (rb.velocity.y < jumpRollVelocity && animController.GetBool("BeforeGrounded") && !isLanding)
         {
             isLanding = true;
             disableMovement = true;
@@ -901,6 +902,8 @@ public class PlayerMovement : MonoBehaviour
         if(transform.position.y - newGroundY <= 1 && rb.velocity.y <= 1f)
         {
             animController.SetBool("BeforeGrounded", true);
+
+            animController.SetFloat("verticalVelocity", rb.velocity.y);
         }
         else
         {

@@ -57,6 +57,7 @@ public class PlayerMovementEditor : Editor
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanJumpHeight"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpRollVelocity"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("rootMotionJumpRollSpeed"));
 
         // Stamina
