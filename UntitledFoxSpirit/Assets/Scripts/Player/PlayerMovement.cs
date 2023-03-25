@@ -16,7 +16,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Attack")]
     [SerializeField] float attackCooldown = 2f;
     [SerializeField] float resetComboDelay = 1f;
-    [SerializeField] float rootMotionSpeed = 2f;
+    [SerializeField] float rootMotionAtkSpeed = 2f;
     private bool isAttacking = false;
     private float currentAttackCooldown;
     private int comboCounter;
@@ -38,7 +38,8 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
-    public float jumpForce = 20f;
+    [SerializeField] float rootMotionJumpRollSpeed = 2f;
+    private bool isLanding = false;
 
     [Header("Dash")]
     public float humanDashTime = 5.0f;
@@ -269,13 +270,42 @@ public class PlayerMovement : MonoBehaviour
 
     void OnAnimatorMove()
     {
+        // Attacking root motion
         if (isAttacking && !disableDashing && !animController.IsInTransition(0))
         {
             float y = rb.velocity.y;
 
-            rb.velocity = animController.deltaPosition * rootMotionSpeed / Time.deltaTime;
+            rb.velocity = animController.deltaPosition * rootMotionAtkSpeed / Time.deltaTime;
 
             rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+        }
+
+        // Jump Roll root motion
+        if (rb.velocity.y < -1f && animController.GetBool("BeforeGrounded") && !isLanding)
+        {
+            isLanding = true;
+            disableMovement = true;
+            capsuleCollider.material = null;
+        }
+        if (isLanding)
+        {
+            AnimatorStateInfo jumpRollState = animController.GetCurrentAnimatorStateInfo(0);
+
+            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("BeforeGrounded") && animController.IsInTransition(0))
+            {
+                float y = rb.velocity.y;
+
+                rb.velocity = animController.deltaPosition * rootMotionJumpRollSpeed / Time.deltaTime;
+
+                rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+
+            }
+            else if (isGrounded)
+            {
+                isLanding = false;
+                disableMovement = false;
+                capsuleCollider.material = friction;
+            }
         }
     }
 

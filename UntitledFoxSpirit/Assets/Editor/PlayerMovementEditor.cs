@@ -40,7 +40,7 @@ public class PlayerMovementEditor : Editor
         // Attack
         EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCooldown"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("resetComboDelay"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootMotionSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootMotionAtkSpeed"));
 
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanSpeed"));
@@ -57,6 +57,7 @@ public class PlayerMovementEditor : Editor
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanJumpHeight"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootMotionJumpRollSpeed"));
 
         // Stamina
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaConsumption"));
