@@ -3488,7 +3488,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067231, y: -0.000000016953926, z: 0.0000000029366534, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067231, y: 0.000000016953926, z: -0.0000000029366534, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -4404,6 +4404,7 @@ MonoBehaviour:
   animJogAccelSpeed: 0.8
   animJogDecelSpeed: 0.8
   humanJumpHeight: 3
+  jumpRollVelocity: -5
   rootMotionJumpRollSpeed: 2
   humanDashTime: 0.2
   humanDashDistance: 4
@@ -9893,7 +9894,8 @@ MonoBehaviour:
   animJogAccelSpeed: 0.9
   animJogDecelSpeed: 0.7
   humanJumpHeight: 8
-  rootMotionJumpRollSpeed: 3
+  jumpRollVelocity: -10
+  rootMotionJumpRollSpeed: 2.5
   humanDashTime: 0.5
   humanDashDistance: 6
   staminaConsumption: 20
