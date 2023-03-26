@@ -4403,6 +4403,7 @@ MonoBehaviour:
   animJogSpeed: 1.17
   animJogAccelSpeed: 0.8
   animJogDecelSpeed: 0.8
+  timeToReachTargetRotation: 0.14
   humanJumpHeight: 3
   jumpRollVelocity: -5
   rootMotionJumpRollSpeed: 2
@@ -9888,11 +9889,12 @@ MonoBehaviour:
   rootMotionAtkSpeed: 2
   humanSpeed: 7
   humanRunSpeed: 10
-  accelTimeToMaxSpeed: 0.5
-  decelTimeToZeroSpeed: 0.2
+  accelTimeToMaxSpeed: 0.6
+  decelTimeToZeroSpeed: 0.4
   animJogSpeed: 1.17
   animJogAccelSpeed: 0.9
   animJogDecelSpeed: 0.7
+  timeToReachTargetRotation: 0.14
   humanJumpHeight: 8
   jumpRollVelocity: -10
   rootMotionJumpRollSpeed: 2.5

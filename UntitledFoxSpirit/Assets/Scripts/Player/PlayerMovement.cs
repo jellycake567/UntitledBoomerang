@@ -42,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float timeToReachTargetRotation = 0.14f;
     private float dampedTargetRotationCurrentYVelocity;
     private float dampedTargetRotationPassedTime;
+    private bool disableRotations = false;
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
@@ -182,7 +183,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isWallClimbing;
     private bool canClimbWall;
     private bool isHoldingJump = false;
-    private float prevInputDirection;
+    private Vector3 prevInputDirection;
     
 
     // Ledge Climbing
@@ -193,7 +194,6 @@ public class PlayerMovement : MonoBehaviour
 
     // Save current rotation when input is pressed
     private Quaternion previousRotation;
-    private Vector3 previousDirection;
 
     const float REDUCE_SPEED = 1.414214f;
     private float distanceOnPath;
@@ -398,11 +398,11 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("isMoving", true);
 
             // Store when player presses left or right
-            if (prevInputDirection != targetVelocity.x)
+            if (prevInputDirection != direction)
             {
                 // Reset speed when turning around
                 currentSpeed = 2f;
-                prevInputDirection = targetVelocity.x;
+                prevInputDirection = direction;
             }
         }
         else
@@ -480,15 +480,19 @@ public class PlayerMovement : MonoBehaviour
     Quaternion Rotation2D(Quaternion targetRot2D, Vector3 direction)
     {
         // Flipping player
-        if (previousDirection.x < 0f)
+        if (prevInputDirection.x < 0f)
         {
             Vector3 rot = targetRot2D.eulerAngles;
             targetRot2D = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
         }
 
         //transform.rotation = targetRot2D;
+        
+        if (disableRotations)
+            UpdateRotation(previousRotation);
+        else
+            UpdateRotation(targetRot2D);
 
-        UpdateRotation(targetRot2D);
 
         if (direction.magnitude > 0.01f)
         {
@@ -497,13 +501,16 @@ public class PlayerMovement : MonoBehaviour
                 dampedTargetRotationPassedTime = 0f;
             }
 
+            if (disableRotations)
+                return targetRot2D;
+
             // Saved for deceleration
             previousRotation = targetRot2D;
-            previousDirection = direction;
+            prevInputDirection = direction;
         }
 
         return targetRot2D;
-    }
+    } 
 
     void UpdateRotation(Quaternion targetRot2D)
     {
@@ -565,7 +572,7 @@ public class PlayerMovement : MonoBehaviour
         maxSpeed = isFox ? foxSpeed : humanSpeed;
 
         DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
-        
+
 
         // Calculate player 3D rotation
         float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
@@ -578,6 +585,7 @@ public class PlayerMovement : MonoBehaviour
             Rotation3D(targetAngle3D, direction);
         else
             targetRot2D = Rotation2D(targetRot2D, direction);
+
 
         if (disableMovement)
             return;
@@ -804,7 +812,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetBool("Dash", false);
                 isDashing = false;
-                disableDashing = false;
             }
 
             if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded)
@@ -817,10 +824,11 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("Dash", true);
                 disableMovement = true;
                 disableDashing = true;
+                disableRotations = true;
                 animController.speed = 1f;
 
                 
-                if (previousDirection.x < 0.1f)
+                if (prevInputDirection.x < 0.1f)
                 {
                     StartCoroutine(Dash(false));
                 }
@@ -906,6 +914,8 @@ public class PlayerMovement : MonoBehaviour
 
         currentSpeed = tempSpeed;
         disableMovement = false;
+        disableDashing = false;
+        disableRotations = false;
         animController.SetBool("isSprinting", true);
     }
 
@@ -1138,6 +1148,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
+                disableRotations = true;
                 isAttacking = true;
                 currentSpeed = 0f;
             }
@@ -1154,6 +1165,7 @@ public class PlayerMovement : MonoBehaviour
             if (isAttacking)
             {
                 disableMovement = false;
+                disableRotations = false;
                 isAttacking = false;
                 comboCounter = 0;
 
@@ -1170,6 +1182,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetBool("Attack1", false);
                 disableMovement = false;
+                disableRotations = false;
                 comboCounter = 0;
             }
         }
@@ -1203,7 +1216,10 @@ public class PlayerMovement : MonoBehaviour
     void OnClick()
     {
         if (comboCounter == 0)
+        {
+            disableRotations = true;
             isAttacking = true;
+        }
 
         animController.speed = 1f;
 
