@@ -412,6 +412,7 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("isMoving", false);
             }
             animController.SetBool("isSprinting", false);
+            Debug.Log("False");
 
             // If currently accelerating, but input is released, stop accel and start decel
             if (isAccel)
@@ -564,10 +565,7 @@ public class PlayerMovement : MonoBehaviour
         maxSpeed = isFox ? foxSpeed : humanSpeed;
 
         DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
-
-
-        if (disableMovement)
-            return;
+        
 
         // Calculate player 3D rotation
         float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
@@ -580,6 +578,9 @@ public class PlayerMovement : MonoBehaviour
             Rotation3D(targetAngle3D, direction);
         else
             targetRot2D = Rotation2D(targetRot2D, direction);
+
+        if (disableMovement)
+            return;
 
         // If player is moving
         if (direction.magnitude > 0.01f)
@@ -818,8 +819,8 @@ public class PlayerMovement : MonoBehaviour
                 disableDashing = true;
                 animController.speed = 1f;
 
-                float angle = Quaternion.Angle(GetPathRotation(), transform.rotation);
-                if (angle > 30f)
+                
+                if (previousDirection.x < 0.1f)
                 {
                     StartCoroutine(Dash(false));
                 }
