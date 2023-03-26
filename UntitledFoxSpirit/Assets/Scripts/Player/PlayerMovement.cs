@@ -38,6 +38,11 @@ public class PlayerMovement : MonoBehaviour
     private bool isRunning = false;
     private bool disableMovement;
 
+    [Header("Rotation")]
+    [SerializeField] float timeToReachTargetRotation = 0.14f;
+    private float dampedTargetRotationCurrentYVelocity;
+    private float dampedTargetRotationPassedTime;
+
     [Header("Jump")]
     public float humanJumpHeight = 5f;
     [SerializeField] float jumpRollVelocity = -5f;
@@ -188,6 +193,7 @@ public class PlayerMovement : MonoBehaviour
 
     // Save current rotation when input is pressed
     private Quaternion previousRotation;
+    private Vector3 previousDirection;
 
     const float REDUCE_SPEED = 1.414214f;
     private float distanceOnPath;
@@ -473,18 +479,48 @@ public class PlayerMovement : MonoBehaviour
     Quaternion Rotation2D(Quaternion targetRot2D, Vector3 direction)
     {
         // Flipping player
-        if (direction.x < 0f)
+        if (previousDirection.x < 0f)
         {
             Vector3 rot = targetRot2D.eulerAngles;
             targetRot2D = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
         }
 
-        transform.rotation = targetRot2D;
+        //transform.rotation = targetRot2D;
 
-        // Saved for deceleration
-        previousRotation = targetRot2D;
+        UpdateRotation(targetRot2D);
+
+        if (direction.magnitude > 0.01f)
+        {
+            if (previousRotation != targetRot2D)
+            {
+                dampedTargetRotationPassedTime = 0f;
+            }
+
+            // Saved for deceleration
+            previousRotation = targetRot2D;
+            previousDirection = direction;
+        }
 
         return targetRot2D;
+    }
+
+    void UpdateRotation(Quaternion targetRot2D)
+    {
+        float currentYAngle = rb.rotation.eulerAngles.y;
+        if (currentYAngle == previousRotation.eulerAngles.y)
+        {
+            Debug.Log("test");
+            return;
+        }
+
+        Debug.DrawRay(transform.position, rb.rotation.eulerAngles.normalized, Color.black);
+
+        float smoothedYAngle = Mathf.SmoothDampAngle(currentYAngle, targetRot2D.eulerAngles.y, ref dampedTargetRotationCurrentYVelocity, timeToReachTargetRotation - dampedTargetRotationPassedTime);
+        dampedTargetRotationPassedTime += Time.deltaTime;
+
+        Quaternion targetRotation = Quaternion.Euler(0f, smoothedYAngle, 0f);
+        rb.MoveRotation(targetRotation);
+        
     }
 
     void AdjustPlayerOnPath()
@@ -540,15 +576,14 @@ public class PlayerMovement : MonoBehaviour
         distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
         Quaternion targetRot2D = GetPathRotation();
 
+        if (mode3D)
+            Rotation3D(targetAngle3D, direction);
+        else
+            targetRot2D = Rotation2D(targetRot2D, direction);
 
         // If player is moving
         if (direction.magnitude > 0.01f)
         {
-            if (mode3D)
-                Rotation3D(targetAngle3D, direction);
-            else
-                targetRot2D = Rotation2D(targetRot2D, direction);
-
             #region Reached end of path
             if (direction.x < 0f)
             {
