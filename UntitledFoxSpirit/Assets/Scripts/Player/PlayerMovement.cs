@@ -21,6 +21,8 @@ public class PlayerMovement : MonoBehaviour
     private float currentAttackCooldown;
     private int comboCounter;
 
+    #region Movement
+
     [Header("Movement")]
     [SerializeField] float humanSpeed = 5.0f;
     [SerializeField] float humanRunSpeed = 10.0f;
@@ -48,6 +50,10 @@ public class PlayerMovement : MonoBehaviour
     private bool isDashing = false;
     private bool disableDashing = false;
 
+    #endregion
+
+    #region Other
+
     [Header("Stamina")]
     public float staminaConsumption = 20f;
     public float staminaRecovery = 5f;
@@ -62,6 +68,8 @@ public class PlayerMovement : MonoBehaviour
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
+
+    #endregion
 
     #endregion
 
@@ -81,6 +89,8 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Other Settings
+
+    #region Movement
 
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
@@ -126,6 +136,10 @@ public class PlayerMovement : MonoBehaviour
     private float updateMaxHeight2 = 100000f;
     private bool disableGravity = false;
 
+    #endregion
+
+    #region Other
+
     [Header("Damage")]
     public float invulnerableTime = 1f;
     public float regainMovement = 0.5f;
@@ -152,6 +166,8 @@ public class PlayerMovement : MonoBehaviour
     public GameObject human;
     public GameObject fox;
     [SerializeField] PhysicMaterial friction;
+
+    #endregion
 
     #endregion
 
@@ -307,6 +323,53 @@ public class PlayerMovement : MonoBehaviour
                 disableMovement = false;
                 capsuleCollider.material = friction;
             }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Spawn player position
+        if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
+        {
+            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
+            spawnPosition.y += spawnYOffset;
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(spawnPosition, 0.5f);
+        }
+
+        // Player ground check
+        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(point, groundCheckSize);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = true;
+        }
+
+        if (other.CompareTag("Hitbox"))
+        {
+            EnemyNavigation enemyNav = other.GetComponentInParent<EnemyNavigation>();
+            Vector3 enemyPos = enemyNav.transform.position;
+
+            // Get dir from AI to player
+            Vector3 facingDir = (other.ClosestPointOnBounds(transform.position) - enemyPos).IgnoreYAxis();
+            Vector3 dir = enemyNav.CalculatePathFacingDir(enemyPos, facingDir);
+
+            TakeDamage(dir);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = false;
         }
     }
 
@@ -1216,50 +1279,5 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
-    private void OnDrawGizmos()
-    {
-        // Spawn player position
-        if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
-        {
-            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
-            spawnPosition.y += spawnYOffset;
-
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawSphere(spawnPosition, 0.5f);
-        }
-
-        // Player ground check
-        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(point, groundCheckSize);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimbWall = true;
-        }
-
-        if (other.CompareTag("Hitbox"))
-        {
-            EnemyNavigation enemyNav = other.GetComponentInParent<EnemyNavigation>();
-            Vector3 enemyPos = enemyNav.transform.position;
-
-            // Get dir from AI to player
-            Vector3 facingDir = (other.ClosestPointOnBounds(transform.position) - enemyPos).IgnoreYAxis();
-            Vector3 dir = enemyNav.CalculatePathFacingDir(enemyPos, facingDir);
-
-            TakeDamage(dir);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimbWall = false;
-        }
-    }
+    
 }
