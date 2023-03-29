@@ -42,7 +42,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float timeToReachTargetRotation = 0.14f;
     private float dampedTargetRotationCurrentYVelocity;
     private float dampedTargetRotationPassedTime;
-    private bool disableRotations = false;
+    private bool disableUpdateRotations = false;
+    private bool disableInputRotations = false;
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
@@ -308,6 +309,7 @@ public class PlayerMovement : MonoBehaviour
         {
             isLanding = true;
             disableMovement = true;
+            disableInputRotations = true;
             capsuleCollider.material = null;
         }
         if (isLanding)
@@ -327,6 +329,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 isLanding = false;
                 disableMovement = false;
+                disableInputRotations = false;
                 capsuleCollider.material = friction;
             }
         }
@@ -412,7 +415,6 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("isMoving", false);
             }
             animController.SetBool("isSprinting", false);
-            Debug.Log("False");
 
             // If currently accelerating, but input is released, stop accel and start decel
             if (isAccel)
@@ -479,6 +481,9 @@ public class PlayerMovement : MonoBehaviour
 
     Quaternion Rotation2D(Quaternion targetRot2D, Vector3 direction)
     {
+        if (disableUpdateRotations)
+            return targetRot2D;
+
         // Flipping player
         if (prevInputDirection.x < 0f)
         {
@@ -488,7 +493,7 @@ public class PlayerMovement : MonoBehaviour
 
         //transform.rotation = targetRot2D;
         
-        if (disableRotations)
+        if (disableInputRotations)
             UpdateRotation(previousRotation);
         else
             UpdateRotation(targetRot2D);
@@ -501,7 +506,7 @@ public class PlayerMovement : MonoBehaviour
                 dampedTargetRotationPassedTime = 0f;
             }
 
-            if (disableRotations)
+            if (disableInputRotations)
                 return targetRot2D;
 
             // Saved for deceleration
@@ -517,18 +522,14 @@ public class PlayerMovement : MonoBehaviour
         float currentYAngle = rb.rotation.eulerAngles.y;
         if (currentYAngle == previousRotation.eulerAngles.y)
         {
-            Debug.Log("test");
             return;
         }
-
-        Debug.DrawRay(transform.position, rb.rotation.eulerAngles.normalized, Color.black);
 
         float smoothedYAngle = Mathf.SmoothDampAngle(currentYAngle, targetRot2D.eulerAngles.y, ref dampedTargetRotationCurrentYVelocity, timeToReachTargetRotation - dampedTargetRotationPassedTime);
         dampedTargetRotationPassedTime += Time.deltaTime;
 
         Quaternion targetRotation = Quaternion.Euler(0f, smoothedYAngle, 0f);
         rb.MoveRotation(targetRotation);
-        
     }
 
     void AdjustPlayerOnPath()
@@ -733,7 +734,7 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isDashing)
+        if (isDashing || isLanding)
             return;
 
         // Player jump input
@@ -824,7 +825,7 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("Dash", true);
                 disableMovement = true;
                 disableDashing = true;
-                disableRotations = true;
+                disableInputRotations = true;
                 animController.speed = 1f;
 
                 
@@ -842,7 +843,8 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator Dash(bool usePathRotation)
     {
-        float tempSpeed = currentSpeed;
+        currentSpeed = humanRunSpeed;
+        animController.SetFloat("ForwardSpeed", currentSpeed);
 
         if (!isFox)
         {
@@ -912,10 +914,9 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        currentSpeed = tempSpeed;
         disableMovement = false;
         disableDashing = false;
-        disableRotations = false;
+        disableInputRotations = false;
         animController.SetBool("isSprinting", true);
     }
 
@@ -1148,7 +1149,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
-                disableRotations = true;
+                disableInputRotations = true;
                 isAttacking = true;
                 currentSpeed = 0f;
             }
@@ -1165,7 +1166,7 @@ public class PlayerMovement : MonoBehaviour
             if (isAttacking)
             {
                 disableMovement = false;
-                disableRotations = false;
+                disableInputRotations = false;
                 isAttacking = false;
                 comboCounter = 0;
 
@@ -1182,7 +1183,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetBool("Attack1", false);
                 disableMovement = false;
-                disableRotations = false;
+                disableInputRotations = false;
                 comboCounter = 0;
             }
         }
@@ -1217,7 +1218,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (comboCounter == 0)
         {
-            disableRotations = true;
+            disableInputRotations = true;
             isAttacking = true;
         }
 
