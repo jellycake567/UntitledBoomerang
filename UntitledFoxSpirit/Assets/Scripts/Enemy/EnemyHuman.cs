@@ -1,19 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyHuman : MonoBehaviour
 {
     public GameManager GM;
     private Vector3 playerPos;
-    float detectionLength = 5;
+    float detectionLength = 8;
     float decisionTimer = 0;
+    public float decisionTimerMin = 0;
+    public float decisionTimerMax = 0;
     
     int optionCount = 0;
     int choice = 0;
-    Vector3 moveSpeed = new Vector3(0,0,5);
+    float moveSpeed = 5f;
     Rigidbody rb;
     public float speed;
+
+    NavMeshAgent agent;
+
     public enum State
     {
         Standing,
@@ -28,6 +34,7 @@ public class EnemyHuman : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        agent = GetComponent<NavMeshAgent>();
     }
 
 
@@ -37,6 +44,14 @@ public class EnemyHuman : MonoBehaviour
         {
             FindPlayer();
         }
+        else if (AIState == State.Wander)
+        {             
+            if(rb.velocity == Vector3.zero)
+            {
+                rb.AddForce(transform.forward * moveSpeed, ForceMode.VelocityChange);
+            }
+            FindPlayer();
+        }
     }
 
     // Update is called once per frame
@@ -44,6 +59,7 @@ public class EnemyHuman : MonoBehaviour
     {
         if (AIState == State.Standing)
         {
+            decisionTimer -= Time.deltaTime;
             Standing();
         }
         else if (AIState == State.Attack)
@@ -52,13 +68,16 @@ public class EnemyHuman : MonoBehaviour
         }
         else if (AIState == State.Wander)
         {
+            decisionTimer -= Time.deltaTime;
             Wander();
         }
+        
     }
+
     void Standing()
     {
         
-        decisionTimer -= Time.deltaTime;
+     
         if (decisionTimer <= 0)
         {
             //Does the AI move?
@@ -66,8 +85,14 @@ public class EnemyHuman : MonoBehaviour
             choice = decideRandomly(optionCount);
             if (choice == 0)
             {
-                //move
-                //optionCount = 2;
+                AIState = State.Wander;
+            }
+            else if (choice == 1)
+            {
+                //dont move
+                rb.velocity = Vector3.zero;
+                AIState = State.Standing;
+
                 choice = decideRandomly(optionCount);
                 //does AI turn around?
                 if (choice == 0) //yes
@@ -75,24 +100,18 @@ public class EnemyHuman : MonoBehaviour
                     //turn around
                     Flip();
                 }
-
-                rb.AddForce(moveSpeed, ForceMode.VelocityChange);
-            }
-            else if (choice == 1)
-            {
-                //dont move
-                rb.AddForce(-moveSpeed, ForceMode.VelocityChange);
             }
 
-            decisionTimer = Random.Range(2, 6);
+
+            decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
         }
-       
-       
+
 
     }
 
     void Attack()
     {
+        rb.velocity = Vector3.zero;
         playerPos = GM.playerPos;
         Vector3 dirToPlayer = (playerPos - transform.position).normalized;
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
@@ -102,14 +121,48 @@ public class EnemyHuman : MonoBehaviour
             Flip();
         }
 
+        agent.destination = playerPos;
+        //Debug.Log("agent destination: " + agent.destination);
         //move towards player using force
-        Move(dirToPlayer);
+        //Move(dirToPlayer);
+
 
 
     }
     void Wander()
     {
+        if (decisionTimer <= 0)
+        {
+            //move
+            //optionCount = 2;
+            choice = decideRandomly(optionCount);
+            Debug.Log(choice);
 
+            if (choice == 0)
+            {
+                AIState = State.Wander;
+
+                choice = decideRandomly(optionCount);
+                //does AI turn around?
+                if (choice == 0) //yes
+                {
+                    //turn around
+                    Flip();
+                }
+            }
+            else if (choice == 1)
+            {
+                //dont move
+                rb.velocity = Vector3.zero;
+                AIState = State.Standing;
+            }
+
+            
+
+            
+            decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
+        }
+            
     }
 
     int decideRandomly(int optionCount)
@@ -128,10 +181,13 @@ public class EnemyHuman : MonoBehaviour
             if (hit.collider.gameObject.CompareTag("Player"))
             {
                 //Player detected
+                Debug.Log("Detected");
                 AIState = State.Attack;
             }
        
         }
+        
+        Debug.DrawRay(transform.position, transform.forward * detectionLength, Color.red);
     }
 
     IEnumerator DecisionTimerCountdown()
@@ -153,6 +209,14 @@ public class EnemyHuman : MonoBehaviour
 
         // Move AI
         rb.AddForce(targetVelocity, ForceMode.VelocityChange);
+    }
+
+
+    void OnDrawGizmos()
+    {
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawLine(transform.position, transform.position + transform.forward * detectionLength);
+
     }
 }
 

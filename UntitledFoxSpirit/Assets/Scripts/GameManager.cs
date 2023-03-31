@@ -20,5 +20,6 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         playerPos = player.transform.position;
+        
     }
 }
