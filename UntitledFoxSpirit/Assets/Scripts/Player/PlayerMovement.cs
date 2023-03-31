@@ -1,5 +1,6 @@
 using Cinemachine;
 using PathCreation;
+using System;
 using System.Collections;
 using System.Reflection;
 using UnityEditor.Animations;
@@ -13,33 +14,52 @@ public class PlayerMovement : MonoBehaviour
     #region Human Settings
 
     [Header("Attack")]
-    [SerializeField] public float attackCooldown = 2f;
-    [SerializeField] public float resetComboDelay = 1f;
+    [SerializeField] float attackCooldown = 2f;
+    [SerializeField] float resetComboDelay = 1f;
+    [SerializeField] float rootMotionAtkSpeed = 2f;
+    private bool isAttacking = false;
     private float currentAttackCooldown;
     private int comboCounter;
 
+    #region Movement
+
     [Header("Movement")]
-    [SerializeField] public float humanSpeed = 5.0f;
-    [SerializeField] public float humanRunSpeed = 10.0f;
-    [SerializeField] public float accelTimeToMaxSpeed = 2.0f;
-    [SerializeField] public float decelTimeToZeroSpeed = 1.0f;
-    [SerializeField] public float animJogSpeed = 1.17f;
-    [SerializeField] public float animJogAccelSpeed = 0.8f;
-    [SerializeField] public float animJogDecelSpeed = 0.8f;
+    [SerializeField] float humanSpeed = 5.0f;
+    [SerializeField] float humanRunSpeed = 10.0f;
+    [SerializeField] float accelTimeToMaxSpeed = 2.0f;
+    [SerializeField] float decelTimeToZeroSpeed = 1.0f;
+    [SerializeField] float animJogSpeed = 1.17f;
+    [SerializeField] float animJogAccelSpeed = 0.8f;
+    [SerializeField] float animJogDecelSpeed = 0.8f;
     private float accelRatePerSec;
     private float decelRatePerSec;
     private bool isAccel = false;
     private bool isDecel = false;
-    
+    private bool isRunning = false;
+    private bool disableMovement;
+
+    [Header("Rotation")]
+    [SerializeField] float timeToReachTargetRotation = 0.14f;
+    private float dampedTargetRotationCurrentYVelocity;
+    private float dampedTargetRotationPassedTime;
+    private bool disableUpdateRotations = false;
+    private bool disableInputRotations = false;
+
     [Header("Jump")]
     public float humanJumpHeight = 5f;
-    public float jumpForce = 20f;
+    [SerializeField] float jumpRollVelocity = -5f;
+    [SerializeField] float rootMotionJumpRollSpeed = 2f;
+    private bool isLanding = false;
 
     [Header("Dash")]
     public float humanDashTime = 5.0f;
     public float humanDashDistance = 4.0f;
     private bool isDashing = false;
     private bool disableDashing = false;
+
+    #endregion
+
+    #region Other
 
     [Header("Stamina")]
     public float staminaConsumption = 20f;
@@ -55,6 +75,8 @@ public class PlayerMovement : MonoBehaviour
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
+
+    #endregion
 
     #endregion
 
@@ -74,6 +96,8 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Other Settings
+
+    #region Movement
 
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
@@ -117,6 +141,11 @@ public class PlayerMovement : MonoBehaviour
     private bool isGrounded;
     private float updateMaxHeight = 100000f;
     private float updateMaxHeight2 = 100000f;
+    private bool disableGravity = false;
+
+    #endregion
+
+    #region Other
 
     [Header("Damage")]
     public float invulnerableTime = 1f;
@@ -147,17 +176,16 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #endregion
+
     #region Internal Variables
 
     private bool isFox;
-    private bool disableMovement;
     private bool isWallClimbing;
     private bool canClimbWall;
     private bool isHoldingJump = false;
-    private bool disableGravity = false;
-    private bool isAttacking = false;
-    private bool isWindingUp = false;
-    private float prevInputDirection;
+    private Vector3 prevInputDirection;
+    
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -242,11 +270,15 @@ public class PlayerMovement : MonoBehaviour
         if (!isWallClimbing && !canClimbLedge && !disableMovement)
         {
             // Player Input Functions
-            Jump();
+            
             ChangeForm();
             LedgeClimb();
         }
 
+
+        Jump();
+        
+        
         DashInput();
         Attack();
     }
@@ -257,6 +289,96 @@ public class PlayerMovement : MonoBehaviour
         {
             ApplyGravity();
             Movement();
+        }
+    }
+
+    void OnAnimatorMove()
+    {
+        // Attacking root motion
+        if (isAttacking && !disableDashing && !animController.IsInTransition(0))
+        {
+            float y = rb.velocity.y;
+
+            rb.velocity = animController.deltaPosition * rootMotionAtkSpeed / Time.deltaTime;
+
+            rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+        }
+
+        // Jump Roll root motion
+        if (rb.velocity.y < jumpRollVelocity && animController.GetBool("BeforeGrounded") && !isLanding)
+        {
+            isLanding = true;
+            disableMovement = true;
+            disableInputRotations = true;
+            capsuleCollider.material = null;
+        }
+        if (isLanding)
+        {
+            AnimatorStateInfo jumpRollState = animController.GetCurrentAnimatorStateInfo(0);
+
+            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("BeforeGrounded") && animController.IsInTransition(0))
+            {
+                float y = rb.velocity.y;
+
+                rb.velocity = animController.deltaPosition * rootMotionJumpRollSpeed / Time.deltaTime;
+
+                rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+
+            }
+            else if (isGrounded)
+            {
+                isLanding = false;
+                disableMovement = false;
+                disableInputRotations = false;
+                capsuleCollider.material = friction;
+            }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Spawn player position
+        if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
+        {
+            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
+            spawnPosition.y += spawnYOffset;
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(spawnPosition, 0.5f);
+        }
+
+        // Player ground check
+        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(point, groundCheckSize);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = true;
+        }
+
+        if (other.CompareTag("Hitbox"))
+        {
+            EnemyNavigation enemyNav = other.GetComponentInParent<EnemyNavigation>();
+            Vector3 enemyPos = enemyNav.transform.position;
+
+            // Get dir from AI to player
+            Vector3 facingDir = (other.ClosestPointOnBounds(transform.position) - enemyPos).IgnoreYAxis();
+            Vector3 dir = enemyNav.CalculatePathFacingDir(enemyPos, facingDir);
+
+            TakeDamage(dir);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = false;
         }
     }
 
@@ -279,11 +401,11 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("isMoving", true);
 
             // Store when player presses left or right
-            if (prevInputDirection != targetVelocity.x)
+            if (prevInputDirection != direction)
             {
                 // Reset speed when turning around
                 currentSpeed = 2f;
-                prevInputDirection = targetVelocity.x;
+                prevInputDirection = direction;
             }
         }
         else
@@ -292,6 +414,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetBool("isMoving", false);
             }
+            animController.SetBool("isSprinting", false);
 
             // If currently accelerating, but input is released, stop accel and start decel
             if (isAccel)
@@ -307,18 +430,19 @@ public class PlayerMovement : MonoBehaviour
 
         #region Acceleraction / Deceleration Animation
 
-        // If player is currently in jogging state
-        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
-        {
-            // Start acceleration when entering state
-            if (!isAccel && !isDecel)
-            {
-                isAccel = true;
-                animController.speed = animJogAccelSpeed; // Set to accel jogging speed
-            }
-            else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
-                animController.speed = animJogSpeed;
+        // Is player currently in jogging state
+        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
+            return;
 
+        // Start acceleration when entering state
+        if (!isAccel && !isDecel)
+        {
+            isAccel = true;
+            animController.speed = animJogAccelSpeed; // Set to accel jogging speed
+        }
+        else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
+        {
+            animController.speed = animJogSpeed;
         }
 
         // If not moving, reset anim speed
@@ -357,19 +481,75 @@ public class PlayerMovement : MonoBehaviour
 
     Quaternion Rotation2D(Quaternion targetRot2D, Vector3 direction)
     {
+        if (disableUpdateRotations)
+            return targetRot2D;
+
         // Flipping player
-        if (direction.x < 0f)
+        if (prevInputDirection.x < 0f)
         {
             Vector3 rot = targetRot2D.eulerAngles;
             targetRot2D = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
         }
 
-        transform.rotation = targetRot2D;
+        //transform.rotation = targetRot2D;
+        
+        if (disableInputRotations)
+            UpdateRotation(previousRotation);
+        else
+            UpdateRotation(targetRot2D);
 
-        // Saved for deceleration
-        previousRotation = targetRot2D;
+
+        if (direction.magnitude > 0.01f)
+        {
+            if (previousRotation != targetRot2D)
+            {
+                dampedTargetRotationPassedTime = 0f;
+            }
+
+            if (disableInputRotations)
+                return targetRot2D;
+
+            // Saved for deceleration
+            previousRotation = targetRot2D;
+            prevInputDirection = direction;
+        }
 
         return targetRot2D;
+    } 
+
+    void UpdateRotation(Quaternion targetRot2D)
+    {
+        float currentYAngle = rb.rotation.eulerAngles.y;
+        if (currentYAngle == previousRotation.eulerAngles.y)
+        {
+            return;
+        }
+
+        float smoothedYAngle = Mathf.SmoothDampAngle(currentYAngle, targetRot2D.eulerAngles.y, ref dampedTargetRotationCurrentYVelocity, timeToReachTargetRotation - dampedTargetRotationPassedTime);
+        dampedTargetRotationPassedTime += Time.deltaTime;
+
+        Quaternion targetRotation = Quaternion.Euler(0f, smoothedYAngle, 0f);
+        rb.MoveRotation(targetRotation);
+    }
+
+    void AdjustPlayerOnPath()
+    {
+        Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+        //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+
+        // Distance between path and player
+        float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
+
+        // Direction from path towards player
+        Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
+        Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
+
+        // Keeps player on the path
+        if (distance > maxDistancePath)
+        {
+            Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
+            rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
+        }
     }
 
     #endregion
@@ -389,129 +569,124 @@ public class PlayerMovement : MonoBehaviour
         Vector3 targetVelocity = mode3D ? targetVelocity3D : targetVelocity2D;
         Vector3 direction = targetVelocity.normalized;
 
-        DetectAnimAcceleration(targetVelocity, direction);
+
+        maxSpeed = isFox ? foxSpeed : humanSpeed;
+
+        DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
 
 
-        if (!disableMovement)
+        // Calculate player 3D rotation
+        float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
+
+        // Calculate player 2D rotation
+        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        Quaternion targetRot2D = GetPathRotation();
+
+        if (mode3D)
+            Rotation3D(targetAngle3D, direction);
+        else
+            targetRot2D = Rotation2D(targetRot2D, direction);
+
+
+        if (disableMovement)
+            return;
+
+        // If player is moving
+        if (direction.magnitude > 0.01f)
         {
-            // Calculate player 3D rotation
-            float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
-
-            // Calculate player 2D rotation
-            distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
-            Quaternion targetRot2D = GetPathRotation();
-
-            maxSpeed = isFox ? foxSpeed : humanSpeed;
-
-            // If player is moving
-            if (direction.magnitude > 0.01f)
+            #region Reached end of path
+            if (direction.x < 0f)
             {
-                if (mode3D)
-                    Rotation3D(targetAngle3D, direction);
-                else
-                    targetRot2D = Rotation2D(targetRot2D, direction);
-
-                #region Reached end of path
-                if (direction.x < 0f)
+                if (distanceOnPath <= 0)
                 {
-                    if (distanceOnPath <= 0)
-                    {
-                        maxSpeed = 0f;
-                    }
+                    maxSpeed = 0f;
                 }
-                else if (direction.x > 0f)
+            }
+            else if (direction.x > 0f)
+            {
+                if (distanceOnPath >= pathCreator.path.length)
                 {
-                    if (distanceOnPath >= pathCreator.path.length)
-                    {
-                        maxSpeed = 0f;
-                    }
+                    maxSpeed = 0f;
                 }
-                #endregion
-
-                // Acceleration
-                currentSpeed += accelRatePerSec * Time.deltaTime;
-                currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
-
-                if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running"))
-                    currentSpeed = humanRunSpeed;
-
-                capsuleCollider.material = null;
             }
-            else
-            {
-                // Deceleration
-                currentSpeed += decelRatePerSec * Time.deltaTime;
-                currentSpeed = Mathf.Max(currentSpeed, 0);
-
-                capsuleCollider.material = friction;
-            }
-
-            #region Calculate Velocity
-
-            // Where we want to player to face/walk towards
-            Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
-
-            // Rotation Debug Line for path
-            //Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
-
-            
-            if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
-            {
-                // Player is moving diagonally
-                targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed / REDUCE_SPEED;
-            }
-            else if (targetVelocity.magnitude > 0f)
-            {
-                // Player currently apply input
-                targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed;
-            }
-            else
-            {
-                // No input
-                targetVelocity = previousRotation * Vector3.forward * currentSpeed;
-            }
-
-            Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-            // Apply a force that attempts to reach our target velocity
-            Vector3 velocity = rbVelocity;
-            Vector3 velocityChange = (targetVelocity - velocity);
-            velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-            velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-            velocityChange.y = 0;
-
-            rb.AddForce(velocityChange, ForceMode.VelocityChange);
-
             #endregion
 
-            if (!mode3D)
+            // Acceleration
+            currentSpeed += accelRatePerSec * Time.deltaTime;
+            currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
+
+            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || isRunning)
             {
-                #region Adjust Player on Path
-
-                Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
-                //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
-
-                // Distance between path and player
-                float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
-
-                // Direction from path towards player
-                Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
-                Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
-
-                // Keeps player on the path
-                if (distance > maxDistancePath)
-                {
-                    Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
-                    rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
-                }
-
-                #endregion
+                currentSpeed = humanRunSpeed;
+                isRunning = true;
             }
 
-            StepClimb(desiredDir); // After movement
+            if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Land"))
+            {
+                isRunning = false;
+            }
+
+            capsuleCollider.material = null;
+        }
+        else
+        {
+            // Deceleration
+            currentSpeed += decelRatePerSec * Time.deltaTime;
+            currentSpeed = Mathf.Max(currentSpeed, 0);
+
+            capsuleCollider.material = friction;
+
+            isRunning = false;
         }
 
-        
+        animController.SetFloat("ForwardSpeed", currentSpeed);
+
+        #region Calculate Velocity
+
+        // Where we want to player to face/walk towards
+        Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
+
+        // Rotation Debug Line for path
+        //Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
+
+
+        if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
+        {
+            // Player is moving diagonally
+            targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed / REDUCE_SPEED;
+        }
+        else if (targetVelocity.magnitude > 0f)
+        {
+            // Player currently apply input
+            targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed;
+        }
+        else
+        {
+            // No input
+            targetVelocity = previousRotation * Vector3.forward * currentSpeed;
+        }
+
+        Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        // Apply a force that attempts to reach our target velocity
+        Vector3 velocity = rbVelocity;
+        Vector3 velocityChange = (targetVelocity - velocity);
+        velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+        velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+        velocityChange.y = 0;
+
+        rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+        #endregion
+
+        if (isGrounded)
+            //StepClimb(desiredDir); // After movement
+
+        if (!mode3D)
+        {
+            AdjustPlayerOnPath();
+        }
+
     }
 
     void Jump()
@@ -526,10 +701,16 @@ public class PlayerMovement : MonoBehaviour
 
         #region Coyote and Jump Buffer Timers
 
+        if (jumpCounter <= 0f)
+        {
+            animController.SetBool("Jump", false);
+        }
+
         // Coyote Time
         if (isGrounded && jumpCounter <= 0f)
         {
             canDoubleJump = true;
+            
 
             jumpCoyoteCounter = jumpCoyoteTime;
         }
@@ -553,6 +734,9 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
+        if (isDashing || isLanding)
+            return;
+
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
         {
@@ -571,7 +755,7 @@ public class PlayerMovement : MonoBehaviour
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
-            animController.SetTrigger("Jump");
+            animController.SetBool("Jump", true);
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
@@ -613,47 +797,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void StepClimb(Vector3 direction)
-    {
-        if (!animController.GetBool("isMoving"))
-            return;
-
-        if (stepDebug)
-        {
-            Debug.DrawRay(stepRayLower.transform.position, direction * stepRayLowerDistance, Color.red);
-
-            Debug.DrawRay(stepRayUpper.transform.position, direction * stepRayUpperDistance, Color.blue);
-        }
-
-        // Forward
-        if (Physics.Raycast(stepRayLower.transform.position, direction, stepRayLowerDistance, ~ignorePlayerMask))
-        {
-            if (!Physics.Raycast(stepRayUpper.transform.position, direction, stepRayUpperDistance, ~ignorePlayerMask))
-            {
-                rb.position += new Vector3(0f, stepSmooth * Time.deltaTime, 0f);
-
-                //Vector3 velocityY = new Vector3(0f, rb.velocity.y, 0f);
-
-                //// Apply a force that attempts to reach our target velocity
-                //Vector3 velocity = velocityY;
-                //Vector3 velocityChange = (targetVelocity - velocity);
-                //velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-                //velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-                //velocityChange.y = 0;
-
-                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-                Vector3 velocity = new Vector3(0f, stepSmooth, 0f);
-
-                rb.AddForce(velocity);
-            }
-        }
-    }
-
-    #endregion
-
-    #region Dash
-
     void DashInput()
     {
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Dash"))
@@ -668,34 +811,41 @@ public class PlayerMovement : MonoBehaviour
         {
             if (isDashing)
             {
+                animController.SetBool("Dash", false);
                 isDashing = false;
-                disableMovement = false;
-                disableDashing = false;
-                currentSpeed = 0f;
             }
 
-            if (!isFox && currentStamina >= staminaConsumption || isFox)
+            if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded)
             {
-                // Dash input
-                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableDashing && isGrounded)
-                {
-                    //If player is moving left or right
-                    if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-                    {
-                        animController.SetTrigger("Dash");
-                        disableMovement = true;
-                        disableDashing = true;
+                return;
+            }
 
-                        bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
-                        StartCoroutine(Dash(isFacingRight));
-                    }
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                animController.SetBool("Dash", true);
+                disableMovement = true;
+                disableDashing = true;
+                disableInputRotations = true;
+                animController.speed = 1f;
+
+                
+                if (prevInputDirection.x < 0.1f)
+                {
+                    StartCoroutine(Dash(false));
+                }
+                else
+                {
+                    StartCoroutine(Dash(true));
                 }
             }
         }
     }
 
-    IEnumerator Dash(bool isFacingRight)
+    IEnumerator Dash(bool usePathRotation)
     {
+        currentSpeed = humanRunSpeed;
+        animController.SetFloat("ForwardSpeed", currentSpeed);
+
         if (!isFox)
         {
             // Stamina
@@ -704,7 +854,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
         disableMovement = true;
-        //disableGravity = true;
 
         // Set Y velocity to 0
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
@@ -720,12 +869,14 @@ public class PlayerMovement : MonoBehaviour
 
         while (currentDashTime > 0f)
         {
+            Debug.Log("dashing");
+
             currentDashTime -= Time.deltaTime;
 
             #region Rotation
 
             Quaternion targetRot = GetPathRotation();
-            if (isFacingRight)
+            if (usePathRotation)
             {
                 distanceOnPath += speed * Time.deltaTime;
             }
@@ -764,9 +915,37 @@ public class PlayerMovement : MonoBehaviour
         }
 
         disableMovement = false;
-        disableGravity = false;
+        disableDashing = false;
+        disableInputRotations = false;
+        animController.SetBool("isSprinting", true);
+    }
 
-        
+    void StepClimb(Vector3 direction)
+    {
+        if (!animController.GetBool("isMoving"))
+            return;
+
+        if (stepDebug)
+        {
+            Debug.DrawRay(stepRayLower.transform.position, direction * stepRayLowerDistance, Color.red);
+
+            Debug.DrawRay(stepRayUpper.transform.position, direction * stepRayUpperDistance, Color.blue);
+        }
+
+        // Forward
+        if (Physics.Raycast(stepRayLower.transform.position, direction, stepRayLowerDistance, ~ignorePlayerMask))
+        {
+            if (!Physics.Raycast(stepRayUpper.transform.position, direction, stepRayUpperDistance, ~ignorePlayerMask))
+            {
+                rb.position += new Vector3(0f, stepSmooth * Time.deltaTime, 0f);
+
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+                Vector3 velocity = new Vector3(0f, stepSmooth, 0f);
+
+                rb.AddForce(velocity);
+            }
+        }
     }
 
     #endregion
@@ -808,7 +987,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(centerPos, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, Quaternion.identity, ~ignorePlayerMask);
 
         RaycastHit hit;
         if(Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
@@ -833,6 +1012,8 @@ public class PlayerMovement : MonoBehaviour
         if(transform.position.y - newGroundY <= 1 && rb.velocity.y <= 1f)
         {
             animController.SetBool("BeforeGrounded", true);
+
+            animController.SetFloat("verticalVelocity", rb.velocity.y);
         }
         else
         {
@@ -968,9 +1149,15 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
+                disableInputRotations = true;
                 isAttacking = true;
-                animController.applyRootMotion = true;
                 currentSpeed = 0f;
+            }
+
+            // Move after attacking
+            if (animController.IsInTransition(0) && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f)
+            {
+                disableMovement = false;
             }
 
         }
@@ -979,21 +1166,15 @@ public class PlayerMovement : MonoBehaviour
             if (isAttacking)
             {
                 disableMovement = false;
+                disableInputRotations = false;
                 isAttacking = false;
                 comboCounter = 0;
-                animController.applyRootMotion = false;
 
                 animController.SetBool("Attack1", false);
                 animController.SetBool("Attack2", false);
                 animController.SetBool("Attack3", false);
             }
         }
-
-        if (animController.GetAnimatorTransitionInfo(0).IsUserName("AttackTransition"))
-        {
-            Debug.Log("true");
-        }
-
 
         // End animation combo
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
@@ -1002,34 +1183,30 @@ public class PlayerMovement : MonoBehaviour
             {
                 animController.SetBool("Attack1", false);
                 disableMovement = false;
+                disableInputRotations = false;
                 comboCounter = 0;
             }
         }
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2") && !animController.IsInTransition(0))
         {
-            if (!animController.IsInTransition(0))
-            {
-                animController.SetBool("Attack2", false);
-                disableMovement = false;
-                comboCounter = 0;
-            }
+            animController.SetBool("Attack2", false);
+            disableMovement = false;
+            comboCounter = 0;
         }
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3"))
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3") && !animController.IsInTransition(0))
         {
-            if (!animController.IsInTransition(0))
-            {
-                animController.SetBool("Attack3", false);
-                disableMovement = false;
-                comboCounter = 0;
-            }
+            animController.SetBool("Attack3", false);
+            disableMovement = false;
+            comboCounter = 0;
         }
 
         // Cooldown to click again
         if (currentAttackCooldown <= 0f)
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded)
             {
                 OnClick();
+                Debug.Log("Click");
             }
         }
 
@@ -1039,15 +1216,23 @@ public class PlayerMovement : MonoBehaviour
 
     void OnClick()
     {
+        if (comboCounter == 0)
+        {
+            disableInputRotations = true;
+            isAttacking = true;
+        }
+
+        animController.speed = 1f;
+
         // Set time
         currentAttackCooldown = attackCooldown;
 
         // Increase combo count
         comboCounter++;
         // Clamp combo
-        comboCounter = Mathf.Clamp(comboCounter, 0, 3);
+        comboCounter = Mathf.Clamp(comboCounter, 0, 1);
 
-        if (comboCounter == 1)
+        if (comboCounter == 1 && !animController.GetBool("Attack1"))
         {
             animController.SetTrigger("Attack");
             animController.SetBool("Attack1", true);
@@ -1147,50 +1332,5 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
-    private void OnDrawGizmos()
-    {
-        // Spawn player position
-        if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
-        {
-            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
-            spawnPosition.y += spawnYOffset;
-
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawSphere(spawnPosition, 0.5f);
-        }
-
-        // Player ground check
-        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(point, groundCheckSize);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimbWall = true;
-        }
-
-        if (other.CompareTag("Hitbox"))
-        {
-            EnemyNavigation enemyNav = other.GetComponentInParent<EnemyNavigation>();
-            Vector3 enemyPos = enemyNav.transform.position;
-
-            // Get dir from AI to player
-            Vector3 facingDir = (other.ClosestPointOnBounds(transform.position) - enemyPos).IgnoreYAxis();
-            Vector3 dir = enemyNav.CalculatePathFacingDir(enemyPos, facingDir);
-
-            TakeDamage(dir);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimbWall = false;
-        }
-    }
+    
 }
