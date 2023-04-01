@@ -45,6 +45,17 @@ public class PlayerMovement : MonoBehaviour
     private bool disableUpdateRotations = false;
     private bool disableInputRotations = false;
 
+    [Header("Sneaking")]
+    [SerializeField] float sneakSpeed = 2f;
+    [SerializeField] Vector3 sneakCheckOffset;
+    [SerializeField] Vector3 sneakCheckSize;
+    private bool canUnsneak = true;
+    private bool isSneaking
+    {
+        get { return animController.GetBool("isSneaking"); }
+        set { animController.SetBool("isSneaking", value); }
+    }
+
     [Header("Jump")]
     public float humanJumpHeight = 5f;
     [SerializeField] float jumpRollVelocity = -5f;
@@ -201,7 +212,9 @@ public class PlayerMovement : MonoBehaviour
     // References
     Rigidbody rb;
     Animator animController;
-    CapsuleCollider capsuleCollider;
+    CapsuleCollider tallCollider;
+    CapsuleCollider shortCollider;
+    BoxCollider boxCollider;
 
     // Debug
     float currentMaxHeight = 0f;
@@ -216,7 +229,12 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
-        capsuleCollider = GetComponent<CapsuleCollider>();
+        boxCollider = GetComponent<BoxCollider>();
+
+        CapsuleCollider[] colliderArr = GetComponentsInChildren<CapsuleCollider>();
+        tallCollider = colliderArr[0];
+        shortCollider = colliderArr[1];
+
 
         currentStamina = maxStamina;
 
@@ -247,7 +265,6 @@ public class PlayerMovement : MonoBehaviour
         {
             currentMaxHeight = transform.position.y;
         }
-
 
         VirtualCamUpdate();
         GroundCheck();
@@ -310,7 +327,7 @@ public class PlayerMovement : MonoBehaviour
             isLanding = true;
             disableMovement = true;
             disableInputRotations = true;
-            capsuleCollider.material = null;
+            tallCollider.material = null;
         }
         if (isLanding)
         {
@@ -330,7 +347,7 @@ public class PlayerMovement : MonoBehaviour
                 isLanding = false;
                 disableMovement = false;
                 disableInputRotations = false;
-                capsuleCollider.material = friction;
+                tallCollider.material = friction;
             }
         }
     }
@@ -352,6 +369,11 @@ public class PlayerMovement : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(point, groundCheckSize);
+
+        // Player head check
+        Vector3 centerPos = new Vector3(transform.position.x + sneakCheckOffset.x, transform.position.y + sneakCheckOffset.y, transform.position.z + sneakCheckOffset.z) + Vector3.up;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(centerPos, sneakCheckSize);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -432,7 +454,10 @@ public class PlayerMovement : MonoBehaviour
 
         // Is player currently in jogging state
         if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
+        {
+            animController.speed = 1f;
             return;
+        }
 
         // Start acceleration when entering state
         if (!isAccel && !isDecel)
@@ -445,9 +470,7 @@ public class PlayerMovement : MonoBehaviour
             animController.speed = animJogSpeed;
         }
 
-        // If not moving, reset anim speed
-        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
-            animController.speed = 1f;
+        
 
         #endregion
     }
@@ -471,6 +494,8 @@ public class PlayerMovement : MonoBehaviour
         if (isDecel)
             animController.SetBool("isMoving", false);
     }
+
+    #region Rotation
 
     void Rotation3D(float targetAngle3D, Vector3 direction)
     {
@@ -532,6 +557,8 @@ public class PlayerMovement : MonoBehaviour
         rb.MoveRotation(targetRotation);
     }
 
+    #endregion
+
     void AdjustPlayerOnPath()
     {
         Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
@@ -571,9 +598,13 @@ public class PlayerMovement : MonoBehaviour
 
 
         maxSpeed = isFox ? foxSpeed : humanSpeed;
+        
+        if (isSneaking)
+            maxSpeed = sneakSpeed;
 
         DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
 
+        #region Rotation
 
         // Calculate player 3D rotation
         float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
@@ -587,9 +618,12 @@ public class PlayerMovement : MonoBehaviour
         else
             targetRot2D = Rotation2D(targetRot2D, direction);
 
+        #endregion
 
         if (disableMovement)
             return;
+
+        #region Is player moving?
 
         // If player is moving
         if (direction.magnitude > 0.01f)
@@ -626,7 +660,8 @@ public class PlayerMovement : MonoBehaviour
                 isRunning = false;
             }
 
-            capsuleCollider.material = null;
+            tallCollider.material = null;
+            shortCollider.material = null;
         }
         else
         {
@@ -634,12 +669,17 @@ public class PlayerMovement : MonoBehaviour
             currentSpeed += decelRatePerSec * Time.deltaTime;
             currentSpeed = Mathf.Max(currentSpeed, 0);
 
-            capsuleCollider.material = friction;
+            tallCollider.material = friction;
+            shortCollider.material = friction;
 
             isRunning = false;
         }
 
         animController.SetFloat("ForwardSpeed", currentSpeed);
+
+        #endregion
+
+
 
         #region Calculate Velocity
 
@@ -734,7 +774,7 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isDashing || isLanding)
+        if (isDashing || isLanding || isSneaking)
             return;
 
         // Player jump input
@@ -815,7 +855,7 @@ public class PlayerMovement : MonoBehaviour
                 isDashing = false;
             }
 
-            if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded)
+            if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded || isSneaking)
             {
                 return;
             }
@@ -922,17 +962,26 @@ public class PlayerMovement : MonoBehaviour
 
     void Sneak()
     {
-        if (Input.GetKeyDown(KeyCode.C) && !animController.IsInTransition(0))
+        if (isSneaking)
         {
-            bool isSneaking = animController.GetBool("isSneaking");
+            Vector3 centerPos = new Vector3(transform.position.x + sneakCheckOffset.x, transform.position.y + sneakCheckOffset.y, transform.position.z + sneakCheckOffset.z) + Vector3.up;
 
-            if (isSneaking)
+            canUnsneak = !Physics.CheckBox(centerPos, sneakCheckSize / 2, Quaternion.identity, ~ignorePlayerMask);
+        }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (isSneaking && canUnsneak)
             {
-                animController.SetBool("isSneaking", false);
+                tallCollider.enabled = true;
+                shortCollider.enabled = false;
+                isSneaking = false;
             }
             else
             {
-                animController.SetBool("isSneaking", true);
+                tallCollider.enabled = false;
+                shortCollider.enabled = true;
+                isSneaking = true;
             }
         }
     }
@@ -1220,7 +1269,7 @@ public class PlayerMovement : MonoBehaviour
         // Cooldown to click again
         if (currentAttackCooldown <= 0f)
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded)
+            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded && !isSneaking)
             {
                 OnClick();
                 Debug.Log("Click");
