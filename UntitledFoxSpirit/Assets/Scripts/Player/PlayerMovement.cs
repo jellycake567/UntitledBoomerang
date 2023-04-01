@@ -185,7 +185,6 @@ public class PlayerMovement : MonoBehaviour
     private bool canClimbWall;
     private bool isHoldingJump = false;
     private Vector3 prevInputDirection;
-    
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -273,6 +272,7 @@ public class PlayerMovement : MonoBehaviour
             
             ChangeForm();
             LedgeClimb();
+            Sneak();
         }
 
 
@@ -410,7 +410,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            if (isDashing)
+            if (isDashing || animController.GetBool("isSneaking"))
             {
                 animController.SetBool("isMoving", false);
             }
@@ -918,6 +918,23 @@ public class PlayerMovement : MonoBehaviour
         disableDashing = false;
         disableInputRotations = false;
         animController.SetBool("isSprinting", true);
+    }
+
+    void Sneak()
+    {
+        if (Input.GetKeyDown(KeyCode.C) && !animController.IsInTransition(0))
+        {
+            bool isSneaking = animController.GetBool("isSneaking");
+
+            if (isSneaking)
+            {
+                animController.SetBool("isSneaking", false);
+            }
+            else
+            {
+                animController.SetBool("isSneaking", true);
+            }
+        }
     }
 
     void StepClimb(Vector3 direction)
