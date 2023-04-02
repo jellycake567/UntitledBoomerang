@@ -1211,6 +1211,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    // Parry not being used atm
     void Parry()
     {
         if (isDashing || isSneaking || !isGrounded || isAttacking)
