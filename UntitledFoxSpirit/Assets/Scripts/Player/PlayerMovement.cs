@@ -197,6 +197,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isHoldingJump = false;
     private Vector3 prevInputDirection;
 
+    private bool isParrying = false;
+
     // Ledge Climbing
     private bool isTouchingWall;
     private bool isTouchingLedge;
@@ -290,12 +292,13 @@ public class PlayerMovement : MonoBehaviour
             ChangeForm();
             LedgeClimb();
             Sneak();
+            
         }
 
 
         Jump();
-        
-        
+
+        //Parry();
         DashInput();
         Attack();
     }
@@ -581,6 +584,8 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Movement functions
+
     void Movement()
     {
         if (!mode3D)
@@ -774,7 +779,7 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isDashing || isLanding || isSneaking)
+        if (isDashing || isLanding || isSneaking || isParrying)
             return;
 
         // Player jump input
@@ -867,7 +872,6 @@ public class PlayerMovement : MonoBehaviour
                 disableDashing = true;
                 disableInputRotations = true;
                 animController.speed = 1f;
-
                 
                 if (prevInputDirection.x < 0.1f)
                 {
@@ -1013,6 +1017,8 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
+    #endregion
 
     #endregion
 
@@ -1202,6 +1208,39 @@ public class PlayerMovement : MonoBehaviour
 
             // Set stamina ui
             staminaBar.value = currentStamina / maxStamina;
+        }
+    }
+
+    void Parry()
+    {
+        if (isDashing || isSneaking || !isGrounded || isAttacking)
+            return;
+
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("Parry"))
+        {
+            if (!isParrying)
+                isParrying = true;
+        }
+        else
+        {
+            if (isParrying)
+            {
+                isParrying = false;
+                disableMovement = false;
+                disableInputRotations = false;
+                currentSpeed = 1f;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                animController.SetTrigger("Parry");
+                disableMovement = true;
+                rb.velocity = Vector3.zero;
+                disableInputRotations = true;
+                currentSpeed = 0f;
+                tallCollider.material = friction;
+                animController.SetBool("isMoving", false);
+            }
         }
     }
 
