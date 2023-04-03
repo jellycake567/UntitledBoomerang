@@ -966,6 +966,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Sneak()
     {
+        if (!isGrounded || isAttacking)
+            return;
+
         if (isSneaking)
         {
             Vector3 centerPos = new Vector3(transform.position.x + sneakCheckOffset.x, transform.position.y + sneakCheckOffset.y, transform.position.z + sneakCheckOffset.z) + Vector3.up;
