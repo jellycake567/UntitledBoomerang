@@ -82,6 +82,8 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ledge Climb")]
     public float wallCheckDistance = 3.0f;
+    public float ledgeHangDistanceOffset;
+    public float ledgeHangYOffset;
     public Transform wallCheck;
     public Transform ledgeCheck;
     public LayerMask groundLayer;
@@ -278,7 +280,6 @@ public class PlayerMovement : MonoBehaviour
         GroundCheck();
         Stamina();
         WallClimb();
-        ShowLedgeRaycast();
         CheckInvulnerableTime();
 
         if (Input.GetKey(KeyCode.Space)) //if space is held
@@ -797,6 +798,7 @@ public class PlayerMovement : MonoBehaviour
                 disableGravity = false;
                 disableInputRotations = false;
                 animController.SetBool("LedgeHang", true);
+                tallCollider.enabled = true;
             }
 
 
@@ -1416,30 +1418,57 @@ public class PlayerMovement : MonoBehaviour
                 disableGravity = false;
                 disableInputRotations = false;
                 animController.SetBool("LedgeHang", false);
+                tallCollider.enabled = true;
             }
 
-            if (rb.velocity.y < 0f)
+            if (rb.velocity.y >= 0f)
+                return;
+
+            // Raycasts
+            isTouchingLedge = Physics.Raycast(ledgeCheck.position, -prevInputDirection, wallCheckDistance, groundLayer);
+            isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
+
+            Vector3 ledgeCheckEndPoint = ledgeCheck.position + -prevInputDirection * wallCheckDistance;
+            
+
+            Debug.DrawRay(ledgeCheckEndPoint, Vector3.down * wallCheckDistance);
+            
+
+            RaycastHit verticalHit;
+            // Check if there is floor
+            if (Physics.Raycast(ledgeCheckEndPoint, Vector3.down, out verticalHit, wallCheckDistance, groundLayer))
             {
-                // Raycasts
-                isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
-                isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
+                Vector3 wallCheckPos = ledgeCheck.position;
+                wallCheckPos.y = verticalHit.point.y - 0.01f;
 
-                Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
+                Debug.DrawRay(wallCheckPos, -prevInputDirection * wallCheckDistance);
 
-                // Check if there is floor
-                if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
+                RaycastHit horizontalHit;
+                if (Physics.Raycast(wallCheckPos, -prevInputDirection, out horizontalHit, wallCheckDistance, groundLayer))
                 {
-                    if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
-                    {
-                        canClimbLedge = true;
-                        animController.SetBool("LedgeHang", true);
-                        rb.velocity = Vector3.zero;
-                        rb.useGravity = false;
-                        disableMovement = true;
-                        disableGravity = true;
-                        disableInputRotations = true;
-                    }
+                    if (canClimbLedge)
+                        return;
+
+                    canClimbLedge = true;
+                    animController.SetBool("LedgeHang", true);
+                    rb.velocity = Vector3.zero;
+                    rb.useGravity = false;
+                    disableMovement = true;
+                    disableGravity = true;
+                    disableInputRotations = true;
+                    tallCollider.enabled = false;
+
+                    Vector3 hangPos;
+                    hangPos = horizontalHit.point + -prevInputDirection * ledgeHangDistanceOffset;
+                    hangPos.y = verticalHit.point.y - ledgeHangYOffset;
+
+                    transform.position = hangPos;
+
+                    
+                    
                 }
+
+                
             }
         }
 
@@ -1463,12 +1492,6 @@ public class PlayerMovement : MonoBehaviour
             virtualCam3D.Priority = 0;
             virtualCam2D.Priority = 10;
         }
-    }
-
-    void ShowLedgeRaycast()
-    {
-        Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
-        Debug.DrawLine(ledgeCheck.position, ledgeCheck.position + transform.forward * wallCheckDistance);
     }
 
     Quaternion GetPathRotation()

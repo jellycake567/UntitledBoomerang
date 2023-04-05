@@ -77,6 +77,8 @@ public class PlayerMovementEditor : Editor
 
         // Wall Climb
         EditorGUILayout.PropertyField(serializedObject.FindProperty("wallCheckDistance"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeHangDistanceOffset"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeHangYOffset"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("wallCheck"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeCheck"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("groundLayer"));
