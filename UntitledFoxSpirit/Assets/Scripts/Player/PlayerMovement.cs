@@ -80,12 +80,13 @@ public class PlayerMovement : MonoBehaviour
     private float currentStaminaCooldown = 0f;
     private float currentStamina;
 
-    [Header("Wall Climb")]
+    [Header("Ledge Climb")]
     public float wallCheckDistance = 3.0f;
     public Transform wallCheck;
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
+    private bool isClimbing = false;
 
     #endregion
 
@@ -153,6 +154,11 @@ public class PlayerMovement : MonoBehaviour
     private float updateMaxHeight = 100000f;
     private float updateMaxHeight2 = 100000f;
     private bool disableGravity = false;
+    private bool beforeGrounded
+    {
+        get { return animController.GetBool("BeforeGrounded"); }
+        set { animController.SetBool("BeforeGrounded", value); }
+    }
 
     #endregion
 
@@ -290,12 +296,12 @@ public class PlayerMovement : MonoBehaviour
             // Player Input Functions
             
             ChangeForm();
-            LedgeClimb();
+            
             Sneak();
             
         }
 
-
+        LedgeClimb();
         Jump();
 
         //Parry();
@@ -305,15 +311,13 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!isWallClimbing && !canClimbLedge)
-        {
-            ApplyGravity();
-            Movement();
-        }
+        ApplyGravity();
+        Movement();
     }
 
     void OnAnimatorMove()
     {
+
         // Attacking root motion
         if (isAttacking && !disableDashing && !animController.IsInTransition(0))
         {
@@ -783,8 +787,19 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         // Player jump input
-        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
+        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || isClimbing && jumpBufferCounter > 0f)
         {
+            if (isClimbing)
+            {
+                canClimbLedge = false;
+                rb.useGravity = true;
+                disableMovement = false;
+                disableGravity = false;
+                disableInputRotations = false;
+                animController.SetBool("LedgeHang", true);
+            }
+
+
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
             // Calculate Velocity
@@ -1084,15 +1099,15 @@ public class PlayerMovement : MonoBehaviour
             animController.SetBool("Grounded", false);
         }
 
-        if(transform.position.y - newGroundY <= 1 && rb.velocity.y <= 1f)
+        if(transform.position.y - newGroundY <= 1 /*&& rb.velocity.y <= 1f*/)
         {
-            animController.SetBool("BeforeGrounded", true);
+            beforeGrounded = true;
 
             animController.SetFloat("verticalVelocity", rb.velocity.y);
         }
         else
         {
-            animController.SetBool("BeforeGrounded", false);
+            beforeGrounded = false;
         }
     }
 
@@ -1383,25 +1398,53 @@ public class PlayerMovement : MonoBehaviour
 
     void LedgeClimb()
     {
-        if (rb.velocity.y > 0f)
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Hang"))
         {
-            // Raycasts
-            isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
-            isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
-
-            Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
-
-            // Check if there is floor
-            if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
+            if (!isClimbing)
             {
-                if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
+                isClimbing = true;
+            }
+        }
+        else
+        {
+            if (isClimbing)
+            {
+                isClimbing = false;
+                canClimbLedge = false;
+                rb.useGravity = true;
+                disableMovement = false;
+                disableGravity = false;
+                disableInputRotations = false;
+                animController.SetBool("LedgeHang", false);
+            }
+
+            if (rb.velocity.y < 0f)
+            {
+                // Raycasts
+                isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
+                isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
+
+                Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
+
+                // Check if there is floor
+                if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
                 {
-                    canClimbLedge = true;
-                    climbAnim.Play();
-                    rb.velocity = Vector3.zero;
+                    if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
+                    {
+                        canClimbLedge = true;
+                        animController.SetBool("LedgeHang", true);
+                        rb.velocity = Vector3.zero;
+                        rb.useGravity = false;
+                        disableMovement = true;
+                        disableGravity = true;
+                        disableInputRotations = true;
+                    }
                 }
             }
         }
+
+
+        
     }
 
     #endregion
