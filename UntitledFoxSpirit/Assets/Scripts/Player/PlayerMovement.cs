@@ -198,6 +198,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isHoldingJump = false;
     private Vector3 prevInputDirection;
 
+    private bool isHeavyLand = false;
+
     private bool isParrying = false;
 
     // Ledge Climbing
@@ -274,6 +276,7 @@ public class PlayerMovement : MonoBehaviour
         Stamina();
         WallClimb();
         CheckInvulnerableTime();
+        HardLand();
 
         if (Input.GetKey(KeyCode.Space)) //if space is held
         {
@@ -1008,6 +1011,34 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void HardLand()
+    {
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("HardLanding"))
+        {
+            if (!isHeavyLand)
+            {
+                isHeavyLand = true;
+                disableMovement = true;
+                disableInputRotations = true;
+            }
+
+            if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
+            {
+                disableMovement = false;
+                disableInputRotations = false;
+            }
+        }
+        else
+        {
+            if (isHeavyLand)
+            {
+                isHeavyLand = false;
+                disableMovement = false;
+                disableInputRotations = false;
+            }
+        }
+    }
+
     void StepClimb(Vector3 direction)
     {
         if (!animController.GetBool("isMoving"))
@@ -1101,8 +1132,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (rb.velocity.y <= jumpRollVelocity)
         {
-            animController.SetTrigger("LandRoll");
-            isLandRolling = true;
+            animController.SetTrigger("HeavyLand");
+
+            if (animController.GetBool("isMoving"))
+                isLandRolling = true;
         }
     }
 
