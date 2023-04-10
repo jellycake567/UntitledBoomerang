@@ -3518,7 +3518,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 789881456}
-  m_LocalRotation: {x: 0.17067231, y: -0.000000016953926, z: 0.0000000029366534, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067231, y: 0.000000016953926, z: -0.0000000029366534, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -4069,7 +4069,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 988442858}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.5976954, y: 0, z: -0.04}
+  m_LocalPosition: {x: 7.5976954, y: 0, z: 5.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -4459,6 +4459,8 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
+  slopeAngle: 10
+  test: {x: 0, y: 0, z: 0}
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
@@ -10061,7 +10063,7 @@ MonoBehaviour:
   sneakCheckOffset: {x: 0, y: 0, z: 0}
   sneakCheckSize: {x: 0.5, y: 0.5, z: 0.5}
   humanJumpHeight: 8
-  jumpRollVelocity: -10
+  jumpRollVelocity: -15
   rootMotionJumpRollSpeed: 2.5
   humanDashTime: 0.5
   humanDashDistance: 6
@@ -10070,8 +10072,8 @@ MonoBehaviour:
   staminaCooldown: 1
   maxStamina: 100
   wallCheckDistance: 0.5
-  ledgeHangDistanceOffset: 1
-  ledgeHangYOffset: 1
+  ledgeHangDistanceOffset: 0.03
+  ledgeHangYOffset: 1.42
   wallCheck: {fileID: 520262945}
   ledgeCheck: {fileID: 1595975723}
   groundLayer:
@@ -10082,6 +10084,8 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
+  slopeAngle: 140
+  test: {x: 0, y: 0, z: 0}
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
@@ -10161,7 +10165,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 112
+  m_Constraints: 120
   m_CollisionDetection: 1
 --- !u!136 &919132148925683453
 CapsuleCollider:

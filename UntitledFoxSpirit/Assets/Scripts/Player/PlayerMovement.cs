@@ -2,9 +2,6 @@ using Cinemachine;
 using PathCreation;
 using System;
 using System.Collections;
-using System.Reflection;
-using UnityEditor.Animations;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -61,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float jumpRollVelocity = -5f;
     [SerializeField] float rootMotionJumpRollSpeed = 2f;
     private bool isLanding = false;
+    private bool isLandRolling = false;
 
     [Header("Dash")]
     public float humanDashTime = 5.0f;
@@ -156,11 +154,6 @@ public class PlayerMovement : MonoBehaviour
     private float updateMaxHeight = 100000f;
     private float updateMaxHeight2 = 100000f;
     private bool disableGravity = false;
-    private bool beforeGrounded
-    {
-        get { return animController.GetBool("BeforeGrounded"); }
-        set { animController.SetBool("BeforeGrounded", value); }
-    }
 
     #endregion
 
@@ -318,7 +311,6 @@ public class PlayerMovement : MonoBehaviour
 
     void OnAnimatorMove()
     {
-
         // Attacking root motion
         if (isAttacking && !disableDashing && !animController.IsInTransition(0))
         {
@@ -330,7 +322,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump Roll root motion
-        if (rb.velocity.y < jumpRollVelocity && animController.GetBool("BeforeGrounded") && !isLanding)
+        if (isLandRolling && animController.GetBool("Grounded") && !isLanding)
         {
             isLanding = true;
             disableMovement = true;
@@ -341,7 +333,7 @@ public class PlayerMovement : MonoBehaviour
         {
             AnimatorStateInfo jumpRollState = animController.GetCurrentAnimatorStateInfo(0);
 
-            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("BeforeGrounded") && animController.IsInTransition(0))
+            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("Grounded") && animController.IsInTransition(0))
             {
                 float y = rb.velocity.y;
 
@@ -356,6 +348,7 @@ public class PlayerMovement : MonoBehaviour
                 disableMovement = false;
                 disableInputRotations = false;
                 tallCollider.material = friction;
+                isLandRolling = false;
             }
         }
     }
@@ -659,7 +652,10 @@ public class PlayerMovement : MonoBehaviour
             currentSpeed += accelRatePerSec * Time.deltaTime;
             currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
 
-            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || isRunning)
+            tallCollider.material = null;
+            shortCollider.material = null;
+
+            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || isRunning || isDashing)
             {
                 currentSpeed = humanRunSpeed;
                 isRunning = true;
@@ -669,9 +665,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 isRunning = false;
             }
-
-            tallCollider.material = null;
-            shortCollider.material = null;
         }
         else
         {
@@ -729,8 +722,8 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isGrounded)
-            //StepClimb(desiredDir); // After movement
+        //if (isGrounded)
+        //  StepClimb(desiredDir); // After movement
 
         if (!mode3D)
         {
@@ -784,7 +777,7 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isDashing || isLanding || isSneaking || isParrying)
+        if (isLanding || isSneaking || isParrying)
             return;
 
         // Player jump input
@@ -828,7 +821,7 @@ public class PlayerMovement : MonoBehaviour
             }
 
         } //2nd jump
-        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded && !animController.GetBool("BeforeGrounded"))
+        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
         {
             //doubleJumpHeight = humanJumpHeight / 3;//the three is a magic number 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
@@ -930,6 +923,9 @@ public class PlayerMovement : MonoBehaviour
 
         while (currentDashTime > 0f)
         {
+            if (!isGrounded)
+                break;
+
             Debug.Log("dashing");
 
             currentDashTime -= Time.deltaTime;
@@ -978,7 +974,9 @@ public class PlayerMovement : MonoBehaviour
         disableMovement = false;
         disableDashing = false;
         disableInputRotations = false;
-        animController.SetBool("isSprinting", true);
+        
+        if (isGrounded)
+            animController.SetBool("isSprinting", true);
     }
 
     void Sneak()
@@ -1101,15 +1099,10 @@ public class PlayerMovement : MonoBehaviour
             animController.SetBool("Grounded", false);
         }
 
-        if(transform.position.y - newGroundY <= 1 /*&& rb.velocity.y <= 1f*/)
+        if (rb.velocity.y <= jumpRollVelocity)
         {
-            beforeGrounded = true;
-
-            animController.SetFloat("verticalVelocity", rb.velocity.y);
-        }
-        else
-        {
-            beforeGrounded = false;
+            animController.SetTrigger("LandRoll");
+            isLandRolling = true;
         }
     }
 
