@@ -11,20 +11,26 @@ public class EnemyHuman : MonoBehaviour
     float decisionTimer = 0;
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
-    
+
+    float distFromPlayer = 0;
     int optionCount = 0;
     int choice = 0;
     float moveSpeed = 5f;
     Rigidbody rb;
     public float speed;
+    Animator animControl;
+    Animator bodyAnimControl;
+    public GameObject weapon;
+    public GameObject bodyAnimObj;
+    
 
-    NavMeshAgent agent;
+    NavMeshAgent navAgent;
 
     public enum State
     {
         Standing,
         Wander,
-        Attack
+        Combat
     }
 
     public State AIState;
@@ -34,7 +40,11 @@ public class EnemyHuman : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        agent = GetComponent<NavMeshAgent>();
+        navAgent = GetComponent<NavMeshAgent>();
+        animControl = weapon.GetComponent<Animator>();
+        bodyAnimControl = bodyAnimObj.GetComponent<Animator>();
+        
+
     }
 
 
@@ -60,15 +70,17 @@ public class EnemyHuman : MonoBehaviour
         if (AIState == State.Standing)
         {
             decisionTimer -= Time.deltaTime;
+            bodyAnimControl.SetTrigger("standingTrig");
             Standing();
         }
-        else if (AIState == State.Attack)
+        else if (AIState == State.Combat)
         {
             Attack();
         }
         else if (AIState == State.Wander)
         {
             decisionTimer -= Time.deltaTime;
+            bodyAnimControl.SetTrigger("wanderTrig");
             Wander();
         }
         
@@ -113,6 +125,7 @@ public class EnemyHuman : MonoBehaviour
     {
         rb.velocity = Vector3.zero;
         playerPos = GM.playerPos;
+        distFromPlayer = Vector3.Distance(transform.position, playerPos);
         Vector3 dirToPlayer = (playerPos - transform.position).normalized;
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
 
@@ -121,12 +134,20 @@ public class EnemyHuman : MonoBehaviour
             Flip();
         }
 
-        agent.destination = playerPos;
+        navAgent.destination = playerPos;
+        bodyAnimControl.SetTrigger("chaseTrig");
         //Debug.Log("agent destination: " + agent.destination);
         //move towards player using force
         //Move(dirToPlayer);
 
-
+        //Debug.Log(distFromPlayer);
+        //attack the player when within range
+        if (distFromPlayer < navAgent.stoppingDistance)
+        {           
+            
+            
+        }
+      
 
     }
     void Wander()
@@ -136,7 +157,7 @@ public class EnemyHuman : MonoBehaviour
             //move
             //optionCount = 2;
             choice = decideRandomly(optionCount);
-            Debug.Log(choice);
+            //Debug.Log(choice);
 
             if (choice == 0)
             {
@@ -176,26 +197,20 @@ public class EnemyHuman : MonoBehaviour
     void FindPlayer()
     {
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward,out hit, detectionLength))
+        if (Physics.SphereCast(transform.position, 5, transform.forward,out hit, detectionLength))
         {
             if (hit.collider.gameObject.CompareTag("Player"))
             {
                 //Player detected
                 Debug.Log("Detected");
-                AIState = State.Attack;
+                AIState = State.Combat;
             }
-       
+            
         }
         
         Debug.DrawRay(transform.position, transform.forward * detectionLength, Color.red);
     }
 
-    IEnumerator DecisionTimerCountdown()
-    {
-
-
-        yield return 1;
-    }
 
     void Flip()
     {
@@ -218,6 +233,10 @@ public class EnemyHuman : MonoBehaviour
         //Gizmos.DrawLine(transform.position, transform.position + transform.forward * detectionLength);
 
     }
+
+
+
+ 
 }
 
 
