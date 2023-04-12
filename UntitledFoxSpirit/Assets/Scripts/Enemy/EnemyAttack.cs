@@ -19,6 +19,9 @@ public class EnemyAttack : MonoBehaviour
 
     Animation attackAnimation;
     Animator animControl;
+
+    public GameObject[] hardpointObjs;
+
     // ## A list of hardPoints will be referred to a singular hardPoint ##
 
     // Show Debug Lines 
@@ -74,13 +77,13 @@ public class EnemyAttack : MonoBehaviour
         if (attackDetected)
         {
             #region Get HardPoints in weapon
-
+            
             List<Vector3> hardPoints = new List<Vector3>();
-
+            
             // Get children(hardPoint) position of the weapon
-            for (int i = 0; i < transform.childCount; i++)
+            for (int i = 0; i < hardpointObjs.Length; i++)
             {
-                hardPoints.Add(transform.GetChild(i).position);
+                hardPoints.Add(hardpointObjs[i].transform.position);
             }
 
             #endregion
