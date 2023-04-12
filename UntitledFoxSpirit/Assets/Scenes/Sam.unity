@@ -4459,8 +4459,6 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
-  slopeAngle: 10
-  test: {x: 0, y: 0, z: 0}
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
@@ -10084,8 +10082,6 @@ MonoBehaviour:
   foxJumpHeight: 5
   foxDashTime: 0.3
   foxDashDistance: 4
-  slopeAngle: 140
-  test: {x: 0, y: 0, z: 0}
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10

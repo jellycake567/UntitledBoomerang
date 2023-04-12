@@ -59,6 +59,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float rootMotionJumpRollSpeed = 2f;
     private bool isLanding = false;
     private bool isLandRolling = false;
+    private bool disableJumping = false;
 
     [Header("Dash")]
     public float humanDashTime = 5.0f;
@@ -349,6 +350,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 isLanding = false;
                 disableMovement = false;
+                disableJumping = false;
                 disableInputRotations = false;
                 tallCollider.material = friction;
                 isLandRolling = false;
@@ -780,7 +782,7 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isLanding || isSneaking || isParrying)
+        if (isLanding || isSneaking || isParrying || disableJumping && canDoubleJump)
             return;
 
         // Player jump input
@@ -984,7 +986,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Sneak()
     {
-        if (!isGrounded || isAttacking)
+        if (!isGrounded || isAttacking || disableJumping /* TODO: make own bool for sneaking*/)
             return;
 
         if (isSneaking)
@@ -1013,6 +1015,18 @@ public class PlayerMovement : MonoBehaviour
 
     void HardLand()
     {
+        if (rb.velocity.y <= jumpRollVelocity)
+        {
+            disableJumping = true;
+
+            animController.SetTrigger("HeavyLand");
+
+            if (animController.GetBool("isMoving"))
+                isLandRolling = true;
+        }
+        
+        
+
         if (animController.GetCurrentAnimatorStateInfo(0).IsName("HardLanding"))
         {
             if (!isHeavyLand)
@@ -1020,12 +1034,14 @@ public class PlayerMovement : MonoBehaviour
                 isHeavyLand = true;
                 disableMovement = true;
                 disableInputRotations = true;
+                tallCollider.material = friction;
             }
 
             if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
             {
                 disableMovement = false;
                 disableInputRotations = false;
+                disableJumping = false;
             }
         }
         else
@@ -1035,6 +1051,12 @@ public class PlayerMovement : MonoBehaviour
                 isHeavyLand = false;
                 disableMovement = false;
                 disableInputRotations = false;
+                disableJumping = false;
+            }
+
+            if (animController.GetAnimatorTransitionInfo(0).IsName("Landing"))
+            {
+                Debug.Log("test");
             }
         }
     }
@@ -1128,14 +1150,6 @@ public class PlayerMovement : MonoBehaviour
         {
             isGrounded = false;
             animController.SetBool("Grounded", false);
-        }
-
-        if (rb.velocity.y <= jumpRollVelocity)
-        {
-            animController.SetTrigger("HeavyLand");
-
-            if (animController.GetBool("isMoving"))
-                isLandRolling = true;
         }
     }
 
@@ -1447,7 +1461,7 @@ public class PlayerMovement : MonoBehaviour
                 tallCollider.enabled = true;
             }
 
-            if (rb.velocity.y >= 0f)
+            if (rb.velocity.y >= 0f || isGrounded)
                 return;
 
             // Raycasts
