@@ -305,6 +305,8 @@ public class PlayerMovement : MonoBehaviour
         //Parry();
         DashInput();
         Attack();
+
+        RigidbodyContraints();
     }
 
     void FixedUpdate()
@@ -515,7 +517,7 @@ public class PlayerMovement : MonoBehaviour
         if (disableUpdateRotations)
             return targetRot2D;
 
-        // Flipping player
+        // Flipping direction
         if (prevInputDirection.x < 0f)
         {
             Vector3 rot = targetRot2D.eulerAngles;
@@ -583,6 +585,14 @@ public class PlayerMovement : MonoBehaviour
             Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
             rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
         }
+    }
+
+    void RigidbodyContraints()
+    {
+        Vector3 localVelocity = transform.InverseTransformDirection(rb.velocity);
+        localVelocity.z = 0f;
+
+        rb.velocity = transform.TransformDirection(localVelocity);
     }
 
     #endregion
@@ -875,7 +885,7 @@ public class PlayerMovement : MonoBehaviour
                 isDashing = false;
             }
 
-            if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded || isSneaking)
+            if (!isFox && currentStamina < staminaConsumption || isFox || !disableDashing && !isGrounded || isSneaking)
             {
                 return;
             }
@@ -929,7 +939,7 @@ public class PlayerMovement : MonoBehaviour
         while (currentDashTime > 0f)
         {
             if (!isGrounded)
-                break;
+                //break;
 
             Debug.Log("dashing");
 
@@ -1025,7 +1035,6 @@ public class PlayerMovement : MonoBehaviour
                 isLandRolling = true;
         }
         
-        
 
         if (animController.GetCurrentAnimatorStateInfo(0).IsName("HardLanding"))
         {
@@ -1052,11 +1061,6 @@ public class PlayerMovement : MonoBehaviour
                 disableMovement = false;
                 disableInputRotations = false;
                 disableJumping = false;
-            }
-
-            if (animController.GetAnimatorTransitionInfo(0).IsName("Landing"))
-            {
-                Debug.Log("test");
             }
         }
     }
