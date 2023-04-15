@@ -1690,7 +1690,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &168939654
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1733,7 +1733,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 168939653}
-  m_LocalRotation: {x: 0.04081324, y: 0.40650365, z: -0.018180504, w: 0.91255605}
+  m_LocalRotation: {x: 0.04081324, y: 0.40650365, z: -0.018180506, w: 0.91255605}
   m_LocalPosition: {x: -21.190002, y: 12.709999, z: -22.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -4919,8 +4919,8 @@ MonoBehaviour:
   mainCamera: {fileID: 768899525}
   pathCreator: {fileID: 1643538676}
   maxDistancePath: 0.1
-  distanceSpawn: 78.86
-  spawnYOffset: -7.3
+  distanceSpawn: 2.83
+  spawnYOffset: 0.8
   adjustVelocity: 5
   staminaBar: {fileID: 1110858370}
   virtualCam2D: {fileID: 768899524}
@@ -6567,7 +6567,7 @@ MonoBehaviour:
   - m_Script
   m_LockStageInInspector: 
   m_StreamingVersion: 20170927
-  m_Priority: 10
+  m_Priority: 200
   m_StandbyUpdate: 2
   m_LookAt: {fileID: 0}
   m_Follow: {fileID: 0}
@@ -6582,13 +6582,13 @@ MonoBehaviour:
     m_VirtualCamera: {fileID: 1599327083}
     m_ActivateAfter: 0
     m_MinDuration: 0
-  - m_FullHash: 405926146
+  - m_FullHash: -1708748512
     m_VirtualCamera: {fileID: 1525614368}
     m_ActivateAfter: 0
     m_MinDuration: 0
   m_DefaultBlend:
     m_Style: 1
-    m_Time: 0.5
+    m_Time: 2
     m_CustomCurve:
       serializedVersion: 2
       m_Curve: []
@@ -6599,7 +6599,7 @@ MonoBehaviour:
   m_ParentHash:
   - m_Hash: -2112258461
     m_ParentHash: 756556552
-  - m_Hash: 405926146
+  - m_Hash: -1708748512
     m_ParentHash: 756556552
 --- !u!1 &531542588
 GameObject:
@@ -8261,7 +8261,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 732476879}
   m_LocalRotation: {x: 0.070971765, y: -0.44408008, z: -0.03531438, w: 0.89247346}
-  m_LocalPosition: {x: 2.4650803, y: -11.845685, z: 63.537342}
+  m_LocalPosition: {x: 2.4650974, y: -11.845679, z: 63.537342}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1525614369}
@@ -9530,7 +9530,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 925546619}
-  m_LocalRotation: {x: 0.15272148, y: 0.000000008502269, z: -0.0000000013138919, w: 0.98826927}
+  m_LocalRotation: {x: 0.15272148, y: 0.000000008502268, z: -0.0000000013138921, w: 0.98826927}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -14493,7 +14493,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1525614367}
-  m_LocalRotation: {x: -0.07097179, y: 0.44408002, z: 0.03531439, w: 0.89247346}
+  m_LocalRotation: {x: -0.07097176, y: 0.4440799, z: 0.03531436, w: 0.8924735}
   m_LocalPosition: {x: -5.811714, y: 0.09817886, z: -21.594406}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -15392,11 +15392,11 @@ MonoBehaviour:
   editorData:
     _bezierPath:
       points:
-      - {x: -36.970993, y: 0, z: 35.849327}
-      - {x: -36.73535, y: 0, z: 35.42742}
-      - {x: -33.35238, y: 0, z: 29.144238}
-      - {x: -32.30523, y: 0, z: 27.347294}
-      - {x: -30.31668, y: 0, z: 23.837921}
+      - {x: -32.89013, y: -0.64559937, z: 28.037422}
+      - {x: -32.654488, y: -0.64559937, z: 27.615517}
+      - {x: -32.76432, y: -0.44557953, z: 27.74842}
+      - {x: -31.71717, y: -0.44557953, z: 25.951477}
+      - {x: -29.728622, y: -0.44557953, z: 22.442104}
       - {x: -23.1857, y: 0, z: 10.838283}
       - {x: -22.26104, y: 0, z: 9.2593}
       - {x: -20.889076, y: 0, z: 7.1869354}
@@ -15432,17 +15432,17 @@ MonoBehaviour:
     showPathBounds: 0
     showPerSegmentBounds: 0
     displayAnchorPoints: 1
-    displayControlPoints: 1
+    displayControlPoints: 0
     bezierHandleScale: 10
     globalDisplaySettingsFoldout: 0
     keepConstantHandleSize: 0
     showNormalsInVertexMode: 0
     showBezierPathInVertexMode: 0
-    showDisplayOptions: 0
+    showDisplayOptions: 1
     showPathOptions: 0
-    showVertexPathDisplayOptions: 0
+    showVertexPathDisplayOptions: 1
     showVertexPathOptions: 1
-    showNormals: 0
+    showNormals: 1
     showNormalsHelpInfo: 0
     tabIndex: 0
   initialized: 1
