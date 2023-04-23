@@ -11,18 +11,14 @@ public class EnemyHuman : MonoBehaviour
     float decisionTimer = 0;
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
+    public float speed;
 
     float distFromPlayer = 0;
     int optionCount = 0;
     int choice = 0;
     float moveSpeed = 3f;
     Rigidbody rb;
-    public float speed;
     Animator animControl;
-
-    //public GameObject weapon;
-    //public GameObject bodyAnimObj;
-    
 
     NavMeshAgent navAgent;
 
@@ -136,11 +132,8 @@ public class EnemyHuman : MonoBehaviour
             Flip();
         }
 
-        navAgent.destination = playerPos;
-        //bodyAnimControl.SetTrigger("chaseTrig");
-        //Debug.Log("agent destination: " + navAgent.destination);
-        //move towards player using force
-        //Move(dirToPlayer);
+        navAgent.destination = playerPos;     
+     
 
         Debug.Log("Distance from Player" + distFromPlayer);
         //attack the player when within range
@@ -191,9 +184,7 @@ public class EnemyHuman : MonoBehaviour
                 }
             }
 
-            
 
-            
             decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
         }
             
@@ -208,19 +199,7 @@ public class EnemyHuman : MonoBehaviour
     }
 
     void FindPlayer()
-    {
-        //RaycastHit hit;
-        //if (Physics.SphereCast(transform.position, 6, transform.forward,out hit, detectionLength))
-        //{
-        //    if (hit.collider.gameObject.CompareTag("Player"))
-        //    {
-        //        //Player detected
-        //        Debug.Log("Detected");
-        //        
-        //        AIState = State.Combat;
-        //    }
-        //    
-        //}
+    { 
         
         Debug.DrawRay(transform.position, transform.forward * detectionLength, Color.red);
 

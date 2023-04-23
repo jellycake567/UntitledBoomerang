@@ -163,12 +163,9 @@ public class EnemyAttack : MonoBehaviour
 
             // Clear previous hardPoint
             preHardPoints = new List<Vector3>();
-
-            // Attack Animation
-            //attackAnimation["Cubetest"].speed = attackSpeed;
-            //attackAnimation.Play();
+   
             AnimatorStateInfo animStateInfo = animControl.GetCurrentAnimatorStateInfo(0);
-            animControl.SetTrigger("attackTrig");
+            
             isAttacking = true;
             attackDetected = true;
 

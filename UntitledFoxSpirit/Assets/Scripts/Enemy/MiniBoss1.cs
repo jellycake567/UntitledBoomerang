@@ -17,13 +17,7 @@ public class MiniBoss1 : MonoBehaviour
     public float speed;
 
     //attack variables
-    float currentAtkCooldown = 0;
-    public float atkCooldown1;
-    public float atkCooldown2;
-    public float atkCooldown3;
     bool isAttacking = false;
-
-    AnimatorClipInfo[] currentClipArray;
     public AnimationClip[] attackAnimations;
 
     public GameManager GM;
@@ -152,9 +146,6 @@ public class MiniBoss1 : MonoBehaviour
             Flip();
         }
 
-        //navAgent.destination = playerPos;
-        //Debug.Log("agent destination: " + navAgent.destination);
-
         if(!isAttacking)
         {
             StartCoroutine(attackCycle());
@@ -265,8 +256,7 @@ public class MiniBoss1 : MonoBehaviour
                 if (distFromPlayer < 2.5)
                 {
                     animControl.SetTrigger("attack");
-                    atkState = atk.antiAirMelee;
-                    //currentClipArray = animControl.GetCurrentAnimatorClipInfo(0);
+                    atkState = atk.antiAirMelee;            
 
                     yield return new WaitForSeconds(attackAnimations[0].length);
                     
