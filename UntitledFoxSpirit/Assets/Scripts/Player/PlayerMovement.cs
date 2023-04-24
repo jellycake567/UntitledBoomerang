@@ -233,9 +233,11 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider>();
+
 
         CapsuleCollider[] colliderArr = GetComponentsInChildren<CapsuleCollider>();
         tallCollider = colliderArr[0];
@@ -306,7 +308,9 @@ public class PlayerMovement : MonoBehaviour
         DashInput();
         Attack();
 
-        RigidbodyContraints();
+        
+
+        
     }
 
     void FixedUpdate()
@@ -362,6 +366,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        Gizmos.matrix = Matrix4x4.identity;
+
         // Spawn player position
         if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
         {
@@ -374,14 +380,17 @@ public class PlayerMovement : MonoBehaviour
 
         // Player ground check
         Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+        Gizmos.matrix = Matrix4x4.TRS(point, transform.rotation, transform.lossyScale);
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(point, groundCheckSize);
+        Gizmos.DrawWireCube(Vector3.zero, groundCheckSize);
 
         // Player head check
         Vector3 centerPos = new Vector3(transform.position.x + sneakCheckOffset.x, transform.position.y + sneakCheckOffset.y, transform.position.z + sneakCheckOffset.z) + Vector3.up;
+        Gizmos.matrix = Matrix4x4.TRS(centerPos, transform.rotation, transform.lossyScale);
+
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(centerPos, sneakCheckSize);
+        Gizmos.DrawWireCube(Vector3.zero, sneakCheckSize);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -585,14 +594,6 @@ public class PlayerMovement : MonoBehaviour
             Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
             rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
         }
-    }
-
-    void RigidbodyContraints()
-    {
-        Vector3 localVelocity = transform.InverseTransformDirection(rb.velocity);
-        localVelocity.z = 0f;
-
-        rb.velocity = transform.TransformDirection(localVelocity);
     }
 
     #endregion
@@ -1134,7 +1135,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, transform.rotation, ~ignorePlayerMask);
 
         RaycastHit hit;
         if(Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
