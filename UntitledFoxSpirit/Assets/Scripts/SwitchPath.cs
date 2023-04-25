@@ -16,18 +16,19 @@ public class SwitchPath : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             PlayerMovement script = other.GetComponentInParent<PlayerMovement>();
+            script.ChangePath(path);
 
-            if (!didChangePath)
-            {
-                prevPath = script.pathCreator;
-                script.ChangePath(path);
-                didChangePath = true;
-            }
-            else
-            {
-                script.ChangePath(prevPath);
-                didChangePath = false;
-            }
+            //if (!didChangePath)
+            //{
+            //    prevPath = script.pathCreator;
+            //    script.ChangePath(path);
+            //    didChangePath = true;
+            //}
+            //else
+            //{
+            //    script.ChangePath(prevPath);
+            //    didChangePath = false;
+            //}
         }
     }
 }
