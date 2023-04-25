@@ -1,6 +1,5 @@
 using Cinemachine;
 using PathCreation;
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -1345,7 +1344,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // End animation combo
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
             if (!animController.IsInTransition(0)) // Check if not in transiton, so it doesn't reset run during transition
             {
@@ -1404,6 +1403,9 @@ public class PlayerMovement : MonoBehaviour
         {
             animController.SetTrigger("Attack");
             animController.SetBool("Attack1", true);
+
+            int atkNum = Random.Range(1, 5);
+            animController.SetInteger("RngAttack", atkNum);
         }
         
         // Transitions to next combo animation
