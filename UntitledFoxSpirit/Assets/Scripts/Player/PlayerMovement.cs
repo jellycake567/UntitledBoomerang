@@ -63,6 +63,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash")]
     public float humanDashTime = 5.0f;
     public float humanDashDistance = 4.0f;
+    [SerializeField] float dashCooldown = 1f;
+    private float currentDashCooldown = 1f;
     private bool isDashing = false;
     private bool disableDashing = false;
 
@@ -882,6 +884,12 @@ public class PlayerMovement : MonoBehaviour
                 isDashing = false;
             }
 
+            if (currentDashCooldown > 0f)
+            {
+                currentDashCooldown -= Time.deltaTime;
+                return;
+            }
+
             if (!isFox && currentStamina < staminaConsumption || isFox || !disableDashing && !isGrounded || isSneaking)
             {
                 return;
@@ -894,7 +902,9 @@ public class PlayerMovement : MonoBehaviour
                 disableDashing = true;
                 disableInputRotations = true;
                 animController.speed = 1f;
-                
+
+                currentDashCooldown = dashCooldown;
+
                 if (prevInputDirection.x < 0.1f)
                 {
                     StartCoroutine(Dash(false));
@@ -986,7 +996,8 @@ public class PlayerMovement : MonoBehaviour
         disableMovement = false;
         disableDashing = false;
         disableInputRotations = false;
-        
+
+
         if (isGrounded)
             animController.SetBool("isSprinting", true);
     }

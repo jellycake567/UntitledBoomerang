@@ -63,6 +63,7 @@ public class PlayerMovementEditor : Editor
         // Dash
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanDashTime"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanDashDistance"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("dashCooldown"));
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanJumpHeight"));
