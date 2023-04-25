@@ -208,6 +208,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isHeavyLand = false;
 
     private bool isParrying = false;
+    private int lastAttackInt;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -1381,7 +1382,7 @@ public class PlayerMovement : MonoBehaviour
         // Cooldown to click again
         if (currentAttackCooldown <= 0f)
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded && !isSneaking)
+            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded && !isSneaking && !animController.IsInTransition(0))
             {
                 OnClick();
                 Debug.Log("Click");
@@ -1416,6 +1417,17 @@ public class PlayerMovement : MonoBehaviour
             animController.SetBool("Attack1", true);
 
             int atkNum = Random.Range(1, 5);
+            if (lastAttackInt == atkNum)
+            {
+                atkNum++;
+
+                if (atkNum > 4)
+                    atkNum = 1;
+            }
+
+            Debug.Log("Num: " + atkNum + " Last: " + lastAttackInt);
+            lastAttackInt = atkNum;
+
             animController.SetInteger("RngAttack", atkNum);
         }
         
