@@ -83,10 +83,14 @@ public class PlayerMovement : MonoBehaviour
     public float wallCheckDistance = 3.0f;
     public float ledgeHangDistanceOffset;
     public float ledgeHangYOffset;
+    [SerializeField] float distanceFromGround = 1f;
+    [SerializeField] float ledgeHangCooldown = 1f;
+    private float currentLedgeHangCooldown;
     public Transform wallCheck;
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
+    [SerializeField] Transform ledgeRootJntTransform;
     private bool isClimbing = false;
 
     #endregion
@@ -121,6 +125,7 @@ public class PlayerMovement : MonoBehaviour
     public bool mode3D = false;
     private float currentSpeed;
     private float maxSpeed;
+
 
     [Header("Step Climb")]
     [SerializeField] GameObject stepRayUpper;
@@ -246,8 +251,6 @@ public class PlayerMovement : MonoBehaviour
 
         currentStamina = maxStamina;
 
-        
-
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
 
@@ -321,6 +324,11 @@ public class PlayerMovement : MonoBehaviour
 
     void OnAnimatorMove()
     {
+        if (isClimbing)
+        {
+            rb.velocity = animController.deltaPosition * rootMotionAtkSpeed / Time.deltaTime;
+        }
+
         // Attacking root motion
         if (isAttacking && !disableDashing && !animController.IsInTransition(0))
         {
@@ -793,23 +801,12 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isLanding || isSneaking || isParrying || disableJumping && canDoubleJump)
+        if (isLanding || isSneaking || isParrying || disableJumping && canDoubleJump || isClimbing)
             return;
 
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || isClimbing && jumpBufferCounter > 0f)
         {
-            if (isClimbing)
-            {
-                canClimbLedge = false;
-                rb.useGravity = true;
-                disableMovement = false;
-                disableGravity = false;
-                disableInputRotations = false;
-                animController.SetBool("LedgeHang", true);
-                tallCollider.enabled = true;
-            }
-
 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
@@ -1443,39 +1440,74 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
+    void FinishLedgeClimb()
+    {
+        Transform rootJointTransform = ledgeRootJntTransform;
+        transform.position = rootJointTransform.position;
+        Debug.Log(ledgeRootJntTransform.localPosition);
+        ledgeRootJntTransform.localPosition = ledgeRootJntTransform.localPosition;
+
+        Debug.Log("run");
+        isClimbing = false;
+        canClimbLedge = false;
+        rb.useGravity = true;
+        disableMovement = false;
+        disableGravity = false;
+        disableInputRotations = false;
+        tallCollider.enabled = true;
+        animController.SetBool("LedgeHang", false);
+
+        currentLedgeHangCooldown = ledgeHangCooldown;
+    }
+
+
     void LedgeClimb()
     {
         if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Hang"))
         {
-            if (!isClimbing)
+            if (!isClimbing && canClimbLedge)
             {
                 isClimbing = true;
             }
-        }
-        else
-        {
-            if (isClimbing)
+
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space))
             {
-                isClimbing = false;
+                animController.SetTrigger("ClimbUp");
+
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                animController.SetTrigger("Drop");
+                animController.SetBool("LedgeHang", false);
                 canClimbLedge = false;
                 rb.useGravity = true;
                 disableMovement = false;
                 disableGravity = false;
                 disableInputRotations = false;
-                animController.SetBool("LedgeHang", false);
                 tallCollider.enabled = true;
+                isClimbing = false;
+
+                currentLedgeHangCooldown = ledgeHangCooldown;
+            }
+        }
+        else
+        {
+            if (currentLedgeHangCooldown > 0f)
+            {
+                currentLedgeHangCooldown -= Time.deltaTime;
+                return;
             }
 
-            if (rb.velocity.y >= 0f || isGrounded)
+            if (rb.velocity.y >= 0f || isGrounded || isClimbing)
                 return;
+
 
             // Raycasts
             isTouchingLedge = Physics.Raycast(ledgeCheck.position, -prevInputDirection, wallCheckDistance, groundLayer);
             isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
-
             Vector3 ledgeCheckEndPoint = ledgeCheck.position + -prevInputDirection * wallCheckDistance;
             
-
             Debug.DrawRay(ledgeCheckEndPoint, Vector3.down * wallCheckDistance);
             
 
@@ -1491,6 +1523,9 @@ public class PlayerMovement : MonoBehaviour
                 RaycastHit horizontalHit;
                 if (Physics.Raycast(wallCheckPos, -prevInputDirection, out horizontalHit, wallCheckDistance, groundLayer))
                 {
+                    if (Physics.Raycast(transform.position, Vector3.down, distanceFromGround, groundLayer))
+                        return;
+
                     if (canClimbLedge)
                         return;
 
@@ -1508,17 +1543,9 @@ public class PlayerMovement : MonoBehaviour
                     hangPos.y = verticalHit.point.y - ledgeHangYOffset;
 
                     transform.position = hangPos;
-
-                    
-                    
                 }
-
-                
             }
         }
-
-
-        
     }
 
     #endregion

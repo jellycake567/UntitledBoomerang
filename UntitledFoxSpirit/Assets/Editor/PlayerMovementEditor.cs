@@ -79,10 +79,13 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("wallCheckDistance"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeHangDistanceOffset"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeHangYOffset"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceFromGround"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeHangCooldown"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("wallCheck"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeCheck"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("groundLayer"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("climbAnim"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeRootJntTransform"));
     }
 
     void DisplayFoxInfo()
