@@ -12,6 +12,8 @@ public class EnemyHuman : MonoBehaviour
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
     public float speed;
+    public float velocity;
+    bool hasAttacked = false;
 
     float distFromPlayer = 0;
     int optionCount = 0;
@@ -132,26 +134,31 @@ public class EnemyHuman : MonoBehaviour
             Flip();
         }
 
-        navAgent.destination = playerPos;     
-     
+        navAgent.destination = playerPos;
+
 
         Debug.Log("Distance from Player" + distFromPlayer);
         //attack the player when within range
-        if(distFromPlayer < 2.5)
+        if (distFromPlayer < 2.5 && !hasAttacked)
         {
-            //animControl.SetBool("isFighting", true);
+            
+            StartCoroutine(AttackCycle());
         }
-        else
+        else if (distFromPlayer > 2.5)
         {
-            animControl.SetBool("isFighting", false);
+            animControl.SetTrigger("chaseTrig");
+
+        }
+        else if (distFromPlayer < 2.5)
+        {
+            animControl.SetTrigger("combatIdleTrig");
         }
 
-        if (rb.velocity == Vector3.zero)
+        if (!hasAttacked)
         {
-            animControl.SetTrigger("Attack");
             
+
         }
-      
 
     }
     void Wander()
@@ -240,7 +247,15 @@ public class EnemyHuman : MonoBehaviour
         //Gizmos.DrawSphere(transform.position, 6);
     }
 
+    IEnumerator AttackCycle()
+    {
+        hasAttacked = true;
 
+        animControl.SetTrigger("attack");
+        yield return new WaitForSeconds(5f); 
+
+        hasAttacked = false;
+    }
 
  
 }
