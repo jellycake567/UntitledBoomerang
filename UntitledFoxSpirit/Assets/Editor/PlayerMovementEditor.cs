@@ -37,8 +37,19 @@ public class PlayerMovementEditor : Editor
 
     void DisplayHumanInfo()
     {
+        // Attack
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCooldown"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("resetComboDelay"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootMotionAtkSpeed"));
+
         // Movement
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("humanRunSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("accelTimeToMaxSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("decelTimeToZeroSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogAccelSpeed"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("animJogDecelSpeed"));
 
         // Dash
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanDashTime"));
@@ -46,6 +57,8 @@ public class PlayerMovementEditor : Editor
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("humanJumpHeight"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpRollVelocity"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootMotionJumpRollSpeed"));
 
         // Stamina
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaConsumption"));
@@ -76,7 +89,16 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("turnSmoothTime3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxVelocityChange"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionAmount"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("camera3D"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("mode3D"));
+
+        // Step Climb
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayUpper"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayUpperDistance"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayLower"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayLowerDistance"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepHeight"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepSmooth"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("stepDebug"));
 
         // Jump
         EditorGUILayout.PropertyField(serializedObject.FindProperty("jumpCooldown"));
@@ -119,12 +141,13 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("adjustVelocity"));
 
         // References
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("path"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaBar"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam2D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("virtualCam3D"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("human"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("fox"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("friction"));
+
 
     }
 }

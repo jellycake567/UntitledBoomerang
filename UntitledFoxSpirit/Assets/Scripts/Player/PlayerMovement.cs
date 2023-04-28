@@ -1,7 +1,10 @@
 using Cinemachine;
 using PathCreation;
+using System;
 using System.Collections;
+using System.Reflection;
 using UnityEditor.Animations;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -10,23 +13,59 @@ public class PlayerMovement : MonoBehaviour
 {
     #region Human Settings
 
+    [Header("Attack")]
+    [SerializeField] float attackCooldown = 2f;
+    [SerializeField] float resetComboDelay = 1f;
+    [SerializeField] float rootMotionAtkSpeed = 2f;
+    private bool isAttacking = false;
+    private float currentAttackCooldown;
+    private int comboCounter;
+
+    #region Movement
+
     [Header("Movement")]
-    public float humanSpeed = 5.0f;
+    [SerializeField] float humanSpeed = 5.0f;
+    [SerializeField] float humanRunSpeed = 10.0f;
+    [SerializeField] float accelTimeToMaxSpeed = 2.0f;
+    [SerializeField] float decelTimeToZeroSpeed = 1.0f;
+    [SerializeField] float animJogSpeed = 1.17f;
+    [SerializeField] float animJogAccelSpeed = 0.8f;
+    [SerializeField] float animJogDecelSpeed = 0.8f;
+    private float accelRatePerSec;
+    private float decelRatePerSec;
+    private bool isAccel = false;
+    private bool isDecel = false;
+    private bool isRunning = false;
+    private bool disableMovement;
+
+    [Header("Rotation")]
+    [SerializeField] float timeToReachTargetRotation = 0.14f;
+    private float dampedTargetRotationCurrentYVelocity;
+    private float dampedTargetRotationPassedTime;
+    private bool disableRotations = false;
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
-    public float jumpForce = 20f;
+    [SerializeField] float jumpRollVelocity = -5f;
+    [SerializeField] float rootMotionJumpRollSpeed = 2f;
+    private bool isLanding = false;
 
     [Header("Dash")]
     public float humanDashTime = 5.0f;
     public float humanDashDistance = 4.0f;
+    private bool isDashing = false;
+    private bool disableDashing = false;
+
+    #endregion
+
+    #region Other
 
     [Header("Stamina")]
     public float staminaConsumption = 20f;
     public float staminaRecovery = 5f;
     public float staminaCooldown = 1f;
-    private float currentStaminaCooldown = 0f;
     public float maxStamina = 100f;
+    private float currentStaminaCooldown = 0f;
     private float currentStamina;
 
     [Header("Wall Climb")]
@@ -35,6 +74,8 @@ public class PlayerMovement : MonoBehaviour
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
+
+    #endregion
 
     #endregion
 
@@ -55,14 +96,27 @@ public class PlayerMovement : MonoBehaviour
 
     #region Other Settings
 
+    #region Movement
+
     [Header("Movement")]
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     private float turnSmoothVelocity;
     public float maxVelocityChange = 10f;
     public float frictionAmount = 0.2f;
-    public bool camera3D = false;
-    
+    public bool mode3D = false;
+    private float currentSpeed;
+    private float maxSpeed;
+
+    [Header("Step Climb")]
+    [SerializeField] GameObject stepRayUpper;
+    [SerializeField] float stepRayUpperDistance = 0.7f;
+    [SerializeField] GameObject stepRayLower;
+    [SerializeField] float stepRayLowerDistance = 0.5f;
+    [SerializeField] float stepHeight = 0.7f;
+    [SerializeField] float stepSmooth = 1.5f;
+    [SerializeField] bool stepDebug = false;
+
     [Header("Jump")]
     public float jumpCooldown = 0.2f;
     private float jumpCounter;
@@ -80,12 +134,17 @@ public class PlayerMovement : MonoBehaviour
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
     public float reduceVelocity = 5f;
-    [SerializeField] public Vector3 groundCheckOffset;
-    [SerializeField] public Vector3 groundCheckSize;
+    [SerializeField] Vector3 groundCheckOffset;
+    [SerializeField] Vector3 groundCheckSize;
     public LayerMask ignorePlayerMask;
     private bool isGrounded;
     private float updateMaxHeight = 100000f;
     private float updateMaxHeight2 = 100000f;
+    private bool disableGravity = false;
+
+    #endregion
+
+    #region Other
 
     [Header("Damage")]
     public float invulnerableTime = 1f;
@@ -107,26 +166,25 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Velocity to push player towards the path")] public float adjustVelocity = 1.0f;
 
     [Header("References")]
-    public Transform path;
     public Slider staminaBar;
     public CinemachineVirtualCamera virtualCam2D;
     public CinemachineFreeLook virtualCam3D;
     public GameObject human;
     public GameObject fox;
+    [SerializeField] PhysicMaterial friction;
+
+    #endregion
 
     #endregion
 
     #region Internal Variables
 
     private bool isFox;
-    private bool disableMovement;
     private bool isWallClimbing;
     private bool canClimbWall;
     private bool isHoldingJump = false;
-    private bool disableGravity = false;
-    private bool isAttacking = false;
-    private bool isDashing = false;
-    private bool isWindingUp = false;
+    private Vector3 prevInputDirection;
+    
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -134,10 +192,8 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool canClimbLedge = false;
     [HideInInspector] public bool ledgeDetected;
 
-    // Direction
-    private Vector3 currentPathFacingDir;
-    private Vector3 rightDir;
-    private Vector3 leftDir;
+    // Save current rotation when input is pressed
+    private Quaternion previousRotation;
 
     const float REDUCE_SPEED = 1.414214f;
     private float distanceOnPath;
@@ -145,8 +201,9 @@ public class PlayerMovement : MonoBehaviour
     // References
     Rigidbody rb;
     Animator animController;
+    CapsuleCollider capsuleCollider;
 
-
+    // Debug
     float currentMaxHeight = 0f;
     private Vector3 velocity;
 
@@ -159,13 +216,16 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
 
         currentStamina = maxStamina;
+
+        
 
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
 
-        
+
         Vector3 spawnPos = pathCreator.path.GetPointAtDistance(distanceSpawn);
         spawnPos.y += spawnYOffset + 1.0f;
         transform.position = spawnPos;
@@ -176,16 +236,16 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        velocity = rb.velocity;
+        stepRayUpper.transform.position = new Vector3(stepRayUpper.transform.position.x, stepRayLower.transform.position.y + stepHeight, stepRayUpper.transform.position.z);
+
+        // Acceleration / Deceleration Calculation
+        float maxSpeed = isFox ? foxSpeed : humanSpeed;
+        accelRatePerSec = maxSpeed / accelTimeToMaxSpeed;
+        decelRatePerSec = -maxSpeed / decelTimeToZeroSpeed;
 
         if (rb.velocity.y > 0)
-
         {
-
             currentMaxHeight = transform.position.y;
-
-            //Debug.Log(currentMaxHeight);
-
         }
 
 
@@ -209,11 +269,15 @@ public class PlayerMovement : MonoBehaviour
         if (!isWallClimbing && !canClimbLedge && !disableMovement)
         {
             // Player Input Functions
-            Jump();
+            
             ChangeForm();
             LedgeClimb();
         }
 
+
+        Jump();
+        
+        
         DashInput();
         Attack();
     }
@@ -227,185 +291,425 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void OnAnimatorMove()
+    {
+        // Attacking root motion
+        if (isAttacking && !disableDashing && !animController.IsInTransition(0))
+        {
+            float y = rb.velocity.y;
+
+            rb.velocity = animController.deltaPosition * rootMotionAtkSpeed / Time.deltaTime;
+
+            rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+        }
+
+        // Jump Roll root motion
+        if (rb.velocity.y < jumpRollVelocity && animController.GetBool("BeforeGrounded") && !isLanding)
+        {
+            isLanding = true;
+            disableMovement = true;
+            capsuleCollider.material = null;
+        }
+        if (isLanding)
+        {
+            AnimatorStateInfo jumpRollState = animController.GetCurrentAnimatorStateInfo(0);
+
+            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("BeforeGrounded") && animController.IsInTransition(0))
+            {
+                float y = rb.velocity.y;
+
+                rb.velocity = animController.deltaPosition * rootMotionJumpRollSpeed / Time.deltaTime;
+
+                rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+
+            }
+            else if (isGrounded)
+            {
+                isLanding = false;
+                disableMovement = false;
+                capsuleCollider.material = friction;
+            }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Spawn player position
+        if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
+        {
+            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
+            spawnPosition.y += spawnYOffset;
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(spawnPosition, 0.5f);
+        }
+
+        // Player ground check
+        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(point, groundCheckSize);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = true;
+        }
+
+        if (other.CompareTag("Hitbox"))
+        {
+            EnemyNavigation enemyNav = other.GetComponentInParent<EnemyNavigation>();
+            Vector3 enemyPos = enemyNav.transform.position;
+
+            // Get dir from AI to player
+            Vector3 facingDir = (other.ClosestPointOnBounds(transform.position) - enemyPos).IgnoreYAxis();
+            Vector3 dir = enemyNav.CalculatePathFacingDir(enemyPos, facingDir);
+
+            TakeDamage(dir);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("WallClimb"))
+        {
+            canClimbWall = false;
+        }
+    }
+
     #endregion
 
     #region Player Movement
-    void Movement()
-    {
-        // Get Path direction
-        float pathAngle = GetPathRotation().eulerAngles.y - 90f;
 
-        // Is 2d camera on
-        if (!camera3D)
+    #region Movement Other Functions
+
+    void DetectAnimAcceleration(Vector3 targetVelocity, Vector3 direction)
+    {
+        #region Detect animation player input
+        if (direction.magnitude > 0.1f)
         {
-            // Rotate camera
-            Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
-            virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, pathAngle, camEulerAngle.z), camRotationSpeed2D);
+            // Currently decelerating, but if input is pressed, stop decel and start accel
+            if (!isAccel && isDecel)
+                isDecel = false;
+
+            if (!disableMovement)
+                animController.SetBool("isMoving", true);
+
+            // Store when player presses left or right
+            if (prevInputDirection != direction)
+            {
+                // Reset speed when turning around
+                currentSpeed = 2f;
+                prevInputDirection = direction;
+            }
+        }
+        else
+        {
+            if (isDashing)
+            {
+                animController.SetBool("isMoving", false);
+            }
+            animController.SetBool("isSprinting", false);
+            Debug.Log("False");
+
+            // If currently accelerating, but input is released, stop accel and start decel
+            if (isAccel)
+            {
+                isAccel = false;
+                isDecel = true;
+
+                animController.speed = animJogDecelSpeed;
+                StartCoroutine(Deceleration());
+            }
+        }
+        #endregion
+
+        #region Acceleraction / Deceleration Animation
+
+        // Is player currently in jogging state
+        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
+            return;
+
+        // Start acceleration when entering state
+        if (!isAccel && !isDecel)
+        {
+            isAccel = true;
+            animController.speed = animJogAccelSpeed; // Set to accel jogging speed
+        }
+        else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
+        {
+            animController.speed = animJogSpeed;
         }
 
-        // Get input
+        // If not moving, reset anim speed
+        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
+            animController.speed = 1f;
+
+        #endregion
+    }
+
+    IEnumerator Deceleration()
+    {
+        float time = 0f;
+        float timeToZero = decelTimeToZeroSpeed * currentSpeed;
+
+        // Waiting for deceleration to reach zero (Match decel anim with player movement)
+        while (time < timeToZero)
+        {
+            time += -decelRatePerSec * Time.deltaTime;
+
+            if (!isDecel)
+                break;
+
+            yield return new WaitForEndOfFrame();
+        }
+
+        if (isDecel)
+            animController.SetBool("isMoving", false);
+    }
+
+    void Rotation3D(float targetAngle3D, Vector3 direction)
+    {
+        // Player movement/rotation direction
+        float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle3D, ref turnSmoothVelocity, turnSmoothTime3D);
+        transform.rotation = Quaternion.Euler(0f, angle, 0f);
+    }
+
+    Quaternion Rotation2D(Quaternion targetRot2D, Vector3 direction)
+    {
+        // Flipping player
+        if (prevInputDirection.x < 0f)
+        {
+            Vector3 rot = targetRot2D.eulerAngles;
+            targetRot2D = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
+        }
+
+        //transform.rotation = targetRot2D;
+        
+        if (disableRotations)
+            UpdateRotation(previousRotation);
+        else
+            UpdateRotation(targetRot2D);
+
+
+        if (direction.magnitude > 0.01f)
+        {
+            if (previousRotation != targetRot2D)
+            {
+                dampedTargetRotationPassedTime = 0f;
+            }
+
+            if (disableRotations)
+                return targetRot2D;
+
+            // Saved for deceleration
+            previousRotation = targetRot2D;
+            prevInputDirection = direction;
+        }
+
+        return targetRot2D;
+    } 
+
+    void UpdateRotation(Quaternion targetRot2D)
+    {
+        float currentYAngle = rb.rotation.eulerAngles.y;
+        if (currentYAngle == previousRotation.eulerAngles.y)
+        {
+            Debug.Log("test");
+            return;
+        }
+
+        Debug.DrawRay(transform.position, rb.rotation.eulerAngles.normalized, Color.black);
+
+        float smoothedYAngle = Mathf.SmoothDampAngle(currentYAngle, targetRot2D.eulerAngles.y, ref dampedTargetRotationCurrentYVelocity, timeToReachTargetRotation - dampedTargetRotationPassedTime);
+        dampedTargetRotationPassedTime += Time.deltaTime;
+
+        Quaternion targetRotation = Quaternion.Euler(0f, smoothedYAngle, 0f);
+        rb.MoveRotation(targetRotation);
+        
+    }
+
+    void AdjustPlayerOnPath()
+    {
+        Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+        //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+
+        // Distance between path and player
+        float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
+
+        // Direction from path towards player
+        Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
+        Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
+
+        // Keeps player on the path
+        if (distance > maxDistancePath)
+        {
+            Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
+            rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
+        }
+    }
+
+    #endregion
+
+    void Movement()
+    {
+        if (!mode3D)
+        {
+            // Rotate camera 2d
+            Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
+            virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, GetPathRotation().eulerAngles.y - 90f, camEulerAngle.z), camRotationSpeed2D);
+        }
+
         Vector3 targetVelocity3D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
         Vector3 targetVelocity2D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0);
 
-        Vector3 targetVelocity = camera3D ? targetVelocity3D : targetVelocity2D;
+        Vector3 targetVelocity = mode3D ? targetVelocity3D : targetVelocity2D;
         Vector3 direction = targetVelocity.normalized;
 
-        #region Detect animation player input
-        if (direction.magnitude > 0.1f)
-            animController.SetBool("isMoving", true);
+
+        maxSpeed = isFox ? foxSpeed : humanSpeed;
+
+        DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
+
+
+        // Calculate player 3D rotation
+        float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
+
+        // Calculate player 2D rotation
+        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        Quaternion targetRot2D = GetPathRotation();
+
+        if (mode3D)
+            Rotation3D(targetAngle3D, direction);
         else
-            animController.SetBool("isMoving", false);
-        #endregion
+            targetRot2D = Rotation2D(targetRot2D, direction);
 
-        if (!disableMovement)
+
+        if (disableMovement)
+            return;
+
+        // If player is moving
+        if (direction.magnitude > 0.01f)
         {
-            // Calculate player rotation
-            float camAngle = camera3D ? mainCamera.eulerAngles.y : pathAngle;
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camAngle;
-
-            distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
-            Quaternion targetRot = GetPathRotation();
-
-            float speed = isFox ? foxSpeed : humanSpeed;
-
-            // If player is moving
-            if (direction.magnitude > 0.1f)
+            #region Reached end of path
+            if (direction.x < 0f)
             {
-                #region Player Rotation
-                if (camera3D)
+                if (distanceOnPath <= 0)
                 {
-                    // Player movement/rotation direction
-                    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime3D);
-                    transform.rotation = Quaternion.Euler(0f, angle, 0f);
-                }
-                else
-                {
-                    // Flipping player
-                    if (direction.x < 0f)
-                    {
-                        Vector3 rot = targetRot.eulerAngles;
-                        targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
-                    }
-
-                    transform.rotation = targetRot;
-                }
-                #endregion
-
-                // Reached end of path
-                if (direction.x < 0f)
-                {
-                    if (distanceOnPath <= 0)
-                    {
-                        speed = 0f;
-                    }
-                }
-                else if (direction.x > 0f)
-                {
-                    if (distanceOnPath >= pathCreator.path.length)
-                    {
-                        speed = 0f;
-                    }
+                    maxSpeed = 0f;
                 }
             }
-
-            #region Calculate Velocity
-
-            // Where we want to player to face/walk towards
-            Vector3 desiredDir = (camera3D ? Quaternion.Euler(0f, targetAngle, 0f) : targetRot) * Vector3.forward;
-
-            // Rotation Debug Line for path
-            //Debug.DrawLine(transform.position, transform.position + targetRot * Vector3.forward * 3f, Color.red);
-
-            Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
-            Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
-
-            // Player is moving diagonally
-            if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
+            else if (direction.x > 0f)
             {
-                targetVelocity = desiredDir * targetVelocity.magnitude * speed / REDUCE_SPEED;
+                if (distanceOnPath >= pathCreator.path.length)
+                {
+                    maxSpeed = 0f;
+                }
             }
-            else
-            {
-                targetVelocity = desiredDir * targetVelocity.magnitude * speed;
-            }
-
-            // Get rigidbody x and y velocity
-            Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-            // Apply a force that attempts to reach our target velocity
-            Vector3 velocity = rbVelocity;
-            Vector3 velocityChange = (targetVelocity - velocity);
-            velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-            velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-            velocityChange.y = 0;
-
-            rb.AddForce(velocityChange, ForceMode.VelocityChange);
-
             #endregion
 
-            if (!camera3D)
+            // Acceleration
+            currentSpeed += accelRatePerSec * Time.deltaTime;
+            currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
+
+            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || isRunning)
             {
-                #region Adjust Player on Path
-
-                // Distance between path and player
-                float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
-
-                // Direction from path towards player
-                Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
-                Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
-
-                // Keeps player on the path
-                if (distance > maxDistancePath)
-                {
-                    Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
-                    rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
-                }
-
-                #endregion
+                currentSpeed = humanRunSpeed;
+                isRunning = true;
             }
+
+            if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Land"))
+            {
+                isRunning = false;
+            }
+
+            capsuleCollider.material = null;
+        }
+        else
+        {
+            // Deceleration
+            currentSpeed += decelRatePerSec * Time.deltaTime;
+            currentSpeed = Mathf.Max(currentSpeed, 0);
+
+            capsuleCollider.material = friction;
+
+            isRunning = false;
+        }
+
+        animController.SetFloat("ForwardSpeed", currentSpeed);
+
+        #region Calculate Velocity
+
+        // Where we want to player to face/walk towards
+        Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
+
+        // Rotation Debug Line for path
+        //Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
+
+
+        if (targetVelocity.z == 1 && targetVelocity.x == 1 || targetVelocity.z == 1 && targetVelocity.x == -1 || targetVelocity.z == -1 && targetVelocity.x == 1 || targetVelocity.z == -1 && targetVelocity.x == -1)
+        {
+            // Player is moving diagonally
+            targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed / REDUCE_SPEED;
+        }
+        else if (targetVelocity.magnitude > 0f)
+        {
+            // Player currently apply input
+            targetVelocity = desiredDir * targetVelocity.magnitude * currentSpeed;
+        }
+        else
+        {
+            // No input
+            targetVelocity = previousRotation * Vector3.forward * currentSpeed;
+        }
+
+        Vector3 rbVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        // Apply a force that attempts to reach our target velocity
+        Vector3 velocity = rbVelocity;
+        Vector3 velocityChange = (targetVelocity - velocity);
+        velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
+        velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
+        velocityChange.y = 0;
+
+        rb.AddForce(velocityChange, ForceMode.VelocityChange);
+
+        #endregion
+
+        if (isGrounded)
+            //StepClimb(desiredDir); // After movement
+
+        if (!mode3D)
+        {
+            AdjustPlayerOnPath();
         }
 
     }
 
     void Jump()
     {
-        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Crouch"))
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump"))
         {
-            if (!isWindingUp)
+            if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
             {
-                isWindingUp = true;
+                animController.SetBool("DoubleJump", false);
             }
         }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                animController.SetTrigger("Jump");
-                isWindingUp = true;//temp
-            }
-
-            //Wait for crouch/windup to finish
-            if (isWindingUp)
-            {
-                
-                isWindingUp = false;
-                jumpBufferCounter = jumpBufferTime;
-            }
-            else
-            {
-                jumpBufferCounter -= Time.deltaTime;
-            }
-
-        
-        }
-        
 
         #region Coyote and Jump Buffer Timers
+
+        if (jumpCounter <= 0f)
+        {
+            animController.SetBool("Jump", false);
+        }
 
         // Coyote Time
         if (isGrounded && jumpCounter <= 0f)
         {
             canDoubleJump = true;
+            
 
             jumpCoyoteCounter = jumpCoyoteTime;
         }
@@ -417,17 +721,20 @@ public class PlayerMovement : MonoBehaviour
             jumpCounter -= Time.deltaTime;
         }
 
-        // Jump Buffer
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    jumpBufferCounter = jumpBufferTime;
-        //}
-        //else
-        //{
-        //    jumpBufferCounter -= Time.deltaTime;
-        //}
+        //Jump Buffer
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            jumpBufferCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
 
         #endregion
+
+        if (isDashing)
+            return;
 
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
@@ -446,24 +753,19 @@ public class PlayerMovement : MonoBehaviour
 
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
-            
+
+            animController.SetBool("Jump", true);
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
-            if (jumpCoyoteCounter <= 0f && !isGrounded && canDoubleJump)
-            {
-                canDoubleJump = false;
-            }
             if (jumpCoyoteCounter > 0f)
             {
                 jumpCoyoteCounter = 0f; // So you don't triple jump
             }
 
-        }
-
-        //2nd jump
-        if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
+        } //2nd jump
+        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded && !animController.GetBool("BeforeGrounded"))
         {
             //doubleJumpHeight = humanJumpHeight / 3;//the three is a magic number 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
@@ -482,27 +784,17 @@ public class PlayerMovement : MonoBehaviour
             // Jump
             rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
+            animController.SetBool("DoubleJump", true);
 
             // Set jump cooldown
             jumpCounter = jumpCooldown;
 
-            if (jumpCoyoteCounter <= 0f && !isGrounded && canDoubleJump)
+            if (!isGrounded && canDoubleJump)
             {
                 canDoubleJump = false;
             }
-            if (jumpCoyoteCounter > 0f)
-            {
-                jumpCoyoteCounter = 0f; // So you don't triple jump
-            }
-
         }
-
-
     }
-
-    #endregion
-
-    #region Dash
 
     void DashInput()
     {
@@ -515,68 +807,51 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         else
-
         {
-
             if (isDashing)
-
             {
-
+                animController.SetBool("Dash", false);
                 isDashing = false;
-
-                disableMovement = false;
-
-                animController.applyRootMotion = false;
-
             }
 
-
-
-            if (!isFox && currentStamina >= staminaConsumption || isFox)
-
+            if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded)
             {
-
-                // Dash input
-
-                if (Input.GetKeyDown(KeyCode.LeftShift) && !disableMovement)
-
-                {
-
-                    animController.SetTrigger("Dash");
-
-                    animController.applyRootMotion = true;
-
-                    disableMovement = true;
-
-
-
-                    // If player is moving left or right
-
-                    //if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
-
-                    //{
-
-                    //    currentPathFacingDir = Input.GetAxisRaw("Horizontal") > 0 ? rightDir : leftDir;
-
-                    //    bool isFacingRight = Input.GetAxisRaw("Horizontal") > 0 ? true : false;
-
-
-
-                    //    StartCoroutine(Dash(isFacingRight));
-
-                    //}
-
-                }
-
+                return;
             }
 
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                animController.SetBool("Dash", true);
+                disableMovement = true;
+                disableDashing = true;
+                disableRotations = true;
+                animController.speed = 1f;
+
+                
+                if (prevInputDirection.x < 0.1f)
+                {
+                    StartCoroutine(Dash(false));
+                }
+                else
+                {
+                    StartCoroutine(Dash(true));
+                }
+            }
         }
     }
 
-    IEnumerator Dash(bool isFacingRight)
+    IEnumerator Dash(bool usePathRotation)
     {
+        float tempSpeed = currentSpeed;
+
+        if (!isFox)
+        {
+            // Stamina
+            currentStamina -= staminaConsumption;
+            currentStaminaCooldown = staminaCooldown;
+        }
+
         disableMovement = true;
-        disableGravity = true;
 
         // Set Y velocity to 0
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
@@ -592,12 +867,14 @@ public class PlayerMovement : MonoBehaviour
 
         while (currentDashTime > 0f)
         {
+            Debug.Log("dashing");
+
             currentDashTime -= Time.deltaTime;
 
             #region Rotation
 
             Quaternion targetRot = GetPathRotation();
-            if (isFacingRight)
+            if (usePathRotation)
             {
                 distanceOnPath += speed * Time.deltaTime;
             }
@@ -635,14 +912,38 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
+        currentSpeed = tempSpeed;
         disableMovement = false;
-        disableGravity = false;
+        disableDashing = false;
+        disableRotations = false;
+        animController.SetBool("isSprinting", true);
+    }
 
-        if (!isFox)
+    void StepClimb(Vector3 direction)
+    {
+        if (!animController.GetBool("isMoving"))
+            return;
+
+        if (stepDebug)
         {
-            // Stamina
-            currentStamina -= staminaConsumption;
-            currentStaminaCooldown = staminaCooldown;
+            Debug.DrawRay(stepRayLower.transform.position, direction * stepRayLowerDistance, Color.red);
+
+            Debug.DrawRay(stepRayUpper.transform.position, direction * stepRayUpperDistance, Color.blue);
+        }
+
+        // Forward
+        if (Physics.Raycast(stepRayLower.transform.position, direction, stepRayLowerDistance, ~ignorePlayerMask))
+        {
+            if (!Physics.Raycast(stepRayUpper.transform.position, direction, stepRayUpperDistance, ~ignorePlayerMask))
+            {
+                rb.position += new Vector3(0f, stepSmooth * Time.deltaTime, 0f);
+
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+                Vector3 velocity = new Vector3(0f, stepSmooth, 0f);
+
+                rb.AddForce(velocity);
+            }
         }
     }
 
@@ -685,14 +986,21 @@ public class PlayerMovement : MonoBehaviour
         Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(centerPos, groundCheckSize, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, Quaternion.identity, ~ignorePlayerMask);
 
-        if (overlap && rb.velocity.y <= 0f)
+        RaycastHit hit;
+        if(Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
+        {
+            newGroundY = hit.point.y;
+        }
+
+        if (overlap)
         {
             isGrounded = true;
             animController.SetBool("Grounded", true);
-            animController.SetBool("Fall", false);
-            newGroundY = transform.position.y;
+
+            if (rb.velocity.y <= 1f)
+                animController.SetBool("Fall", false);
         }
         else
         {
@@ -700,9 +1008,11 @@ public class PlayerMovement : MonoBehaviour
             animController.SetBool("Grounded", false);
         }
 
-        if(!isGrounded && rb.velocity.y <= 0f && transform.position.y - newGroundY <= 1)
+        if(transform.position.y - newGroundY <= 1 && rb.velocity.y <= 1f)
         {
             animController.SetBool("BeforeGrounded", true);
+
+            animController.SetFloat("verticalVelocity", rb.velocity.y);
         }
         else
         {
@@ -838,37 +1148,105 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
+                disableRotations = true;
                 isAttacking = true;
+                currentSpeed = 0f;
             }
 
-            // Allow animation transition to jog cycle
-            float time = animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
-            animController.SetFloat("NormalisedTime", time);
-
-            if (time >= 0.4f && time < 0.8f)
+            // Move after attacking
+            if (animController.IsInTransition(0) && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f)
             {
-                if (disableMovement)
-                    disableMovement = false;
-            }
-            else
-            {
-                if (!disableMovement)
-                    disableMovement = true;
+                disableMovement = false;
             }
 
         }
         else
-        {
+        { // Not playing attacking animation
             if (isAttacking)
             {
                 disableMovement = false;
+                disableRotations = false;
                 isAttacking = false;
-            }
+                comboCounter = 0;
 
-            if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking)
-            {
-                animController.SetTrigger("Attack");
+                animController.SetBool("Attack1", false);
+                animController.SetBool("Attack2", false);
+                animController.SetBool("Attack3", false);
             }
+        }
+
+        // End animation combo
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        {
+            if (!animController.IsInTransition(0)) // Check if not in transiton, so it doesn't reset run during transition
+            {
+                animController.SetBool("Attack1", false);
+                disableMovement = false;
+                disableRotations = false;
+                comboCounter = 0;
+            }
+        }
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2") && !animController.IsInTransition(0))
+        {
+            animController.SetBool("Attack2", false);
+            disableMovement = false;
+            comboCounter = 0;
+        }
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3") && !animController.IsInTransition(0))
+        {
+            animController.SetBool("Attack3", false);
+            disableMovement = false;
+            comboCounter = 0;
+        }
+
+        // Cooldown to click again
+        if (currentAttackCooldown <= 0f)
+        {
+            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded)
+            {
+                OnClick();
+                Debug.Log("Click");
+            }
+        }
+
+        if (currentAttackCooldown > 0f)
+            currentAttackCooldown -= Time.deltaTime;
+    }
+
+    void OnClick()
+    {
+        if (comboCounter == 0)
+        {
+            disableRotations = true;
+            isAttacking = true;
+        }
+
+        animController.speed = 1f;
+
+        // Set time
+        currentAttackCooldown = attackCooldown;
+
+        // Increase combo count
+        comboCounter++;
+        // Clamp combo
+        comboCounter = Mathf.Clamp(comboCounter, 0, 1);
+
+        if (comboCounter == 1 && !animController.GetBool("Attack1"))
+        {
+            animController.SetTrigger("Attack");
+            animController.SetBool("Attack1", true);
+        }
+        
+        // Transitions to next combo animation
+        if (comboCounter >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        {
+            animController.SetBool("Attack1", false);
+            animController.SetBool("Attack2", true);
+        }
+        if (comboCounter >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+        {
+            animController.SetBool("Attack2", false);
+            animController.SetBool("Attack3", true);
         }
     }
 
@@ -922,7 +1300,7 @@ public class PlayerMovement : MonoBehaviour
 
     void VirtualCamUpdate()
     {
-        if (camera3D)
+        if (mode3D)
         {
             virtualCam3D.Priority = 10;
             virtualCam2D.Priority = 0;
@@ -953,52 +1331,5 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
-    private void OnDrawGizmos()
-    {
-        // Spawn player position
-        if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
-        {
-            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(distanceSpawn);
-            spawnPosition.y += spawnYOffset;
-
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawSphere(spawnPosition, 0.5f);
-        }
-
-        // Player ground check
-        Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(point, groundCheckSize);
-
-
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimbWall = true;
-        }
-
-        if (other.CompareTag("Hitbox"))
-        {
-            EnemyNavigation enemyNav = other.GetComponentInParent<EnemyNavigation>();
-            Vector3 enemyPos = enemyNav.transform.position;
-
-            // Get dir from AI to player
-            Vector3 facingDir = (other.ClosestPointOnBounds(transform.position) - enemyPos).IgnoreYAxis();
-            Vector3 dir = enemyNav.CalculatePathFacingDir(enemyPos, facingDir);
-
-            TakeDamage(dir);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("WallClimb"))
-        {
-            canClimbWall = false;
-        }
-    }
+    
 }
