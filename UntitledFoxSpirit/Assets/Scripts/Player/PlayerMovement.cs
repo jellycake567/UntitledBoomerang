@@ -905,7 +905,7 @@ public class PlayerMovement : MonoBehaviour
                 animController.speed = 1f;
 
                 currentDashCooldown = dashCooldown;
-
+                
                 if (prevInputDirection.x < 0.1f)
                 {
                     StartCoroutine(Dash(false));
