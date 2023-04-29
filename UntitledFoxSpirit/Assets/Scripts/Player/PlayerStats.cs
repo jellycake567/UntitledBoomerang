@@ -49,6 +49,10 @@ public class PlayerStats : MonoBehaviour
         if (currentPotions > 0)
         {
             currentHealth += potionHeal;
+
+            if (currentHealth > health)
+                currentHealth = health;
+
             healthBar.value = currentHealth / health;
 
             currentPotions--;
