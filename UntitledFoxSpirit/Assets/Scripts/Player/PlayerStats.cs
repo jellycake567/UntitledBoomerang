@@ -1,65 +1,38 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerStats : MonoBehaviour
 {
-    [SerializeField] float health = 100f;
-    private float currentHealth;
-    [SerializeField] int numOfPotions = 3;
-    [SerializeField] float potionHeal = 50f;
-    private int currentPotions;
+    [Header("Stats")]
+    public float health = 100f;
+    public float invulnerableDelay = 1.0f;
+    bool isInvulnerable = false;
 
-    [SerializeField] Slider healthBar;
-    [SerializeField] TMP_Text potionNumDisplay;
+    [Header("References")]
+    public Material defaultStateMat;
+    public Material hurtStateMat;
 
-    void Start()
+    public void TakeDamage(float damage)
     {
-        currentHealth = health;
-        healthBar.value = currentHealth / health;
-
-        currentPotions = numOfPotions;
-        potionNumDisplay.text = currentPotions.ToString();
-    }
-
-    void Update()
-    {
-        //if (Input.GetKeyDown(KeyCode.N))
-        //{
-        //    TakeDamage(10f);
-        //}
-
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (!isInvulnerable)
         {
-            UsePotion();
+            health -= damage;
+
+            StartCoroutine(DamageEffect());
         }
     }
 
-    void TakeDamage(float damage)
+    IEnumerator DamageEffect()
     {
-        currentHealth -= damage;
+        isInvulnerable = true;
 
-        healthBar.value = currentHealth / health;
-    }
+        //MeshRenderer playerMesh = GetComponent<MeshRenderer>();
+        //playerMesh.material = hurtStateMat;
 
-    void UsePotion()
-    {
-        if (currentPotions > 0)
-        {
-            currentHealth += potionHeal;
-
-            if (currentHealth > health)
-                currentHealth = health;
-
-            healthBar.value = currentHealth / health;
-
-            currentPotions--;
-            potionNumDisplay.text = currentPotions.ToString();
-
-        }
-
+        yield return new WaitForSeconds(invulnerableDelay);
         
+        isInvulnerable = false; //does not hit??????????
+        //playerMesh.material = defaultStateMat;
     }
 }

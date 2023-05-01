@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyHuman : MonoBehaviour
+public class MiniBoss1 : MonoBehaviour
 {
-    public GameManager GM;
-    private Vector3 playerPos;
     float detectionLength = 4;
     float decisionTimer = 0;
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
-    public float speed;
-    public float velocity;
-    bool hasAttacked = false;
 
     float distFromPlayer = 0;
     int optionCount = 0;
     int choice = 0;
     float moveSpeed = 3f;
+    public float speed;
+
+    //attack variables
+    bool isAttacking = false;
+    public AnimationClip[] attackAnimations;
+
+    public GameManager GM;
     Rigidbody rb;
     Animator animControl;
-
     NavMeshAgent navAgent;
+    private Vector3 playerPos;
 
     public enum State
     {
@@ -31,6 +33,16 @@ public class EnemyHuman : MonoBehaviour
         Combat
     }
 
+    public enum atk
+    {
+        shortMelee,
+        antiAirMelee,
+        chargeAttack,
+        behindMelee,
+
+    }
+
+    public atk atkState;
     public State AIState;
 
 
@@ -40,7 +52,7 @@ public class EnemyHuman : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         navAgent = GetComponent<NavMeshAgent>();
         animControl = GetComponent<Animator>();
-
+        atkState = atk.shortMelee;
     }
 
 
@@ -51,8 +63,8 @@ public class EnemyHuman : MonoBehaviour
             FindPlayer();
         }
         else if (AIState == State.Wander)
-        {             
-            if(rb.velocity == Vector3.zero)
+        {
+            if (rb.velocity == Vector3.zero)
             {
                 rb.AddForce(transform.forward * moveSpeed, ForceMode.VelocityChange);
             }
@@ -73,7 +85,7 @@ public class EnemyHuman : MonoBehaviour
         }
         else if (AIState == State.Combat)
         {
-            animControl.SetBool("isChasing", true);
+            animControl.SetBool("isFighting", true);
             Attack();
         }
         else if (AIState == State.Wander)
@@ -88,8 +100,8 @@ public class EnemyHuman : MonoBehaviour
 
     void Standing()
     {
-        
-     
+
+
         if (decisionTimer <= 0)
         {
             //Does the AI move?
@@ -134,33 +146,15 @@ public class EnemyHuman : MonoBehaviour
             Flip();
         }
 
-        navAgent.destination = playerPos;
-
-
-        Debug.Log("Distance from Player" + distFromPlayer);
-        //attack the player when within range
-        if (distFromPlayer < 2.5 && !hasAttacked)
+        if(!isAttacking)
         {
-            
-            StartCoroutine(AttackCycle());
-        }
-        else if (distFromPlayer > 2.5)
-        {
-            animControl.SetTrigger("chaseTrig");
+            StartCoroutine(attackCycle());
 
         }
-        else if (distFromPlayer < 2.5)
-        {
-            animControl.SetTrigger("combatIdleTrig");
-        }
-
-        if (!hasAttacked)
-        {
-            
-
-        }
+        
 
     }
+
     void Wander()
     {
         if (decisionTimer <= 0)
@@ -175,7 +169,7 @@ public class EnemyHuman : MonoBehaviour
                 AIState = State.Wander;
 
                 choice = decideRandomly(optionCount);
-             
+
             }
             else if (choice == 1)
             {
@@ -192,9 +186,11 @@ public class EnemyHuman : MonoBehaviour
             }
 
 
+
+
             decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
         }
-            
+
     }
 
     int decideRandomly(int optionCount)
@@ -202,24 +198,24 @@ public class EnemyHuman : MonoBehaviour
         int decision = 0;
         decision = Random.Range(0, optionCount);
         //Debug.Log(decision);
-        return decision;  
+        return decision;
     }
 
     void FindPlayer()
-    { 
-        
-        Debug.DrawRay(transform.position, transform.forward * detectionLength, Color.red);
+    {
+
+        //Debug.DrawRay(transform.position, transform.forward * detectionLength, Color.red);
 
         playerPos = GM.playerPos;
         distFromPlayer = Vector3.Distance(transform.position, playerPos);
         Vector3 dirToPlayer = (playerPos - transform.position).normalized;
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
 
-        if(angle < 45 && distFromPlayer < detectionLength)
+        if (angle < 45 && distFromPlayer < detectionLength)
         {
             //Player detected
             Debug.Log("Detected");
-                    
+
             AIState = State.Combat;
         }
     }
@@ -247,17 +243,61 @@ public class EnemyHuman : MonoBehaviour
         //Gizmos.DrawSphere(transform.position, 6);
     }
 
-    IEnumerator AttackCycle()
+
+    IEnumerator attackCycle()
     {
-        hasAttacked = true;
+        isAttacking = true;
+        animControl.SetBool("shortAtk", false);
+        animControl.SetBool("antiAirAtk", false);
+        animControl.SetBool("charge", false);
+        switch (atkState)
+        {
+            case atk.shortMelee:
+                if (distFromPlayer < 2.5)
+                {
+                    animControl.SetTrigger("attack");
+                    atkState = atk.antiAirMelee;            
 
-        animControl.SetTrigger("attack");
-        yield return new WaitForSeconds(5f); 
+                    yield return new WaitForSeconds(attackAnimations[0].length);
+                    
+                }
+                else
+                {
+                    navAgent.destination = playerPos;
+                    animControl.SetTrigger("isChasing");
+                }
 
-        hasAttacked = false;
+                break;
+
+            case atk.antiAirMelee:
+                if (distFromPlayer < 2.5)
+                {
+                    animControl.SetTrigger("attack2");
+                    atkState = atk.chargeAttack;
+                    yield return new WaitForSeconds(attackAnimations[1].length);
+                    
+                }
+                else
+                {
+                    navAgent.destination = playerPos;
+                    animControl.SetTrigger("isChasing");
+                }
+
+                break;
+
+            case atk.chargeAttack:              
+                animControl.SetTrigger("attack3");
+                atkState = atk.shortMelee;
+                yield return new WaitForSeconds(attackAnimations[2].length);
+                
+                break;
+
+        }
+        isAttacking = false;
     }
 
- 
+
+
+
+
 }
-
-
