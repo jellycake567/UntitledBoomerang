@@ -26,12 +26,12 @@ public class PlayerStats : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            TakeDamage(10f);
-        }
+        //if (Input.GetKeyDown(KeyCode.N))
+        //{
+        //    TakeDamage(10f);
+        //}
 
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             UsePotion();
         }

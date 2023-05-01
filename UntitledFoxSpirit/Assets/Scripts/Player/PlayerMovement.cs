@@ -209,6 +209,7 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isParrying = false;
     private int lastAttackInt;
+    private bool resetAttack = true;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -1358,14 +1359,34 @@ public class PlayerMovement : MonoBehaviour
         // End animation combo
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
-            if (!animController.IsInTransition(0)) // Check if not in transiton, so it doesn't reset run during transition
+            if (!animController.IsInTransition(0) && resetAttack) // Check if not in transiton, so it doesn't reset run during transition
             {
                 animController.SetBool("Attack1", false);
                 disableMovement = false;
                 disableInputRotations = false;
+                resetAttack = false;
                 comboCounter = 0;
+
+                int atkNum = Random.Range(1, 5);
+                if (lastAttackInt == atkNum)
+                {
+                    atkNum++;
+
+                    if (atkNum > 4)
+                        atkNum = 1;
+                }
+
+                Debug.Log("Num: " + atkNum + " Last: " + lastAttackInt);
+                lastAttackInt = atkNum;
+
+                animController.SetInteger("RngAttack", atkNum);
             }
         }
+        else
+        {
+            resetAttack = true;
+        }
+
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2") && !animController.IsInTransition(0))
         {
             animController.SetBool("Attack2", false);
@@ -1385,7 +1406,6 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded && !isSneaking && !animController.IsInTransition(0))
             {
                 OnClick();
-                Debug.Log("Click");
             }
         }
 
@@ -1409,26 +1429,16 @@ public class PlayerMovement : MonoBehaviour
         // Increase combo count
         comboCounter++;
         // Clamp combo
-        comboCounter = Mathf.Clamp(comboCounter, 0, 1);
+        comboCounter = Mathf.Clamp(comboCounter, 0, 2);
+        
+
 
         if (comboCounter == 1 && !animController.GetBool("Attack1"))
         {
             animController.SetTrigger("Attack");
             animController.SetBool("Attack1", true);
 
-            int atkNum = Random.Range(1, 5);
-            if (lastAttackInt == atkNum)
-            {
-                atkNum++;
-
-                if (atkNum > 4)
-                    atkNum = 1;
-            }
-
-            Debug.Log("Num: " + atkNum + " Last: " + lastAttackInt);
-            lastAttackInt = atkNum;
-
-            animController.SetInteger("RngAttack", atkNum);
+            
         }
         
         // Transitions to next combo animation
