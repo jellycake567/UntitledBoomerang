@@ -1435,8 +1435,6 @@ public class PlayerMovement : MonoBehaviour
         {
             animController.SetTrigger("Attack");
             animController.SetBool("Attack1", true);
-
-            
         }
         
         // Transitions to next combo animation

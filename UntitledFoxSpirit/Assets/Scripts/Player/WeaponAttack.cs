@@ -11,6 +11,8 @@ public class WeaponAttack : MonoBehaviour
     [Header("References")]
     [SerializeField] Transform weaponhardPoints;
     [SerializeField] Transform leghardPoints;
+    [SerializeField] BoxCollider weaponCollider;
+    [SerializeField] BoxCollider legCollider;
 
     [Header("Debug")]
     public bool showDebugLines = false;
@@ -20,6 +22,7 @@ public class WeaponAttack : MonoBehaviour
     bool isAttacking = false;
     bool isBlocking = false;
     bool attackDetected = false;
+    int rngAtk = 0;
 
     Animation attackAnimation;
 
@@ -40,7 +43,7 @@ public class WeaponAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        AttackDetection();
+        //AttackDetection();
 
         //StartCoroutine(Attack());
     }
@@ -167,30 +170,7 @@ public class WeaponAttack : MonoBehaviour
         }
     }
 
-    IEnumerator Attack()
-    {
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking)
-        {
-            // Clear debug lines
-            if (showDebugLines)
-            {
-                debugHardPoints.Clear();
-            }
-
-            // Clear previous hardPoint
-            preHardPoints = new List<Vector3>();
-
-            // Attack Animation
-            attackAnimation["Attack"].speed = attackSpeed;
-            attackAnimation.Play();
-
-            isAttacking = true;
-
-            yield return new WaitForSeconds(attackAnimation["Attack"].length);
-
-            isAttacking = false;
-        }
-    }
+    
 
     #region Animation Events
 
@@ -208,12 +188,39 @@ public class WeaponAttack : MonoBehaviour
         preHardPoints = new List<Vector3>();
 
         Debug.Log("enable");
+
+        Animator animController = GetComponent<Animator>();
+        rngAtk = animController.GetInteger("RngAttack");
+
+
+        if (rngAtk == 4)
+        {
+            // Leg
+            legCollider.enabled = true;
+        }
+        else
+        {
+            // Weapon
+            weaponCollider.enabled = true;
+        }
+
     }
 
     void DisableAttackDetection()
     {
         attackDetected = false;
-        Debug.Log("disable");
+
+        if (rngAtk == 4)
+        {
+            // Leg
+            legCollider.enabled = false;
+        }
+        else
+        {
+            // Weapon
+            weaponCollider.enabled = false;
+        }
+
     }
 
     #endregion
