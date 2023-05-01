@@ -8,6 +8,10 @@ public class WeaponAttack : MonoBehaviour
     public float attackDamage;
     public float attackSpeed;
 
+    [Header("References")]
+    [SerializeField] Transform weaponhardPoints;
+    [SerializeField] Transform leghardPoints;
+
     [Header("Debug")]
     public bool showDebugLines = false;
 
@@ -38,7 +42,7 @@ public class WeaponAttack : MonoBehaviour
     {
         AttackDetection();
 
-        StartCoroutine(Attack());
+        //StartCoroutine(Attack());
     }
 
     void OnDrawGizmos()
@@ -54,14 +58,10 @@ public class WeaponAttack : MonoBehaviour
                 {
                     // If weapon has hit the enemy make line red
                     if (debugHardPoints[i][j].Item2)
-                    {
                         Gizmos.color = Color.red;
-                    }
                     else
-                    {
                         Gizmos.color = Color.blue;
-                    }
-                    
+
                     Gizmos.DrawLine(debugHardPoints[i][j].Item1, debugHardPoints[i - 1][j].Item1);
                 }
             }
@@ -72,12 +72,32 @@ public class WeaponAttack : MonoBehaviour
     {
         if (attackDetected)
         {
+            Debug.Log("detect");
             #region Get HardPoints in weapon
+
+           //Animator animController = GetComponent<Animator>();
+           //int rngAtk = animController.GetInteger("RngAttack");
 
             List<Vector3> hardPoints = new List<Vector3>();
 
-            // Get children(hardPoint) position of the weapon
-            for (int i = 0; i < transform.childCount; i++)
+            //if (rngAtk == 4)
+            //{
+            //    // Leg
+            //    for (int i = 0; i < leghardPoints.childCount; i++)
+            //    {
+            //        hardPoints.Add(transform.GetChild(i).position);
+            //    }
+            //}
+            //else
+            //{
+            //    // Weapon
+            //    for (int i = 0; i < weaponhardPoints.childCount; i++)
+            //    {
+            //        hardPoints.Add(transform.GetChild(i).position);
+            //    }
+            //}
+
+            for (int i = 0; i < weaponhardPoints.childCount; i++)
             {
                 hardPoints.Add(transform.GetChild(i).position);
             }
@@ -177,11 +197,23 @@ public class WeaponAttack : MonoBehaviour
     void EnableAttackDetection()
     {
         attackDetected = true;
+
+        // Clear debug lines
+        if (showDebugLines)
+        {
+            debugHardPoints.Clear();
+        }
+
+        // Clear previous hardPoint
+        preHardPoints = new List<Vector3>();
+
+        Debug.Log("enable");
     }
 
     void DisableAttackDetection()
     {
         attackDetected = false;
+        Debug.Log("disable");
     }
 
     #endregion

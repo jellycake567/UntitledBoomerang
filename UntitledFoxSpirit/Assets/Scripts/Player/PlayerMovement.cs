@@ -1375,8 +1375,6 @@ public class PlayerMovement : MonoBehaviour
                     if (atkNum > 4)
                         atkNum = 1;
                 }
-
-                Debug.Log("Num: " + atkNum + " Last: " + lastAttackInt);
                 lastAttackInt = atkNum;
 
                 animController.SetInteger("RngAttack", atkNum);
