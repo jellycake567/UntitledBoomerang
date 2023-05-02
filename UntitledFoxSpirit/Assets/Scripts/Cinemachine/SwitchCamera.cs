@@ -2,19 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
+using NUnit.Framework.Constraints;
 
 public class SwitchCamera : MonoBehaviour
 {
-    public CinemachineVirtualCamera activateCam;
-    public CinemachineVirtualCamera deactivateCam;
+    protected enum States
+    {
+        Path,
+        DoorReveal
+    }
 
+    CameraStates script;
+    [SerializeField] States stateToChange;
+
+    void Start()
+    {
+        script = FindObjectOfType<CameraStates>();
+    }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            activateCam.Priority = 10;
-            deactivateCam.Priority = 0;
+            script.controller.Play(stateToChange.ToString());
+            Debug.Log(stateToChange.ToString());
         }
     }
 }

@@ -1,10 +1,6 @@
 using Cinemachine;
 using PathCreation;
-using System;
 using System.Collections;
-using System.Reflection;
-using UnityEditor.Animations;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -42,17 +38,33 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float timeToReachTargetRotation = 0.14f;
     private float dampedTargetRotationCurrentYVelocity;
     private float dampedTargetRotationPassedTime;
-    private bool disableRotations = false;
+    private bool disableUpdateRotations = false;
+    private bool disableInputRotations = false;
+
+    [Header("Sneaking")]
+    [SerializeField] float sneakSpeed = 2f;
+    [SerializeField] Vector3 sneakCheckOffset;
+    [SerializeField] Vector3 sneakCheckSize;
+    private bool canUnsneak = true;
+    private bool isSneaking
+    {
+        get { return animController.GetBool("isSneaking"); }
+        set { animController.SetBool("isSneaking", value); }
+    }
 
     [Header("Jump")]
     public float humanJumpHeight = 5f;
     [SerializeField] float jumpRollVelocity = -5f;
     [SerializeField] float rootMotionJumpRollSpeed = 2f;
     private bool isLanding = false;
+    private bool isLandRolling = false;
+    private bool disableJumping = false;
 
     [Header("Dash")]
     public float humanDashTime = 5.0f;
     public float humanDashDistance = 4.0f;
+    [SerializeField] float dashCooldown = 1f;
+    private float currentDashCooldown = 1f;
     private bool isDashing = false;
     private bool disableDashing = false;
 
@@ -68,12 +80,19 @@ public class PlayerMovement : MonoBehaviour
     private float currentStaminaCooldown = 0f;
     private float currentStamina;
 
-    [Header("Wall Climb")]
+    [Header("Ledge Climb")]
     public float wallCheckDistance = 3.0f;
+    public float ledgeHangDistanceOffset;
+    public float ledgeHangYOffset;
+    [SerializeField] float distanceFromGround = 1f;
+    [SerializeField] float ledgeHangCooldown = 1f;
+    private float currentLedgeHangCooldown;
     public Transform wallCheck;
     public Transform ledgeCheck;
     public LayerMask groundLayer;
     public Animation climbAnim;
+    [SerializeField] Transform ledgeRootJntTransform;
+    private bool isClimbing = false;
 
     #endregion
 
@@ -107,6 +126,7 @@ public class PlayerMovement : MonoBehaviour
     public bool mode3D = false;
     private float currentSpeed;
     private float maxSpeed;
+
 
     [Header("Step Climb")]
     [SerializeField] GameObject stepRayUpper;
@@ -184,7 +204,12 @@ public class PlayerMovement : MonoBehaviour
     private bool canClimbWall;
     private bool isHoldingJump = false;
     private Vector3 prevInputDirection;
-    
+
+    private bool isHeavyLand = false;
+
+    private bool isParrying = false;
+    private int lastAttackInt;
+    private bool resetAttack = true;
 
     // Ledge Climbing
     private bool isTouchingWall;
@@ -201,7 +226,9 @@ public class PlayerMovement : MonoBehaviour
     // References
     Rigidbody rb;
     Animator animController;
-    CapsuleCollider capsuleCollider;
+    CapsuleCollider tallCollider;
+    CapsuleCollider shortCollider;
+    BoxCollider boxCollider;
 
     // Debug
     float currentMaxHeight = 0f;
@@ -214,13 +241,18 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
-        capsuleCollider = GetComponent<CapsuleCollider>();
+        boxCollider = GetComponent<BoxCollider>();
+
+
+        CapsuleCollider[] colliderArr = GetComponentsInChildren<CapsuleCollider>();
+        tallCollider = colliderArr[0];
+        shortCollider = colliderArr[1];
+
 
         currentStamina = maxStamina;
-
-        
 
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
@@ -248,13 +280,12 @@ public class PlayerMovement : MonoBehaviour
             currentMaxHeight = transform.position.y;
         }
 
-
         VirtualCamUpdate();
         GroundCheck();
         Stamina();
         WallClimb();
-        ShowLedgeRaycast();
         CheckInvulnerableTime();
+        HardLand();
 
         if (Input.GetKey(KeyCode.Space)) //if space is held
         {
@@ -271,28 +302,36 @@ public class PlayerMovement : MonoBehaviour
             // Player Input Functions
             
             ChangeForm();
-            LedgeClimb();
+            
+            Sneak();
+            
         }
 
-
+        LedgeClimb();
         Jump();
-        
-        
+
+        //Parry();
         DashInput();
         Attack();
+
+        
+
+        
     }
 
     void FixedUpdate()
     {
-        if (!isWallClimbing && !canClimbLedge)
-        {
-            ApplyGravity();
-            Movement();
-        }
+        ApplyGravity();
+        Movement();
     }
 
     void OnAnimatorMove()
     {
+        if (isClimbing)
+        {
+            rb.velocity = animController.deltaPosition * rootMotionAtkSpeed / Time.deltaTime;
+        }
+
         // Attacking root motion
         if (isAttacking && !disableDashing && !animController.IsInTransition(0))
         {
@@ -304,17 +343,18 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump Roll root motion
-        if (rb.velocity.y < jumpRollVelocity && animController.GetBool("BeforeGrounded") && !isLanding)
+        if (isLandRolling && animController.GetBool("Grounded") && !isLanding)
         {
             isLanding = true;
             disableMovement = true;
-            capsuleCollider.material = null;
+            disableInputRotations = true;
+            tallCollider.material = null;
         }
         if (isLanding)
         {
             AnimatorStateInfo jumpRollState = animController.GetCurrentAnimatorStateInfo(0);
 
-            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("BeforeGrounded") && animController.IsInTransition(0))
+            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("Grounded") && animController.IsInTransition(0))
             {
                 float y = rb.velocity.y;
 
@@ -327,13 +367,18 @@ public class PlayerMovement : MonoBehaviour
             {
                 isLanding = false;
                 disableMovement = false;
-                capsuleCollider.material = friction;
+                disableJumping = false;
+                disableInputRotations = false;
+                tallCollider.material = friction;
+                isLandRolling = false;
             }
         }
     }
 
     private void OnDrawGizmos()
     {
+        Gizmos.matrix = Matrix4x4.identity;
+
         // Spawn player position
         if (distanceSpawn >= 0 && distanceSpawn <= pathCreator.path.length)
         {
@@ -346,9 +391,17 @@ public class PlayerMovement : MonoBehaviour
 
         // Player ground check
         Vector3 point = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+        Gizmos.matrix = Matrix4x4.TRS(point, transform.rotation, transform.lossyScale);
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(point, groundCheckSize);
+        Gizmos.DrawWireCube(Vector3.zero, groundCheckSize);
+
+        // Player head check
+        Vector3 centerPos = new Vector3(transform.position.x + sneakCheckOffset.x, transform.position.y + sneakCheckOffset.y, transform.position.z + sneakCheckOffset.z) + Vector3.up;
+        Gizmos.matrix = Matrix4x4.TRS(centerPos, transform.rotation, transform.lossyScale);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(Vector3.zero, sneakCheckSize);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -407,12 +460,11 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            if (isDashing)
+            if (isDashing || animController.GetBool("isSneaking"))
             {
                 animController.SetBool("isMoving", false);
             }
             animController.SetBool("isSprinting", false);
-            Debug.Log("False");
 
             // If currently accelerating, but input is released, stop accel and start decel
             if (isAccel)
@@ -430,7 +482,10 @@ public class PlayerMovement : MonoBehaviour
 
         // Is player currently in jogging state
         if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
+        {
+            animController.speed = 1f;
             return;
+        }
 
         // Start acceleration when entering state
         if (!isAccel && !isDecel)
@@ -443,9 +498,7 @@ public class PlayerMovement : MonoBehaviour
             animController.speed = animJogSpeed;
         }
 
-        // If not moving, reset anim speed
-        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
-            animController.speed = 1f;
+        
 
         #endregion
     }
@@ -470,6 +523,8 @@ public class PlayerMovement : MonoBehaviour
             animController.SetBool("isMoving", false);
     }
 
+    #region Rotation
+
     void Rotation3D(float targetAngle3D, Vector3 direction)
     {
         // Player movement/rotation direction
@@ -479,7 +534,10 @@ public class PlayerMovement : MonoBehaviour
 
     Quaternion Rotation2D(Quaternion targetRot2D, Vector3 direction)
     {
-        // Flipping player
+        if (disableUpdateRotations)
+            return targetRot2D;
+
+        // Flipping direction
         if (prevInputDirection.x < 0f)
         {
             Vector3 rot = targetRot2D.eulerAngles;
@@ -488,7 +546,7 @@ public class PlayerMovement : MonoBehaviour
 
         //transform.rotation = targetRot2D;
         
-        if (disableRotations)
+        if (disableInputRotations)
             UpdateRotation(previousRotation);
         else
             UpdateRotation(targetRot2D);
@@ -501,7 +559,7 @@ public class PlayerMovement : MonoBehaviour
                 dampedTargetRotationPassedTime = 0f;
             }
 
-            if (disableRotations)
+            if (disableInputRotations)
                 return targetRot2D;
 
             // Saved for deceleration
@@ -517,19 +575,17 @@ public class PlayerMovement : MonoBehaviour
         float currentYAngle = rb.rotation.eulerAngles.y;
         if (currentYAngle == previousRotation.eulerAngles.y)
         {
-            Debug.Log("test");
             return;
         }
-
-        Debug.DrawRay(transform.position, rb.rotation.eulerAngles.normalized, Color.black);
 
         float smoothedYAngle = Mathf.SmoothDampAngle(currentYAngle, targetRot2D.eulerAngles.y, ref dampedTargetRotationCurrentYVelocity, timeToReachTargetRotation - dampedTargetRotationPassedTime);
         dampedTargetRotationPassedTime += Time.deltaTime;
 
         Quaternion targetRotation = Quaternion.Euler(0f, smoothedYAngle, 0f);
         rb.MoveRotation(targetRotation);
-        
     }
+
+    #endregion
 
     void AdjustPlayerOnPath()
     {
@@ -553,6 +609,8 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Movement functions
+
     void Movement()
     {
         if (!mode3D)
@@ -570,9 +628,13 @@ public class PlayerMovement : MonoBehaviour
 
 
         maxSpeed = isFox ? foxSpeed : humanSpeed;
+        
+        if (isSneaking)
+            maxSpeed = sneakSpeed;
 
         DetectAnimAcceleration(targetVelocity, direction); // uses maxSpeed
 
+        #region Rotation
 
         // Calculate player 3D rotation
         float targetAngle3D = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
@@ -586,9 +648,12 @@ public class PlayerMovement : MonoBehaviour
         else
             targetRot2D = Rotation2D(targetRot2D, direction);
 
+        #endregion
 
         if (disableMovement)
             return;
+
+        #region Is player moving?
 
         // If player is moving
         if (direction.magnitude > 0.01f)
@@ -614,7 +679,10 @@ public class PlayerMovement : MonoBehaviour
             currentSpeed += accelRatePerSec * Time.deltaTime;
             currentSpeed = Mathf.Min(currentSpeed, maxSpeed);
 
-            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || isRunning)
+            tallCollider.material = null;
+            shortCollider.material = null;
+
+            if (animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || isRunning || isDashing)
             {
                 currentSpeed = humanRunSpeed;
                 isRunning = true;
@@ -624,8 +692,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 isRunning = false;
             }
-
-            capsuleCollider.material = null;
         }
         else
         {
@@ -633,12 +699,17 @@ public class PlayerMovement : MonoBehaviour
             currentSpeed += decelRatePerSec * Time.deltaTime;
             currentSpeed = Mathf.Max(currentSpeed, 0);
 
-            capsuleCollider.material = friction;
+            tallCollider.material = friction;
+            shortCollider.material = friction;
 
             isRunning = false;
         }
 
         animController.SetFloat("ForwardSpeed", currentSpeed);
+
+        #endregion
+
+
 
         #region Calculate Velocity
 
@@ -678,8 +749,8 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isGrounded)
-            //StepClimb(desiredDir); // After movement
+        //if (isGrounded)
+        //  StepClimb(desiredDir); // After movement
 
         if (!mode3D)
         {
@@ -733,12 +804,13 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isDashing)
+        if (isLanding || isSneaking || isParrying || disableJumping && canDoubleJump || isClimbing)
             return;
 
         // Player jump input
-        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f)
+        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || isClimbing && jumpBufferCounter > 0f)
         {
+
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
             // Calculate Velocity
@@ -765,7 +837,7 @@ public class PlayerMovement : MonoBehaviour
             }
 
         } //2nd jump
-        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded && !animController.GetBool("BeforeGrounded"))
+        else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
         {
             //doubleJumpHeight = humanJumpHeight / 3;//the three is a magic number 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
@@ -814,7 +886,13 @@ public class PlayerMovement : MonoBehaviour
                 isDashing = false;
             }
 
-            if (!isFox && currentStamina < staminaConsumption || isFox || disableDashing && !isGrounded)
+            if (currentDashCooldown > 0f)
+            {
+                currentDashCooldown -= Time.deltaTime;
+                return;
+            }
+
+            if (!isFox && currentStamina < staminaConsumption || isFox || !disableDashing && !isGrounded || isSneaking)
             {
                 return;
             }
@@ -824,9 +902,10 @@ public class PlayerMovement : MonoBehaviour
                 animController.SetBool("Dash", true);
                 disableMovement = true;
                 disableDashing = true;
-                disableRotations = true;
+                disableInputRotations = true;
                 animController.speed = 1f;
 
+                currentDashCooldown = dashCooldown;
                 
                 if (prevInputDirection.x < 0.1f)
                 {
@@ -842,7 +921,8 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator Dash(bool usePathRotation)
     {
-        float tempSpeed = currentSpeed;
+        currentSpeed = humanRunSpeed;
+        animController.SetFloat("ForwardSpeed", currentSpeed);
 
         if (!isFox)
         {
@@ -867,6 +947,9 @@ public class PlayerMovement : MonoBehaviour
 
         while (currentDashTime > 0f)
         {
+            if (!isGrounded)
+                //break;
+
             Debug.Log("dashing");
 
             currentDashTime -= Time.deltaTime;
@@ -912,11 +995,84 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        currentSpeed = tempSpeed;
         disableMovement = false;
         disableDashing = false;
-        disableRotations = false;
-        animController.SetBool("isSprinting", true);
+        disableInputRotations = false;
+
+
+        if (isGrounded)
+            animController.SetBool("isSprinting", true);
+    }
+
+    void Sneak()
+    {
+        if (!isGrounded || isAttacking || disableJumping /* TODO: make own bool for sneaking*/)
+            return;
+
+        if (isSneaking)
+        {
+            Vector3 centerPos = new Vector3(transform.position.x + sneakCheckOffset.x, transform.position.y + sneakCheckOffset.y, transform.position.z + sneakCheckOffset.z) + Vector3.up;
+
+            canUnsneak = !Physics.CheckBox(centerPos, sneakCheckSize / 2, Quaternion.identity, ~ignorePlayerMask);
+        }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (isSneaking && canUnsneak)
+            {
+                tallCollider.enabled = true;
+                shortCollider.enabled = false;
+                isSneaking = false;
+            }
+            else
+            {
+                tallCollider.enabled = false;
+                shortCollider.enabled = true;
+                isSneaking = true;
+            }
+        }
+    }
+
+    void HardLand()
+    {
+        if (rb.velocity.y <= jumpRollVelocity)
+        {
+            disableJumping = true;
+
+            animController.SetTrigger("HeavyLand");
+
+            if (animController.GetBool("isMoving"))
+                isLandRolling = true;
+        }
+        
+
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("HardLanding"))
+        {
+            if (!isHeavyLand)
+            {
+                isHeavyLand = true;
+                disableMovement = true;
+                disableInputRotations = true;
+                tallCollider.material = friction;
+            }
+
+            if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
+            {
+                disableMovement = false;
+                disableInputRotations = false;
+                disableJumping = false;
+            }
+        }
+        else
+        {
+            if (isHeavyLand)
+            {
+                isHeavyLand = false;
+                disableMovement = false;
+                disableInputRotations = false;
+                disableJumping = false;
+            }
+        }
     }
 
     void StepClimb(Vector3 direction)
@@ -946,6 +1102,8 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
+    #endregion
 
     #endregion
 
@@ -986,7 +1144,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, Quaternion.identity, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, transform.rotation, ~ignorePlayerMask);
 
         RaycastHit hit;
         if(Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
@@ -1006,17 +1164,6 @@ public class PlayerMovement : MonoBehaviour
         {
             isGrounded = false;
             animController.SetBool("Grounded", false);
-        }
-
-        if(transform.position.y - newGroundY <= 1 && rb.velocity.y <= 1f)
-        {
-            animController.SetBool("BeforeGrounded", true);
-
-            animController.SetFloat("verticalVelocity", rb.velocity.y);
-        }
-        else
-        {
-            animController.SetBool("BeforeGrounded", false);
         }
     }
 
@@ -1138,6 +1285,40 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    // Parry not being used atm
+    void Parry()
+    {
+        if (isDashing || isSneaking || !isGrounded || isAttacking)
+            return;
+
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("Parry"))
+        {
+            if (!isParrying)
+                isParrying = true;
+        }
+        else
+        {
+            if (isParrying)
+            {
+                isParrying = false;
+                disableMovement = false;
+                disableInputRotations = false;
+                currentSpeed = 1f;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                animController.SetTrigger("Parry");
+                disableMovement = true;
+                rb.velocity = Vector3.zero;
+                disableInputRotations = true;
+                currentSpeed = 0f;
+                tallCollider.material = friction;
+                animController.SetBool("isMoving", false);
+            }
+        }
+    }
+
     void Attack()
     {
         // Is currently playing attack animation
@@ -1148,7 +1329,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.velocity = Vector3.zero;
                 disableMovement = true;
-                disableRotations = true;
+                disableInputRotations = true;
                 isAttacking = true;
                 currentSpeed = 0f;
             }
@@ -1165,7 +1346,7 @@ public class PlayerMovement : MonoBehaviour
             if (isAttacking)
             {
                 disableMovement = false;
-                disableRotations = false;
+                disableInputRotations = false;
                 isAttacking = false;
                 comboCounter = 0;
 
@@ -1176,16 +1357,34 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // End animation combo
-        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+        if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
-            if (!animController.IsInTransition(0)) // Check if not in transiton, so it doesn't reset run during transition
+            if (!animController.IsInTransition(0) && resetAttack) // Check if not in transiton, so it doesn't reset run during transition
             {
                 animController.SetBool("Attack1", false);
                 disableMovement = false;
-                disableRotations = false;
+                disableInputRotations = false;
+                resetAttack = false;
                 comboCounter = 0;
+
+                int atkNum = Random.Range(1, 5);
+                if (lastAttackInt == atkNum)
+                {
+                    atkNum++;
+
+                    if (atkNum > 4)
+                        atkNum = 1;
+                }
+                lastAttackInt = atkNum;
+
+                animController.SetInteger("RngAttack", atkNum);
             }
         }
+        else
+        {
+            resetAttack = true;
+        }
+
         if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2") && !animController.IsInTransition(0))
         {
             animController.SetBool("Attack2", false);
@@ -1202,10 +1401,9 @@ public class PlayerMovement : MonoBehaviour
         // Cooldown to click again
         if (currentAttackCooldown <= 0f)
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded)
+            if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded && !isSneaking && !animController.IsInTransition(0))
             {
                 OnClick();
-                Debug.Log("Click");
             }
         }
 
@@ -1217,7 +1415,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (comboCounter == 0)
         {
-            disableRotations = true;
+            disableInputRotations = true;
             isAttacking = true;
         }
 
@@ -1229,7 +1427,9 @@ public class PlayerMovement : MonoBehaviour
         // Increase combo count
         comboCounter++;
         // Clamp combo
-        comboCounter = Mathf.Clamp(comboCounter, 0, 1);
+        comboCounter = Mathf.Clamp(comboCounter, 0, 2);
+        
+
 
         if (comboCounter == 1 && !animController.GetBool("Attack1"))
         {
@@ -1271,24 +1471,109 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
+    void FinishLedgeClimb()
+    {
+        Transform rootJointTransform = ledgeRootJntTransform;
+        transform.position = rootJointTransform.position;
+        Debug.Log(ledgeRootJntTransform.localPosition);
+        ledgeRootJntTransform.localPosition = ledgeRootJntTransform.localPosition;
+
+        Debug.Log("run");
+        isClimbing = false;
+        canClimbLedge = false;
+        rb.useGravity = true;
+        disableMovement = false;
+        disableGravity = false;
+        disableInputRotations = false;
+        tallCollider.enabled = true;
+        animController.SetBool("LedgeHang", false);
+
+        currentLedgeHangCooldown = ledgeHangCooldown;
+    }
+
+
     void LedgeClimb()
     {
-        if (rb.velocity.y > 0f)
+        if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Hang"))
         {
-            // Raycasts
-            isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
-            isTouchingLedge = Physics.Raycast(ledgeCheck.position, transform.forward, wallCheckDistance, groundLayer);
-
-            Vector3 ledgeCheckEndPoint = ledgeCheck.position + transform.forward * wallCheckDistance;
-
-            // Check if there is floor
-            if (Physics.Raycast(ledgeCheckEndPoint, -transform.up, wallCheckDistance, groundLayer))
+            if (!isClimbing && canClimbLedge)
             {
-                if (isTouchingWall && !isTouchingLedge && !canClimbLedge)
+                isClimbing = true;
+            }
+
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space))
+            {
+                animController.SetTrigger("ClimbUp");
+
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                animController.SetTrigger("Drop");
+                animController.SetBool("LedgeHang", false);
+                canClimbLedge = false;
+                rb.useGravity = true;
+                disableMovement = false;
+                disableGravity = false;
+                disableInputRotations = false;
+                tallCollider.enabled = true;
+                isClimbing = false;
+
+                currentLedgeHangCooldown = ledgeHangCooldown;
+            }
+        }
+        else
+        {
+            if (currentLedgeHangCooldown > 0f)
+            {
+                currentLedgeHangCooldown -= Time.deltaTime;
+                return;
+            }
+
+            if (rb.velocity.y >= 0f || isGrounded || isClimbing)
+                return;
+
+
+            // Raycasts
+            isTouchingLedge = Physics.Raycast(ledgeCheck.position, -prevInputDirection, wallCheckDistance, groundLayer);
+            isTouchingWall = Physics.Raycast(wallCheck.position, transform.forward, wallCheckDistance, groundLayer);
+            Vector3 ledgeCheckEndPoint = ledgeCheck.position + -prevInputDirection * wallCheckDistance;
+            
+            Debug.DrawRay(ledgeCheckEndPoint, Vector3.down * wallCheckDistance);
+            
+
+            RaycastHit verticalHit;
+            // Check if there is floor
+            if (Physics.Raycast(ledgeCheckEndPoint, Vector3.down, out verticalHit, wallCheckDistance, groundLayer))
+            {
+                Vector3 wallCheckPos = ledgeCheck.position;
+                wallCheckPos.y = verticalHit.point.y - 0.01f;
+
+                Debug.DrawRay(wallCheckPos, -prevInputDirection * wallCheckDistance);
+
+                RaycastHit horizontalHit;
+                if (Physics.Raycast(wallCheckPos, -prevInputDirection, out horizontalHit, wallCheckDistance, groundLayer))
                 {
+                    if (Physics.Raycast(transform.position, Vector3.down, distanceFromGround, groundLayer))
+                        return;
+
+                    if (canClimbLedge)
+                        return;
+
                     canClimbLedge = true;
-                    climbAnim.Play();
+                    animController.SetBool("LedgeHang", true);
                     rb.velocity = Vector3.zero;
+                    rb.useGravity = false;
+                    disableMovement = true;
+                    disableGravity = true;
+                    disableInputRotations = true;
+                    tallCollider.enabled = false;
+
+                    Vector3 hangPos;
+                    hangPos = horizontalHit.point + -prevInputDirection * ledgeHangDistanceOffset;
+                    hangPos.y = verticalHit.point.y - ledgeHangYOffset;
+
+                    transform.position = hangPos;
                 }
             }
         }
@@ -1310,12 +1595,6 @@ public class PlayerMovement : MonoBehaviour
             virtualCam3D.Priority = 0;
             virtualCam2D.Priority = 10;
         }
-    }
-
-    void ShowLedgeRaycast()
-    {
-        Debug.DrawLine(wallCheck.position, wallCheck.position + transform.forward * wallCheckDistance);
-        Debug.DrawLine(ledgeCheck.position, ledgeCheck.position + transform.forward * wallCheckDistance);
     }
 
     Quaternion GetPathRotation()

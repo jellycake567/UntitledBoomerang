@@ -99,7 +99,23 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.024098143
+        functionName: EnableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.5165563
+        functionName: DisableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -128,7 +144,23 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.23602483
+        functionName: EnableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.67391306
+        functionName: DisableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -157,7 +189,23 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.5170808
+        functionName: EnableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.70186335
+        functionName: DisableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -186,7 +234,23 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.37111792
+        functionName: EnableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.6956522
+        functionName: DisableAttackDetection
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 169217a4ec6eda04eb0566d88437e4b2,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

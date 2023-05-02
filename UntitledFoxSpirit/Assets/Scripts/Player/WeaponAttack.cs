@@ -8,6 +8,12 @@ public class WeaponAttack : MonoBehaviour
     public float attackDamage;
     public float attackSpeed;
 
+    [Header("References")]
+    [SerializeField] Transform weaponhardPoints;
+    [SerializeField] Transform leghardPoints;
+    [SerializeField] BoxCollider weaponCollider;
+    [SerializeField] BoxCollider legCollider;
+
     [Header("Debug")]
     public bool showDebugLines = false;
 
@@ -16,6 +22,7 @@ public class WeaponAttack : MonoBehaviour
     bool isAttacking = false;
     bool isBlocking = false;
     bool attackDetected = false;
+    int rngAtk = 0;
 
     Animation attackAnimation;
 
@@ -36,9 +43,9 @@ public class WeaponAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        AttackDetection();
+        //AttackDetection();
 
-        StartCoroutine(Attack());
+        //StartCoroutine(Attack());
     }
 
     void OnDrawGizmos()
@@ -54,14 +61,10 @@ public class WeaponAttack : MonoBehaviour
                 {
                     // If weapon has hit the enemy make line red
                     if (debugHardPoints[i][j].Item2)
-                    {
                         Gizmos.color = Color.red;
-                    }
                     else
-                    {
                         Gizmos.color = Color.blue;
-                    }
-                    
+
                     Gizmos.DrawLine(debugHardPoints[i][j].Item1, debugHardPoints[i - 1][j].Item1);
                 }
             }
@@ -72,12 +75,32 @@ public class WeaponAttack : MonoBehaviour
     {
         if (attackDetected)
         {
+            Debug.Log("detect");
             #region Get HardPoints in weapon
+
+           //Animator animController = GetComponent<Animator>();
+           //int rngAtk = animController.GetInteger("RngAttack");
 
             List<Vector3> hardPoints = new List<Vector3>();
 
-            // Get children(hardPoint) position of the weapon
-            for (int i = 0; i < transform.childCount; i++)
+            //if (rngAtk == 4)
+            //{
+            //    // Leg
+            //    for (int i = 0; i < leghardPoints.childCount; i++)
+            //    {
+            //        hardPoints.Add(transform.GetChild(i).position);
+            //    }
+            //}
+            //else
+            //{
+            //    // Weapon
+            //    for (int i = 0; i < weaponhardPoints.childCount; i++)
+            //    {
+            //        hardPoints.Add(transform.GetChild(i).position);
+            //    }
+            //}
+
+            for (int i = 0; i < weaponhardPoints.childCount; i++)
             {
                 hardPoints.Add(transform.GetChild(i).position);
             }
@@ -147,41 +170,57 @@ public class WeaponAttack : MonoBehaviour
         }
     }
 
-    IEnumerator Attack()
-    {
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking)
-        {
-            // Clear debug lines
-            if (showDebugLines)
-            {
-                debugHardPoints.Clear();
-            }
-
-            // Clear previous hardPoint
-            preHardPoints = new List<Vector3>();
-
-            // Attack Animation
-            attackAnimation["Attack"].speed = attackSpeed;
-            attackAnimation.Play();
-
-            isAttacking = true;
-
-            yield return new WaitForSeconds(attackAnimation["Attack"].length);
-
-            isAttacking = false;
-        }
-    }
+    
 
     #region Animation Events
 
     void EnableAttackDetection()
     {
         attackDetected = true;
+
+        // Clear debug lines
+        if (showDebugLines)
+        {
+            debugHardPoints.Clear();
+        }
+
+        // Clear previous hardPoint
+        preHardPoints = new List<Vector3>();
+
+        Debug.Log("enable");
+
+        Animator animController = GetComponent<Animator>();
+        rngAtk = animController.GetInteger("RngAttack");
+
+
+        if (rngAtk == 4)
+        {
+            // Leg
+            legCollider.enabled = true;
+        }
+        else
+        {
+            // Weapon
+            weaponCollider.enabled = true;
+        }
+
     }
 
     void DisableAttackDetection()
     {
         attackDetected = false;
+
+        if (rngAtk == 4)
+        {
+            // Leg
+            legCollider.enabled = false;
+        }
+        else
+        {
+            // Weapon
+            weaponCollider.enabled = false;
+        }
+
     }
 
     #endregion
