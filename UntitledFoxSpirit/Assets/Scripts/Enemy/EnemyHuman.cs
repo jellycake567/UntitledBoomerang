@@ -134,10 +134,10 @@ public class EnemyHuman : MonoBehaviour
             Flip();
         }
 
-        navAgent.destination = playerPos;
+        //navAgent.destination = playerPos;
 
 
-        Debug.Log("Distance from Player" + distFromPlayer);
+        //Debug.Log("Distance from Player" + distFromPlayer);
         //attack the player when within range
         if (distFromPlayer < 2.5 && !hasAttacked)
         {
@@ -151,6 +151,7 @@ public class EnemyHuman : MonoBehaviour
         }
         else if (distFromPlayer < 2.5)
         {
+            navAgent.destination = playerPos;
             animControl.SetTrigger("combatIdleTrig");
         }
 
