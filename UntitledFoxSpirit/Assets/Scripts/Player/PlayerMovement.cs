@@ -192,6 +192,7 @@ public class PlayerMovement : MonoBehaviour
     public GameObject human;
     public GameObject fox;
     [SerializeField] PhysicMaterial friction;
+    [SerializeField] Transform rootJnt;
 
     #endregion
 
@@ -330,6 +331,8 @@ public class PlayerMovement : MonoBehaviour
         if (isClimbing)
         {
             rb.velocity = animController.deltaPosition * rootMotionAtkSpeed / Time.deltaTime;
+
+            Debug.DrawRay(transform.position, animController.deltaPosition.normalized);
         }
 
         // Attacking root motion
@@ -804,7 +807,7 @@ public class PlayerMovement : MonoBehaviour
 
         #endregion
 
-        if (isLanding || isSneaking || isParrying || disableJumping && canDoubleJump || isClimbing)
+        if (isLanding || isSneaking || isParrying || disableJumping && canDoubleJump || isClimbing || canClimbLedge)
             return;
 
         // Player jump input
@@ -1475,6 +1478,7 @@ public class PlayerMovement : MonoBehaviour
     void FinishLedgeClimb()
     {
         Transform rootJointTransform = ledgeRootJntTransform;
+        rootJointTransform.position = new Vector3(rootJointTransform.position.x, rootJointTransform.position.y - 0.65f, rootJointTransform.position.z);
         transform.position = rootJointTransform.position;
         Debug.Log(ledgeRootJntTransform.localPosition);
         ledgeRootJntTransform.localPosition = ledgeRootJntTransform.localPosition;

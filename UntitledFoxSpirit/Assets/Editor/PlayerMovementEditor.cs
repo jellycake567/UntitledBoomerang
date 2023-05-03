@@ -161,6 +161,8 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("human"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("fox"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("friction"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootJnt"));
+
 
 
     }
