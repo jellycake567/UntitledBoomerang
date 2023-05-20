@@ -105,6 +105,7 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxVelocityChange"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("frictionAmount"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("in3Dmode"));
+        
 
         // Step Climb
         EditorGUILayout.PropertyField(serializedObject.FindProperty("stepRayUpper"));
@@ -153,6 +154,8 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceSpawn"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("spawnYOffset"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("adjustVelocity"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("distanceFromClosestPointonPath"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("switchDistance"));
 
         // References
         EditorGUILayout.PropertyField(serializedObject.FindProperty("staminaBar"));

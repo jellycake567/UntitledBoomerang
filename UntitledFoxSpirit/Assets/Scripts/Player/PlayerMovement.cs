@@ -184,7 +184,7 @@ public class PlayerMovement : MonoBehaviour
     public float distanceSpawn = 0f;
     public float spawnYOffset = 0f;
     public float switchDistance = 1f;
-    float distanceFromClosestPointonPath;
+    public float distanceFromClosestPointonPath;
     [Tooltip("Velocity to push player towards the path")] public float adjustVelocity = 1.0f;
 
     [Header("References")]
@@ -619,7 +619,7 @@ public class PlayerMovement : MonoBehaviour
         if (in3Dmode)
         {
             //checking distance from closest point on path 
-            distanceFromClosestPointonPath = Vector3.Magnitude(transform.position - pathCreator.path.GetClosestPointOnPath(transform.position));
+            distanceFromClosestPointonPath = Vector3.Magnitude(transform.position.IgnoreYAxis() - pathCreator.path.GetClosestPointOnPath(transform.position).IgnoreYAxis());
             if (distanceFromClosestPointonPath < switchDistance)
             {
                 in3Dmode = false;
@@ -679,7 +679,7 @@ public class PlayerMovement : MonoBehaviour
             #region Reached end of path
             if (direction.x < 0f)
             {
-                if (distanceOnPath <= 0)
+                if (distanceOnPath <= 0) //&& !in3Dmode)
                 {
                     //maxSpeed = 0f;
                     in3Dmode = true;

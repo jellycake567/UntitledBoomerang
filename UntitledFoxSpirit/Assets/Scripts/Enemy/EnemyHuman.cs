@@ -230,7 +230,9 @@ public class EnemyHuman : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// Rotates the object
+    /// </summary>
     void Flip()
     {
         Vector3 rotation = transform.eulerAngles + Quaternion.Euler(new Vector3(0, 180f, 0)).eulerAngles;
