@@ -1,6 +1,7 @@
 using Cinemachine;
 using PathCreation;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -153,7 +154,9 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = -9.81f;
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
+    public float reduceVelocityPeak = 5f;
     public float reduceVelocity = 5f;
+    private bool reduceVelocityOnce = false;
     [SerializeField] Vector3 groundCheckOffset;
     [SerializeField] Vector3 groundCheckSize;
     public LayerMask ignorePlayerMask;
@@ -813,6 +816,7 @@ public class PlayerMovement : MonoBehaviour
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || isClimbing && jumpBufferCounter > 0f)
         {
+            reduceVelocityOnce = true;
 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
@@ -1119,7 +1123,8 @@ public class PlayerMovement : MonoBehaviour
             // Reached max height, positive velocity
             if (transform.position.y >= updateMaxHeight && rb.velocity.y > 0f && !isGrounded)
             {
-                rb.AddForce(new Vector3(0, gravity * reduceVelocity, 0));
+                Debug.Log(rb.velocity);
+                rb.AddForce(new Vector3(0, gravity * reduceVelocityPeak, 0)); // This is never hit because of max height
             }
             
             if (rb.velocity.y <= 0f)
@@ -1130,15 +1135,19 @@ public class PlayerMovement : MonoBehaviour
                 if (!isGrounded)
                     animController.SetBool("Fall", true);
             }
-            else if (rb.velocity.y > 0f && !isHoldingJump) // while jumping and not holding jump
+            else if (rb.velocity.y > 0f && !isHoldingJump && reduceVelocityOnce) // while jumping and not holding jump
             {
-                rb.AddForce(new Vector3(0, -50, 0));
+                reduceVelocityOnce = false;
                 //rb.AddForce(new Vector3(0, gravity * reduceVelocity, 0));
+                rb.velocity = new Vector3(rb.velocity.x, reduceVelocity, rb.velocity.z);
             }   
             else
             {
                 // Jumping while holding jump input
                 rb.AddForce(new Vector3(0, gravity, 0));
+
+                if (rb.velocity.y < 0f)
+                    reduceVelocityOnce = false;
             }
         }
     }
