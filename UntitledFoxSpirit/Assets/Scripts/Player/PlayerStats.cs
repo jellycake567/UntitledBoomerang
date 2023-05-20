@@ -39,6 +39,7 @@ public class PlayerStats : MonoBehaviour
         //    TakeDamage(10f);
         //}
 
+
         if (Input.GetKeyDown(KeyCode.Q))
         {
             UsePotion();
@@ -49,8 +50,8 @@ public class PlayerStats : MonoBehaviour
     {
         if (!isInvulnerable)
         {
-            health -= damage;
-
+            currentHealth -= damage;
+            healthBar.value = currentHealth / health;
             StartCoroutine(DamageEffect());
         }
     }
@@ -82,5 +83,7 @@ public class PlayerStats : MonoBehaviour
             currentPotions--;
             potionNumDisplay.text = currentPotions.ToString();
         }
+
+        
     }
 }

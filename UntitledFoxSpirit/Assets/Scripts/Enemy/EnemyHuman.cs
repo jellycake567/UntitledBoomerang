@@ -13,6 +13,9 @@ public class EnemyHuman : MonoBehaviour
     public float decisionTimerMax = 0;
     public float speed;
     public float velocity;
+    public float meleeAttackRange = 2;
+    float initialStopDist;
+    float smallerStopDist = 1.0f;
     bool hasAttacked = false;
 
     float distFromPlayer = 0;
@@ -40,7 +43,7 @@ public class EnemyHuman : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         navAgent = GetComponent<NavMeshAgent>();
         animControl = GetComponent<Animator>();
-
+        initialStopDist = navAgent.stoppingDistance;
     }
 
 
@@ -133,25 +136,28 @@ public class EnemyHuman : MonoBehaviour
         {
             Flip();
         }
-
         navAgent.destination = playerPos;
-
-
         Debug.Log("Distance from Player" + distFromPlayer);
         //attack the player when within range
-        if (distFromPlayer < 2.5 && !hasAttacked)
+        if (distFromPlayer < meleeAttackRange && !hasAttacked)
         {
             
             StartCoroutine(AttackCycle());
         }
-        else if (distFromPlayer > 2.5)
+        else if (distFromPlayer > navAgent.stoppingDistance)//outside of close proximity
         {
             animControl.SetTrigger("chaseTrig");
-
+            
         }
-        else if (distFromPlayer < 2.5)
+        else if (distFromPlayer < navAgent.stoppingDistance) //within close proximity
         {
+            navAgent.stoppingDistance = smallerStopDist;
             animControl.SetTrigger("combatIdleTrig");
+        }
+
+        if(distFromPlayer > navAgent.stoppingDistance + 3.0f)
+        {
+            navAgent.stoppingDistance = initialStopDist;
         }
 
         if (!hasAttacked)

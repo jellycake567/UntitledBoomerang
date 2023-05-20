@@ -1132,7 +1132,8 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (rb.velocity.y > 0f && !isHoldingJump) // while jumping and not holding jump
             {
-                rb.AddForce(new Vector3(0, -100, 0));
+                rb.AddForce(new Vector3(0, -50, 0));
+                //rb.AddForce(new Vector3(0, gravity * reduceVelocity, 0));
             }   
             else
             {
