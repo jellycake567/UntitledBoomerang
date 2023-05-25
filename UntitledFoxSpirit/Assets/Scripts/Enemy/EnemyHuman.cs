@@ -12,10 +12,10 @@ public class EnemyHuman : MonoBehaviour
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
     public float speed;
-    public float velocity;
+    //public float velocity;
     public float meleeAttackRange = 2;
     float initialStopDist;
-    float smallerStopDist = 1.0f;
+    float smallerStopDist = 1.40f;
     bool hasAttacked = false;
 
     float distFromPlayer = 0;
@@ -55,7 +55,7 @@ public class EnemyHuman : MonoBehaviour
         }
         else if (AIState == State.Wander)
         {             
-            if(rb.velocity == Vector3.zero)
+            if(rb.velocity.x == 0 && rb.velocity.z == 0)
             {
                 rb.AddForce(transform.forward * moveSpeed, ForceMode.VelocityChange);
             }
@@ -86,7 +86,8 @@ public class EnemyHuman : MonoBehaviour
             animControl.SetBool("isChasing", false);
             Wander();
         }
-        
+
+        Debug.Log("rb " + rb.velocity);
     }
 
     void Standing()
@@ -98,11 +99,11 @@ public class EnemyHuman : MonoBehaviour
             //Does the AI move?
             optionCount = 2;
             choice = decideRandomly(optionCount);
-            if (choice == 0)
+            if (choice == 0) //yes
             {
                 AIState = State.Wander;
             }
-            else if (choice == 1)
+            else if (choice == 1) //no
             {
                 //dont move
                 rb.velocity = Vector3.zero;
@@ -136,8 +137,12 @@ public class EnemyHuman : MonoBehaviour
         {
             Flip();
         }
+
+
         navAgent.destination = playerPos;
-        Debug.Log("Distance from Player" + distFromPlayer);
+
+
+        //Debug.Log("Distance from Player" + distFromPlayer);
         //attack the player when within range
         if (distFromPlayer < meleeAttackRange && !hasAttacked)
         {
@@ -147,7 +152,7 @@ public class EnemyHuman : MonoBehaviour
         else if (distFromPlayer > navAgent.stoppingDistance)//outside of close proximity
         {
             animControl.SetTrigger("chaseTrig");
-            
+            //animControl.SetFloat("forwardBlend", Mathf.Clamp01(navAgent.speed));
         }
         else if (distFromPlayer < navAgent.stoppingDistance) //within close proximity
         {

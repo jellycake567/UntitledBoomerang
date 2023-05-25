@@ -15064,7 +15064,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 757145493}
   m_LocalRotation: {x: 0.060844608, y: 0.9974836, z: 0.009905797, w: 0.035019007}
-  m_LocalPosition: {x: 10.81, y: -0.5877207, z: -24.37}
+  m_LocalPosition: {x: 10.809, y: -0.5955, z: -24.3702}
   m_LocalScale: {x: 0.18724295, y: 0.18724297, z: 0.18724295}
   m_Children:
   - {fileID: 1551390199}
@@ -15939,7 +15939,7 @@ MonoBehaviour:
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
   frictionAmount: 0.5
-  mode3D: 0
+  in3Dmode: 0
   stepRayUpper: {fileID: 1660913469}
   stepRayUpperDistance: 2
   stepRayLower: {fileID: 254860450}
@@ -15972,6 +15972,8 @@ MonoBehaviour:
   maxDistancePath: 0.1
   distanceSpawn: 20.51
   spawnYOffset: 0
+  switchDistance: 1
+  distanceFromClosestPointonPath: 0
   adjustVelocity: 5
   staminaBar: {fileID: 1558228989}
   virtualCam2D: {fileID: 1387391290}
@@ -20853,7 +20855,7 @@ MonoBehaviour:
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
   frictionAmount: 0.5
-  mode3D: 0
+  in3Dmode: 0
   stepRayUpper: {fileID: 0}
   stepRayUpperDistance: 0.7
   stepRayLower: {fileID: 0}
@@ -20886,6 +20888,8 @@ MonoBehaviour:
   maxDistancePath: 0.1
   distanceSpawn: 19.2
   spawnYOffset: 0
+  switchDistance: 1
+  distanceFromClosestPointonPath: 0
   adjustVelocity: 5
   staminaBar: {fileID: 1558228989}
   virtualCam2D: {fileID: 1387391290}
@@ -24494,8 +24498,13 @@ PrefabInstance:
       objectReference: {fileID: 599279846}
     - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
+      propertyPath: m_Speed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
+        type: 3}
       propertyPath: m_StoppingDistance
-      value: 1.75
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
@@ -43215,7 +43224,7 @@ MonoBehaviour:
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
   frictionAmount: 0.5
-  mode3D: 0
+  in3Dmode: 0
   stepRayUpper: {fileID: 1353874248}
   stepRayUpperDistance: 2
   stepRayLower: {fileID: 557097190}
@@ -43248,6 +43257,8 @@ MonoBehaviour:
   maxDistancePath: 0.1
   distanceSpawn: 20.51
   spawnYOffset: 0
+  switchDistance: 1
+  distanceFromClosestPointonPath: 0
   adjustVelocity: 5
   staminaBar: {fileID: 1558228989}
   virtualCam2D: {fileID: 1387391290}

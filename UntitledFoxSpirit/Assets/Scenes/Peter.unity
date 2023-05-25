@@ -7178,7 +7178,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh15268
+  m_Name: pb_Mesh16242
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -10127,7 +10127,7 @@ MonoBehaviour:
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
   frictionAmount: 0.5
-  mode3D: 0
+  in3Dmode: 0
   stepRayUpper: {fileID: 462466086}
   stepRayUpperDistance: 2
   stepRayLower: {fileID: 1707047225}
@@ -10155,13 +10155,15 @@ MonoBehaviour:
   verticalKnockback: 10
   isInvulnerable: 0
   camRotationSpeed2D: 0.1
-  mainCamera: {fileID: 0}
-  pathCreator: {fileID: 0}
+  mainCamera: {fileID: 382136851}
+  pathCreator: {fileID: 450984332}
   maxDistancePath: 0.1
   distanceSpawn: 20.51
   spawnYOffset: 0
+  switchDistance: 1
+  distanceFromClosestPointonPath: 0
   adjustVelocity: 5
-  staminaBar: {fileID: 0}
+  staminaBar: {fileID: 1624168103}
   virtualCam2D: {fileID: 1720162214}
   virtualCam3D: {fileID: 1560146178}
   human: {fileID: 0}
@@ -10468,7 +10470,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 662201338}
-  m_LocalRotation: {x: 0.15272145, y: -0, z: -0, w: 0.98826927}
+  m_LocalRotation: {x: 0.15272145, y: 1e-45, z: -0, w: 0.98826927}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -13236,7 +13238,6 @@ MonoBehaviour:
   decisionTimerMin: 2
   decisionTimerMax: 5
   speed: 4
-  velocity: 0
   meleeAttackRange: 2
   AIState: 0
 --- !u!114 &856354348
@@ -19269,7 +19270,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1218305745}
-  m_LocalRotation: {x: 0.17067228, y: -1e-45, z: -0, w: 0.98532784}
+  m_LocalRotation: {x: 0.17067228, y: 1e-45, z: -0, w: 0.98532784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -22124,7 +22125,7 @@ MonoBehaviour:
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
   frictionAmount: 0.5
-  mode3D: 0
+  in3Dmode: 0
   stepRayUpper: {fileID: 0}
   stepRayUpperDistance: 0.7
   stepRayLower: {fileID: 0}
@@ -22157,6 +22158,8 @@ MonoBehaviour:
   maxDistancePath: 0.1
   distanceSpawn: 19.2
   spawnYOffset: 0
+  switchDistance: 1
+  distanceFromClosestPointonPath: 0
   adjustVelocity: 5
   staminaBar: {fileID: 1624168103}
   virtualCam2D: {fileID: 1720162214}
@@ -23061,7 +23064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab94c5d3ac3b0e4418ed62e264836555, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 1485169907}
+  player: {fileID: 651733122}
   pauseMenu: {fileID: 0}
   playerPos: {x: 0, y: 0, z: 0}
 --- !u!4 &1522315448
@@ -30678,6 +30681,21 @@ PrefabInstance:
       propertyPath: GM
       value: 
       objectReference: {fileID: 1522315447}
+    - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
+        type: 3}
+      propertyPath: m_Speed
+      value: 14.76
+      objectReference: {fileID: 0}
+    - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
+        type: 3}
+      propertyPath: m_Acceleration
+      value: 5.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
+        type: 3}
+      propertyPath: m_StoppingDistance
+      value: 1.73
+      objectReference: {fileID: 0}
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: m_RootOrder
@@ -30691,12 +30709,12 @@ PrefabInstance:
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.65114
+      value: 7.08
       objectReference: {fileID: 0}
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.7895354
+      value: -6.93
       objectReference: {fileID: 0}
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
