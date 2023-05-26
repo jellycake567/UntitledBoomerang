@@ -17,6 +17,10 @@ public class EnemyHuman : MonoBehaviour
     float initialStopDist;
     float smallerStopDist = 1.40f;
     bool hasAttacked = false;
+    bool in3Dmode = true;
+
+    float initialAccel;
+    public float runAccel = 3;
 
     float distFromPlayer = 0;
     int optionCount = 0;
@@ -26,6 +30,20 @@ public class EnemyHuman : MonoBehaviour
     Animator animControl;
 
     NavMeshAgent navAgent;
+    Vector3 targetPoint;
+
+    //Wandering 3D variables
+    float wanderRadius = 3;
+    float wanderDistance = 5;
+    float wanderJitter = 4;
+    Vector3 wanderPreviousTarget;
+    Vector3 newTarget;
+
+    //debug wandering 3D
+    Vector3 debug_wanderDistancePoint;
+    float x;
+    float z;
+    float angle;
 
     public enum State
     {
@@ -44,6 +62,13 @@ public class EnemyHuman : MonoBehaviour
         navAgent = GetComponent<NavMeshAgent>();
         animControl = GetComponent<Animator>();
         initialStopDist = navAgent.stoppingDistance;
+        initialAccel = navAgent.acceleration;
+
+        wanderPreviousTarget.x = Random.Range(-wanderRadius, wanderRadius);
+        wanderPreviousTarget.y = transform.position.y;
+        wanderPreviousTarget.z = Random.Range(-wanderRadius, wanderRadius);
+        debug_wanderDistancePoint = new Vector3();
+        newTarget = new Vector3();
     }
 
 
@@ -55,11 +80,20 @@ public class EnemyHuman : MonoBehaviour
         }
         else if (AIState == State.Wander)
         {             
-            if(rb.velocity.x == 0 && rb.velocity.z == 0)
+            //2D
+            if(!in3Dmode)
             {
-                rb.AddForce(transform.forward * moveSpeed, ForceMode.VelocityChange);
+                if(navAgent.velocity == Vector3.zero)
+                {
+                    targetPoint = transform.forward * Random.Range(2,6);
+                    navAgent.destination = transform.position + targetPoint;
+                    FindPlayer();
+                }
+                return;
             }
-            FindPlayer();
+
+            WanderIn3D();
+
         }
     }
 
@@ -71,7 +105,7 @@ public class EnemyHuman : MonoBehaviour
             decisionTimer -= Time.deltaTime;
             animControl.SetBool("isWalking", false);
             animControl.SetBool("isChasing", false);
-
+            AdjustForwardBlend(AIState);
             Standing();
         }
         else if (AIState == State.Combat)
@@ -84,10 +118,21 @@ public class EnemyHuman : MonoBehaviour
             decisionTimer -= Time.deltaTime;
             animControl.SetBool("isWalking", true);
             animControl.SetBool("isChasing", false);
+            AdjustForwardBlend(AIState);
             Wander();
         }
 
-        Debug.Log("rb " + rb.velocity);
+        //Debug.Log("nav agent " + navAgent.velocity);
+
+        debug_wanderDistancePoint.x = transform.position.x;
+        debug_wanderDistancePoint.y = transform.position.y;
+        debug_wanderDistancePoint.z = transform.position.z;
+
+        debug_wanderDistancePoint = debug_wanderDistancePoint + transform.forward * wanderDistance;
+
+        //sin(theta) = o/h
+
+        //Debug.Log(newTarget.y);
     }
 
     void Standing()
@@ -110,11 +155,16 @@ public class EnemyHuman : MonoBehaviour
                 AIState = State.Standing;
 
                 choice = decideRandomly(optionCount);
+
                 //does AI turn around?
-                if (choice == 0) //yes
+                if (!in3Dmode)
                 {
-                    //turn around
-                    Flip();
+                    if (choice == 0) //yes
+                    {
+                        //turn around
+                        Flip();
+                    }
+
                 }
             }
 
@@ -138,7 +188,7 @@ public class EnemyHuman : MonoBehaviour
             Flip();
         }
 
-
+        navAgent.acceleration = runAccel;
         navAgent.destination = playerPos;
 
 
@@ -186,7 +236,7 @@ public class EnemyHuman : MonoBehaviour
                 AIState = State.Wander;
 
                 choice = decideRandomly(optionCount);
-             
+                
             }
             else if (choice == 1)
             {
@@ -195,17 +245,23 @@ public class EnemyHuman : MonoBehaviour
                 AIState = State.Standing;
 
                 //does AI turn around?
-                if (choice == 0) //yes
+                if(!in3Dmode)
                 {
-                    //turn around
-                    Flip();
+                    if (choice == 0) //yes
+                    {
+                        //turn around
+                        Flip();
+                    }
+
                 }
             }
 
 
             decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
         }
-            
+         
+
+      
     }
 
     int decideRandomly(int optionCount)
@@ -255,9 +311,11 @@ public class EnemyHuman : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        //Gizmos.color = Color.red;
-        //Gizmos.DrawLine(transform.position, transform.position + transform.forward * detectionLength);
-        //Gizmos.DrawSphere(transform.position, 6);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(transform.position, debug_wanderDistancePoint);        
+        Gizmos.DrawWireSphere(debug_wanderDistancePoint, wanderRadius);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(transform.position, newTarget);        
     }
 
     IEnumerator AttackCycle()
@@ -270,7 +328,70 @@ public class EnemyHuman : MonoBehaviour
         hasAttacked = false;
     }
 
+    void AdjustForwardBlend(State AIstate)
+    {
+        Vector3 velocity = new Vector3();
+        float velocityMag = 0;
+        switch (AIState)
+        {
+            case State.Wander:
+
+            case State.Standing:
+                velocity.x = rb.velocity.x;
+                velocity.y = 0;
+                velocity.z = rb.velocity.z;
+                velocityMag = Vector3.Magnitude(velocity);
+                animControl.SetFloat("forwardBlend", Mathf.Clamp(velocityMag, 0, 1));
+                break;
+
+            case State.Combat:
+                velocity.x = navAgent.velocity.x;
+                velocity.y = 0;
+                velocity.z = navAgent.velocity.z;
+                velocityMag = Vector3.Magnitude(velocity);
+                animControl.SetFloat("forwardBlend", Mathf.Clamp(velocityMag, 0, 1));
+                break;
+
+        }
+
+        
+
+    }
  
+
+    void WanderIn3D()
+    {
+        //newTarget = new Vector3();
+        newTarget.x = wanderPreviousTarget.x + Random.Range(-wanderJitter, wanderJitter);
+        newTarget.y = wanderPreviousTarget.y;
+        newTarget.z = wanderPreviousTarget.z + Random.Range(-wanderJitter, wanderJitter);
+
+        //funky math 
+        
+        
+
+        //move new target onto circle
+        newTarget.Normalize();
+        newTarget.x = newTarget.x * wanderRadius;
+        newTarget.y = wanderPreviousTarget.y;
+        newTarget.z = newTarget.z * wanderRadius;
+
+        newTarget = newTarget + transform.forward * wanderDistance;
+
+        Vector3 newTargetDirection = newTarget.normalized; 
+        
+
+        rb.velocity = transform.forward * 3;
+
+        Vector3 dotProduct = new Vector3();
+        dotProduct.x = transform.right.x * newTarget.x;
+        angle = Vector3.Angle(transform.forward, newTarget);
+
+        transform.Rotate(new Vector3(0, angle, 0) * Time.deltaTime, Space.Self);
+
+
+        wanderPreviousTarget = newTarget;
+    }
 }
 
 
