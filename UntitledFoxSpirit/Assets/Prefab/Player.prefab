@@ -5964,13 +5964,12 @@ MonoBehaviour:
   ledgeHangYOffset: 1.42
   distanceFromGround: 1
   ledgeHangCooldown: 0.3
-  wallCheck: {fileID: 0}
-  ledgeCheck: {fileID: 0}
+  wallCheck: {fileID: 4468181660598265659}
+  ledgeCheck: {fileID: 4468181658928094171}
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
-  climbAnim: {fileID: 0}
-  ledgeRootJntTransform: {fileID: 0}
+  ledgeRootJntTransform: {fileID: 4468181659912351089}
   foxSpeed: 10
   foxJumpHeight: 5
   foxDashTime: 0.3
@@ -5980,9 +5979,9 @@ MonoBehaviour:
   maxVelocityChange: 10
   frictionAmount: 0.5
   mode3D: 0
-  stepRayUpper: {fileID: 0}
+  stepRayUpper: {fileID: 4468181660395411974}
   stepRayUpperDistance: 2
-  stepRayLower: {fileID: 0}
+  stepRayLower: {fileID: 4468181658956710297}
   stepRayLowerDistance: 0.6
   stepHeight: 0.25
   stepSmooth: 1.5
@@ -6020,7 +6019,6 @@ MonoBehaviour:
   human: {fileID: 0}
   fox: {fileID: 0}
   friction: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
-  rootJnt: {fileID: 0}
   canClimbLedge: 0
   ledgeDetected: 0
 --- !u!114 &4468181659523654550

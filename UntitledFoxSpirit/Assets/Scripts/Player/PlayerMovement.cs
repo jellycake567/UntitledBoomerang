@@ -91,7 +91,6 @@ public class PlayerMovement : MonoBehaviour
     public Transform wallCheck;
     public Transform ledgeCheck;
     public LayerMask groundLayer;
-    public Animation climbAnim;
     [SerializeField] Transform ledgeRootJntTransform;
     private bool isClimbing = false;
 
@@ -195,7 +194,6 @@ public class PlayerMovement : MonoBehaviour
     public GameObject human;
     public GameObject fox;
     [SerializeField] PhysicMaterial friction;
-    [SerializeField] Transform rootJnt;
 
     #endregion
 
@@ -331,11 +329,9 @@ public class PlayerMovement : MonoBehaviour
 
     void OnAnimatorMove()
     {
-        if (isClimbing)
+        if (isClimbing && !animController.IsInTransition(0))
         {
             rb.velocity = animController.deltaPosition * rootMotionAtkSpeed / Time.deltaTime;
-
-            Debug.DrawRay(transform.position, animController.deltaPosition.normalized);
         }
 
         // Attacking root motion
@@ -1490,10 +1486,8 @@ public class PlayerMovement : MonoBehaviour
         Transform rootJointTransform = ledgeRootJntTransform;
         rootJointTransform.position = new Vector3(rootJointTransform.position.x, rootJointTransform.position.y - 0.65f, rootJointTransform.position.z);
         transform.position = rootJointTransform.position;
-        Debug.Log(ledgeRootJntTransform.localPosition);
         ledgeRootJntTransform.localPosition = ledgeRootJntTransform.localPosition;
 
-        Debug.Log("run");
         isClimbing = false;
         canClimbLedge = false;
         rb.useGravity = true;
@@ -1502,6 +1496,7 @@ public class PlayerMovement : MonoBehaviour
         disableInputRotations = false;
         tallCollider.enabled = true;
         animController.SetBool("LedgeHang", false);
+
 
         currentLedgeHangCooldown = ledgeHangCooldown;
     }
@@ -1519,6 +1514,8 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space))
             {
                 animController.SetTrigger("ClimbUp");
+
+                
 
             }
             else if (Input.GetKeyDown(KeyCode.S))
@@ -1576,12 +1573,14 @@ public class PlayerMovement : MonoBehaviour
 
                     canClimbLedge = true;
                     animController.SetBool("LedgeHang", true);
+                    animController.SetBool("isMoving", false);
                     rb.velocity = Vector3.zero;
                     rb.useGravity = false;
                     disableMovement = true;
                     disableGravity = true;
                     disableInputRotations = true;
                     tallCollider.enabled = false;
+                    currentSpeed = 0f;
 
                     Vector3 hangPos;
                     hangPos = horizontalHit.point + -prevInputDirection * ledgeHangDistanceOffset;

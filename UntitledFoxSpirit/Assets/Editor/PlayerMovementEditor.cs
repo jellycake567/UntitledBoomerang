@@ -85,7 +85,6 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("wallCheck"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeCheck"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("groundLayer"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("climbAnim"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ledgeRootJntTransform"));
     }
 
@@ -162,7 +161,6 @@ public class PlayerMovementEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("human"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("fox"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("friction"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("rootJnt"));
 
 
 
