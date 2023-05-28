@@ -5952,7 +5952,7 @@ MonoBehaviour:
   humanJumpHeight: 8
   jumpRollVelocity: -15
   rootMotionJumpRollSpeed: 2.5
-  humanDashTime: 0.25
+  humanDashTime: 0.5
   humanDashDistance: 4
   dashCooldown: 0.6
   staminaConsumption: 20
@@ -5964,13 +5964,13 @@ MonoBehaviour:
   ledgeHangYOffset: 1.42
   distanceFromGround: 1
   ledgeHangCooldown: 0.3
-  wallCheck: {fileID: 4468181660598265659}
-  ledgeCheck: {fileID: 4468181658928094171}
+  wallCheck: {fileID: 0}
+  ledgeCheck: {fileID: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
   climbAnim: {fileID: 0}
-  ledgeRootJntTransform: {fileID: 4468181659912351089}
+  ledgeRootJntTransform: {fileID: 0}
   foxSpeed: 10
   foxJumpHeight: 5
   foxDashTime: 0.3
@@ -5980,9 +5980,9 @@ MonoBehaviour:
   maxVelocityChange: 10
   frictionAmount: 0.5
   mode3D: 0
-  stepRayUpper: {fileID: 4468181660395411974}
+  stepRayUpper: {fileID: 0}
   stepRayUpperDistance: 2
-  stepRayLower: {fileID: 4468181658956710297}
+  stepRayLower: {fileID: 0}
   stepRayLowerDistance: 0.6
   stepHeight: 0.25
   stepSmooth: 1.5
@@ -5994,9 +5994,9 @@ MonoBehaviour:
   doubleJumpHeightPercent: 0.5
   gravity: -9.81
   gravityScale: 1
-  fallGravityMultiplier: 2
+  fallGravityMultiplier: 1.25
   reduceVelocityPeak: 2
-  reduceVelocity: 1
+  reduceVelocity: 5
   groundCheckOffset: {x: 0, y: 1, z: 0}
   groundCheckSize: {x: 0.45, y: 0.1, z: 0.45}
   ignorePlayerMask:
