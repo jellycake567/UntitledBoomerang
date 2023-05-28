@@ -6003,13 +6003,18 @@ PrefabInstance:
       objectReference: {fileID: 1605981670}
     - target: {fileID: 4468181659523654549, guid: 32afaa3977ed5c5408517f14a978df1e,
         type: 3}
+      propertyPath: distanceSpawn
+      value: 17.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 4468181659523654549, guid: 32afaa3977ed5c5408517f14a978df1e,
+        type: 3}
       propertyPath: reduceVelocity
-      value: 0.1
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 4468181659523654549, guid: 32afaa3977ed5c5408517f14a978df1e,
         type: 3}
       propertyPath: doubleJumpHeightPercent
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4468181659523654550, guid: 32afaa3977ed5c5408517f14a978df1e,
         type: 3}

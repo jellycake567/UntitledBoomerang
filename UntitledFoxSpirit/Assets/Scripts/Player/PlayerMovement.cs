@@ -812,6 +812,9 @@ public class PlayerMovement : MonoBehaviour
         // Player jump input
         if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f || isClimbing && jumpBufferCounter > 0f)
         {
+            if (isHeavyLand)
+                return;
+
             reduceVelocityOnce = true;
 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
@@ -842,6 +845,8 @@ public class PlayerMovement : MonoBehaviour
         } //2nd jump
         else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump && !isGrounded)
         {
+            isHeavyLand = false;
+
             //doubleJumpHeight = humanJumpHeight / 3;//the three is a magic number 
             float jumpHeight = isFox ? foxJumpHeight : humanJumpHeight;
 
@@ -1134,9 +1139,8 @@ public class PlayerMovement : MonoBehaviour
             else if (rb.velocity.y > 0f && !isHoldingJump && reduceVelocityOnce) // while jumping and not holding jump
             {
                 reduceVelocityOnce = false;
-                //rb.AddForce(new Vector3(0, gravity * reduceVelocity, 0));
                 float percentageOfVelocity = rb.velocity.y * reduceVelocity;
-                Debug.Log("current:" + rb.velocity.y + " %= " + percentageOfVelocity);
+                Debug.Log("current:" + (rb.velocity.y - percentageOfVelocity) + " %= " + percentageOfVelocity);
                 rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y - percentageOfVelocity, rb.velocity.z);
             }   
             else
