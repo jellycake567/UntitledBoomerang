@@ -822,7 +822,7 @@ public class PlayerMovement : MonoBehaviour
             
             //temporary
             updateMaxHeight = newGroundY + humanJumpHeight;
-            Debug.Log("updated height 1: " + updateMaxHeight);
+            //Debug.Log("updated height 1: " + updateMaxHeight);
 
             //updateMaxHeight = transform.position.y + jumpHeight;
 
@@ -1135,7 +1135,9 @@ public class PlayerMovement : MonoBehaviour
             {
                 reduceVelocityOnce = false;
                 //rb.AddForce(new Vector3(0, gravity * reduceVelocity, 0));
-                rb.velocity = new Vector3(rb.velocity.x, reduceVelocity, rb.velocity.z);
+                float percentageOfVelocity = rb.velocity.y * reduceVelocity;
+                Debug.Log("current:" + rb.velocity.y + " %= " + percentageOfVelocity);
+                rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y - percentageOfVelocity, rb.velocity.z);
             }   
             else
             {
