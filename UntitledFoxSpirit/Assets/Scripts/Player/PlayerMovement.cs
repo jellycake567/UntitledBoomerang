@@ -1140,7 +1140,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 reduceVelocityOnce = false;
                 float percentageOfVelocity = rb.velocity.y * reduceVelocity;
-                Debug.Log("current:" + (rb.velocity.y - percentageOfVelocity) + " %= " + percentageOfVelocity);
                 rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y - percentageOfVelocity, rb.velocity.z);
             }   
             else
