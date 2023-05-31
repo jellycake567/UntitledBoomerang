@@ -8,15 +8,15 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.WSA;
 
-[CustomEditor(typeof(PlayerVariables))]
+//[CustomEditor(typeof(PlayerVariables))]
 public class PlayerEditor : Editor
 {
     GameObject targetObject;
 
     void OnEnable()
     {
-        PlayerVariables script = (PlayerVariables)target;
-        targetObject = script.gameObject;
+        //PlayerVariables script = (PlayerVariables)target;
+        //targetObject = script.gameObject;
     }
 
     public override void OnInspectorGUI()
