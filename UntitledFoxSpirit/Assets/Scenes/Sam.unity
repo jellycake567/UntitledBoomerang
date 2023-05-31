@@ -4758,8 +4758,8 @@ MonoBehaviour:
   m_StreamingVersion: 20170927
   m_Priority: 5
   m_StandbyUpdate: 2
-  m_LookAt: {fileID: 1881400092}
-  m_Follow: {fileID: 1881400092}
+  m_LookAt: {fileID: 673392382441448548}
+  m_Follow: {fileID: 673392382441448548}
   m_Lens:
     FieldOfView: 60
     OrthographicSize: 5
@@ -5966,6 +5966,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 4468181659523654544, guid: 32afaa3977ed5c5408517f14a978df1e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4468181659523654549, guid: 32afaa3977ed5c5408517f14a978df1e,
         type: 3}
       propertyPath: fox
@@ -6028,12 +6033,6 @@ PrefabInstance:
       objectReference: {fileID: 657940075}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 32afaa3977ed5c5408517f14a978df1e, type: 3}
---- !u!4 &1881400092 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4468181659523654536, guid: 32afaa3977ed5c5408517f14a978df1e,
-    type: 3}
-  m_PrefabInstance: {fileID: 1881400091}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1952112048
 GameObject:
   m_ObjectHideFlags: 0
@@ -16545,6 +16544,7 @@ GameObject:
   - component: {fileID: 673392382441448551}
   - component: {fileID: 673392382441448568}
   - component: {fileID: 673392382441448573}
+  - component: {fileID: 673392382441448574}
   m_Layer: 8
   m_Name: Player New
   m_TagString: Player
@@ -16585,7 +16585,7 @@ MonoBehaviour:
   groundCheckSize: {x: 0, y: 0, z: 0}
   ignorePlayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   humanJumpHeight: 5
   jumpRollVelocity: -5
   rootMotionJumpRollSpeed: 2
@@ -16610,7 +16610,7 @@ MonoBehaviour:
   ledgeRootJntTransform: {fileID: 0}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   canClimbLedge: 0
   ledgeDetected: 0
   attackCooldown: 2
@@ -16626,15 +16626,27 @@ MonoBehaviour:
   verticalKnockback: 10
   isInvulnerable: 0
   camRotationSpeed2D: 0.2
-  mainCamera: {fileID: 0}
-  pathCreator: {fileID: 0}
+  mainCamera: {fileID: 1865382425}
+  pathCreator: {fileID: 988442859}
   maxDistancePath: 0.5
-  distanceSpawn: 0
+  distanceSpawn: 15
   spawnYOffset: 0
-  adjustVelocity: 1
-  staminaBar: {fileID: 0}
-  virtualCam2D: {fileID: 0}
-  friction: {fileID: 0}
+  adjustVelocity: 5
+  staminaBar: {fileID: 1558228989}
+  virtualCam2D: {fileID: 1387391290}
+  friction: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
+--- !u!114 &673392382441448574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 673392382441448572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4a7c09891e5cdb49ba3eb17440a2d8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &673392382456912096
 GameObject:
   m_ObjectHideFlags: 0

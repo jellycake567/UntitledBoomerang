@@ -7,6 +7,34 @@ using UnityEngine.UI;
 
 public class PlayerStateMachine : MonoBehaviour
 {
+    PlayerBaseState currentState;
+    PlayerStateFactory states;
+
+    public PlayerBaseState CurrentState { get { return currentState; } set { currentState = value; } }
+    
+    public Animator AnimController { get { return animController; } }
+    public Rigidbody Rb { get { return rb; } }
+
+    public bool isJumpPressed { get { return input.isInputJumpPressed; } }
+
+
+    
+    public float JumpCounter { get { return jumpCounter; } set { jumpCounter = value; } }
+    public float JumpCooldown { get { return jumpCooldown; }}
+    public float JumpCoyoteCounter { get { return jumpCoyoteCounter; } set { jumpCoyoteCounter = value; } }
+    public float JumpBufferCounter { get { return jumpBufferCounter; } set { jumpBufferCounter = value; } }
+    public float JumpBufferTime { get { return jumpBufferTime; } }
+
+    public float Gravity { get { return gravity; } }
+    public float GravityScale { get { return gravityScale; } }
+    public float JumpHeight { get { return humanJumpHeight; } }
+    public float DoubleJumpHeightPercent { get { return doubleJumpHeightPercent; } }
+    
+    public bool CanDoubleJump { get { return canDoubleJump; } set { canDoubleJump = value; } }
+    public bool IsHeavyLand { get { return isHeavyLand; } set { isHeavyLand = value; } }
+    public bool ReduceVelocityOnce { get { return reduceVelocityOnce; } set { reduceVelocityOnce = value; } }
+
+
     #region Movement / Rotation
 
     [Header("Movement")]
@@ -171,7 +199,7 @@ public class PlayerStateMachine : MonoBehaviour
     private CapsuleCollider tallCollider;
     private CapsuleCollider shortCollider;
     private BoxCollider boxCollider;
-    protected PlayerInput input;
+    private PlayerInput input;
 
     #endregion
 
@@ -194,6 +222,10 @@ public class PlayerStateMachine : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        states = new PlayerStateFactory(this);
+        currentState = states.Grounded();
+        currentState.EnterState();
+
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider>();
@@ -219,8 +251,40 @@ public class PlayerStateMachine : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        currentState.UpdateState();
+
+        // Rotation
         HandleRotation();
         CameraRotation();
+
+        // Jump
+        JumpCooldownTimer();
+        CoytoteTime();
+    }
+
+    void JumpCooldownTimer()
+    {
+        if (jumpCounter <= 0f)
+        {
+            animController.SetBool("Jump", false);
+
+            jumpCounter -= Time.deltaTime;
+        }
+    }
+
+    void CoytoteTime()
+    {
+        // Coyote Time
+        if (isGrounded)
+        {
+            canDoubleJump = true;
+
+            jumpCoyoteCounter = jumpCoyoteTime;
+        }
+        else
+        {
+            jumpCoyoteCounter -= Time.deltaTime;
+        }
     }
 
 
