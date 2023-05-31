@@ -15,24 +15,34 @@ public class PlayerStateMachine : MonoBehaviour
     public Animator AnimController { get { return animController; } }
     public Rigidbody Rb { get { return rb; } }
 
-    public bool isJumpPressed { get { return input.isInputJumpPressed; } }
+    public bool IsJumpPressed { get { return input.isInputJumpPressed; } }
+    public bool IsJumpHeld { get { return input.isInputJumpHeld; } }
 
+    #region Jump Get/Set
 
-    
     public float JumpCounter { get { return jumpCounter; } set { jumpCounter = value; } }
     public float JumpCooldown { get { return jumpCooldown; }}
     public float JumpCoyoteCounter { get { return jumpCoyoteCounter; } set { jumpCoyoteCounter = value; } }
     public float JumpBufferCounter { get { return jumpBufferCounter; } set { jumpBufferCounter = value; } }
     public float JumpBufferTime { get { return jumpBufferTime; } }
+    public float JumpHeight { get { return humanJumpHeight; } }
+    public float DoubleJumpHeightPercent { get { return doubleJumpHeightPercent; } }
+    public bool CanDoubleJump { get { return canDoubleJump; } set { canDoubleJump = value; } }
+    
+
+    #endregion
+
+    #region Gravity Get/Set
 
     public float Gravity { get { return gravity; } }
     public float GravityScale { get { return gravityScale; } }
-    public float JumpHeight { get { return humanJumpHeight; } }
-    public float DoubleJumpHeightPercent { get { return doubleJumpHeightPercent; } }
-    
-    public bool CanDoubleJump { get { return canDoubleJump; } set { canDoubleJump = value; } }
     public bool IsHeavyLand { get { return isHeavyLand; } set { isHeavyLand = value; } }
+    public bool IsGrounded { get { return isGrounded; } }
+    public float ReduceVelocity { get { return reduceVelocity; } }
     public bool ReduceVelocityOnce { get { return reduceVelocityOnce; } set { reduceVelocityOnce = value; } }
+
+    #endregion
+
 
 
     #region Movement / Rotation
@@ -260,6 +270,8 @@ public class PlayerStateMachine : MonoBehaviour
         // Jump
         JumpCooldownTimer();
         CoytoteTime();
+
+        GroundCheck();
     }
 
     void JumpCooldownTimer()
@@ -284,6 +296,35 @@ public class PlayerStateMachine : MonoBehaviour
         else
         {
             jumpCoyoteCounter -= Time.deltaTime;
+        }
+    }
+
+
+    void GroundCheck()
+    {
+        Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+        //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
+
+        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, transform.rotation, ~ignorePlayerMask);
+
+        RaycastHit hit;
+        if (Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
+        {
+            newGroundY = hit.point.y;
+        }
+
+        if (overlap)
+        {
+            isGrounded = true;
+            animController.SetBool("Grounded", true);
+
+            if (rb.velocity.y <= 1f)
+                animController.SetBool("Fall", false);
+        }
+        else
+        {
+            isGrounded = false;
+            animController.SetBool("Grounded", false);
         }
     }
 
