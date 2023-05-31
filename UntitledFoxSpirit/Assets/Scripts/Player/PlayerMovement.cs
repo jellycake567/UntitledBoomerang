@@ -243,16 +243,13 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider>();
 
-
         CapsuleCollider[] colliderArr = GetComponentsInChildren<CapsuleCollider>();
         tallCollider = colliderArr[0];
         shortCollider = colliderArr[1];
-
 
         currentStamina = maxStamina;
 
