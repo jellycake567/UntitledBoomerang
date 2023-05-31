@@ -6,17 +6,18 @@ using System.Reflection;
 using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Analytics;
 using UnityEngine.WSA;
 
-//[CustomEditor(typeof(PlayerVariables))]
+[CustomEditor(typeof(PlayerStateMachine))]
 public class PlayerEditor : Editor
 {
     GameObject targetObject;
 
     void OnEnable()
     {
-        //PlayerVariables script = (PlayerVariables)target;
-        //targetObject = script.gameObject;
+        PlayerStateMachine script = (PlayerStateMachine)target;
+        targetObject = script.gameObject;
     }
 
     public override void OnInspectorGUI()
@@ -28,38 +29,34 @@ public class PlayerEditor : Editor
 
             if (baseType.Name != "MonoBehaviour")
                 continue;
-            
-            //Debug.Log("type " + com.GetType() + " basetype " + baseType.Name + " fields: " + com.GetType().GetFields().Length);
 
-            foreach (FieldInfo field in com.GetType().GetFields())
+            //SerializedObject serObj = new SerializedObject(com);
+            //SerializedProperty prop = serObj.GetIterator();
+
+            Debug.Log("type " + com.GetType() + " basetype " + baseType.Name + " fields: " + com.GetType().BaseType);
+
+            //while (prop.NextVisible(true))
+            //{
+            //    if (prop.name == "x" || prop.name == "y" || prop.name == "z")
+            //        continue;
+            //
+            //    EditorGUILayout.PropertyField(serializedObject.FindProperty(prop.name));
+            //}
+
+            PropertyInfo[] parry = com.GetType().GetProperties();
+
+            foreach (var info in com.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public))
             {
-                if (com.GetType().Name != "Test")
+                if (!info.IsPublic)
                     continue;
 
-                    
+                if (info.FieldType.ToString() == "PlayerBaseState" || info.FieldType.ToString() == "PlayerStateFactory")
+                    continue;
 
-                //EditorGUILayout.PropertyField(serializedObject.FindProperty(field.Name));
-                //EditorGUILayout.PropertyField(serializedObject.FindProperty("test"));
-
-
-                //Debug.Log("fi name " + field.Name + " val " + field.GetValue(com));
-                
-                
+                EditorGUILayout.PropertyField(serializedObject.FindProperty(info.Name));
             }
         }
 
         serializedObject.ApplyModifiedProperties();
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

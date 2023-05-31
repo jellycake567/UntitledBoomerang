@@ -7,217 +7,183 @@ using UnityEngine.UI;
 
 public class PlayerStateMachine : MonoBehaviour
 {
-    PlayerBaseState currentState;
+    protected PlayerBaseState currentState;
     PlayerStateFactory states;
-
-    public PlayerBaseState CurrentState { get { return currentState; } set { currentState = value; } }
-    
-    public Animator AnimController { get { return animController; } }
-    public Rigidbody Rb { get { return rb; } }
-
-    public bool IsJumpPressed { get { return input.isInputJumpPressed; } }
-    public bool IsJumpHeld { get { return input.isInputJumpHeld; } }
-
-    #region Jump Get/Set
-
-    public float JumpCounter { get { return jumpCounter; } set { jumpCounter = value; } }
-    public float JumpCooldown { get { return jumpCooldown; }}
-    public float JumpCoyoteCounter { get { return jumpCoyoteCounter; } set { jumpCoyoteCounter = value; } }
-    public float JumpBufferCounter { get { return jumpBufferCounter; } set { jumpBufferCounter = value; } }
-    public float JumpBufferTime { get { return jumpBufferTime; } }
-    public float JumpHeight { get { return humanJumpHeight; } }
-    public float DoubleJumpHeightPercent { get { return doubleJumpHeightPercent; } }
-    public bool CanDoubleJump { get { return canDoubleJump; } set { canDoubleJump = value; } }
-    
-
-    #endregion
-
-    #region Gravity Get/Set
-
-    public float Gravity { get { return gravity; } }
-    public float GravityScale { get { return gravityScale; } }
-    public bool IsHeavyLand { get { return isHeavyLand; } set { isHeavyLand = value; } }
-    public bool IsGrounded { get { return isGrounded; } }
-    public float ReduceVelocity { get { return reduceVelocity; } }
-    public bool ReduceVelocityOnce { get { return reduceVelocityOnce; } set { reduceVelocityOnce = value; } }
-
-    #endregion
-
 
 
     #region Movement / Rotation
 
     [Header("Movement")]
-    [SerializeField] float humanSpeed = 5.0f;
-    [SerializeField] float humanRunSpeed = 10.0f;
-    [SerializeField] float accelTimeToMaxSpeed = 2.0f;
-    [SerializeField] float decelTimeToZeroSpeed = 1.0f;
-    [SerializeField] float animJogSpeed = 1.17f;
-    [SerializeField] float animJogAccelSpeed = 0.8f;
-    [SerializeField] float animJogDecelSpeed = 0.8f;
-    private float accelRatePerSec;
-    private float decelRatePerSec;
-    private bool isAccel = false;
-    private bool isDecel = false;
-    private bool isRunning = false;
-    private bool disableMovement;
+    public float humanSpeed = 5.0f;
+    public float humanRunSpeed = 10.0f;
+    public float accelTimeToMaxSpeed = 2.0f;
+    public float decelTimeToZeroSpeed = 1.0f;
+    public float animJogSpeed = 1.17f;
+    public float animJogAccelSpeed = 0.8f;
+    public float animJogDecelSpeed = 0.8f;
+    protected float accelRatePerSec;
+    protected float decelRatePerSec;
+    protected bool isAccel = false;
+    protected bool isDecel = false;
+    protected bool isRunning = false;
+    protected bool disableMovement;
 
-    [SerializeField] float turnSmoothTime2D = 0.03f;
-    [SerializeField] float turnSmoothTime3D = 0.1f;
-    [SerializeField] float maxVelocityChange = 10f;
-    [SerializeField] float frictionAmount = 0.2f;
-    private float turnSmoothVelocity;
-    private float currentSpeed;
-    private float maxSpeed;
+    public float turnSmoothTime2D = 0.03f;
+    public float turnSmoothTime3D = 0.1f;
+    public float maxVelocityChange = 10f;
+    public float frictionAmount = 0.2f;
+    protected float turnSmoothVelocity;
+    protected float currentSpeed;
+    protected float maxSpeed;
 
     [Header("Rotation")]
-    [SerializeField] float timeToReachTargetRotation = 0.14f;
-    private float dampedTargetRotationCurrentYVelocity;
-    private float dampedTargetRotationPassedTime;
-    private bool disableUpdateRotations = false;
-    private bool disableInputRotations = false;
-    private Quaternion previousRotation;
-    private Quaternion targetRot2D;
+    public float timeToReachTargetRotation = 0.14f;
+    protected float dampedTargetRotationCurrentYVelocity;
+    protected float dampedTargetRotationPassedTime;
+    protected bool disableUpdateRotations = false;
+    protected bool disableInputRotations = false;
+    protected Quaternion previousRotation;
+    protected Quaternion targetRot2D;
 
     [Header("Gravity")]
-    [SerializeField] float gravity = -9.81f;
-    [SerializeField] float gravityScale = 3f;
-    [SerializeField] float fallGravityMultiplier = 0.2f;
-    [SerializeField] float reduceVelocityPeak = 5f;
-    [SerializeField] float reduceVelocity = 5f;
-    [SerializeField] Vector3 groundCheckOffset;
-    [SerializeField] Vector3 groundCheckSize;
-    [SerializeField] LayerMask ignorePlayerMask;
-    private bool reduceVelocityOnce = false;
-    private bool isGrounded;
-    private float updateMaxHeight = 100000f;
-    private float updateMaxHeight2 = 100000f;
-    private bool disableGravity = false;
+    public float gravity = -9.81f;
+    public float gravityScale = 3f;
+    public float fallGravityMultiplier = 0.2f;
+    public float reduceVelocityPeak = 5f;
+    public float reduceVelocity = 5f;
+    public Vector3 groundCheckOffset;
+    public Vector3 groundCheckSize;
+    public LayerMask ignorePlayerMask;
+    protected bool reduceVelocityOnce = false;
+    protected bool isGrounded;
+    protected float updateMaxHeight = 100000f;
+    protected float updateMaxHeight2 = 100000f;
+    protected bool disableGravity = false;
 
     #endregion
 
     #region Player Actions
 
     [Header("Jump")]
-    [SerializeField] float humanJumpHeight = 5f;
-    [SerializeField] float jumpRollVelocity = -5f;
-    [SerializeField] float rootMotionJumpRollSpeed = 2f;
-    private bool isLanding = false;
-    private bool isLandRolling = false;
-    private bool disableJumping = false;
-    private bool isHoldingJump = false;
+    public float humanJumpHeight = 5f;
+    public float jumpRollVelocity = -5f;
+    public float rootMotionJumpRollSpeed = 2f;
+    protected bool isLanding = false;
+    protected bool isLandRolling = false;
+    protected bool disableJumping = false;
+    protected bool isHoldingJump = false;
 
-    [SerializeField] float jumpCooldown = 0.2f;
-    [SerializeField] float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
-    [SerializeField] float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
-    [SerializeField] float jumpMultiplier = 1.0f;
-    [SerializeField] float doubleJumpHeightPercent = 0.5f;
-    private float jumpCounter;
-    private float jumpBufferCounter;
-    private float jumpCoyoteCounter;
-    private bool canDoubleJump;
-    private float newGroundY = 1000000f;
+    public float jumpCooldown = 0.2f;
+    public float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
+    public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
+    public float jumpMultiplier = 1.0f;
+    public float doubleJumpHeightPercent = 0.5f;
+    protected float jumpCounter;
+    protected float jumpBufferCounter;
+    protected float jumpCoyoteCounter;
+    protected bool canDoubleJump;
+    protected float newGroundY = 1000000f;
 
     [Header("Sneaking")]
-    [SerializeField] float sneakSpeed = 2f;
-    [SerializeField] Vector3 sneakCheckOffset;
-    [SerializeField] Vector3 sneakCheckSize;
-    private bool canUnsneak = true;
-    private bool isSneaking
+    public float sneakSpeed = 2f;
+    public Vector3 sneakCheckOffset;
+    public Vector3 sneakCheckSize;
+    protected bool canUnsneak = true;
+    protected bool isSneaking
     {
         get { return animController.GetBool("isSneaking"); }
         set { animController.SetBool("isSneaking", value); }
     }
 
     [Header("Dash")]
-    [SerializeField] float humanDashTime = 5.0f;
-    [SerializeField] float humanDashDistance = 4.0f;
-    [SerializeField] float dashCooldown = 1f;
-    private float currentDashCooldown = 1f;
-    private bool isDashing = false;
-    private bool disableDashing = false;
+    public float humanDashTime = 5.0f;
+    public float humanDashDistance = 4.0f;
+    public float dashCooldown = 1f;
+    protected float currentDashCooldown = 1f;
+    protected bool isDashing = false;
+    protected bool disableDashing = false;
 
     [Header("Ledge Climb")]
-    [SerializeField] float wallCheckDistance = 3.0f;
-    [SerializeField] float ledgeHangDistanceOffset;
-    [SerializeField] float ledgeHangYOffset;
-    [SerializeField] float distanceFromGround = 1f;
-    [SerializeField] float ledgeHangCooldown = 1f;
-    [SerializeField] Transform wallCheck;
-    [SerializeField] Transform ledgeCheck;
-    [SerializeField] Transform ledgeRootJntTransform;
-    [SerializeField] LayerMask groundLayer;
-    private float currentLedgeHangCooldown;
-    private bool isClimbing = false;
-    private bool isWallClimbing;
-    private bool canClimbWall;
+    public float wallCheckDistance = 3.0f;
+    public float ledgeHangDistanceOffset;
+    public float ledgeHangYOffset;
+    public float distanceFromGround = 1f;
+    public float ledgeHangCooldown = 1f;
+    public Transform wallCheck;
+    public Transform ledgeCheck;
+    public Transform ledgeRootJntTransform;
+    public LayerMask groundLayer;
+    protected float currentLedgeHangCooldown;
+    protected bool isClimbing = false;
+    protected bool isWallClimbing;
+    protected bool canClimbWall;
 
-    private bool isTouchingWall;
-    private bool isTouchingLedge;
+    protected bool isTouchingWall;
+    protected bool isTouchingLedge;
     [HideInInspector] public bool canClimbLedge = false;
     [HideInInspector] public bool ledgeDetected;
 
     [Header("Attack")]
-    [SerializeField] float attackCooldown = 2f;
-    [SerializeField] float resetComboDelay = 1f;
-    [SerializeField] float rootMotionAtkSpeed = 2f;
-    private bool isAttacking = false;
-    private float currentAttackCooldown;
-    private int comboCounter;
-    private int lastAttackInt;
-    private bool resetAttack = true;
+    public float attackCooldown = 2f;
+    public float resetComboDelay = 1f;
+    public float rootMotionAtkSpeed = 2f;
+    protected bool isAttacking = false;
+    protected float currentAttackCooldown;
+    protected int comboCounter;
+    protected int lastAttackInt;
+    protected bool resetAttack = true;
 
     #endregion
 
     #region Other
 
     [Header("Stamina")]
-    [SerializeField] float staminaConsumption = 20f;
-    [SerializeField] float staminaRecovery = 5f;
-    [SerializeField] float staminaCooldown = 1f;
-    [SerializeField] float maxStamina = 100f;
-    private float currentStaminaCooldown = 0f;
-    private float currentStamina;
+    public float staminaConsumption = 20f;
+    public float staminaRecovery = 5f;
+    public float staminaCooldown = 1f;
+    public float maxStamina = 100f;
+    protected float currentStaminaCooldown = 0f;
+    protected float currentStamina;
 
 
     [Header("Take Damage")]
-    [SerializeField] float invulnerableTime = 1f;
-    [SerializeField] float regainMovement = 0.5f;
-    [SerializeField] float horizontalKnockback = 10f;
-    [SerializeField] float verticalKnockback = 10f;
+    public float invulnerableTime = 1f;
+    public float regainMovement = 0.5f;
+    public float horizontalKnockback = 10f;
+    public float verticalKnockback = 10f;
     [HideInInspector] public bool isInvulnerable = false;
-    private float currentInvulnerableCooldown;
+    protected float currentInvulnerableCooldown;
 
     [Header("Camera")]
-    [SerializeField] float camRotationSpeed2D = 0.2f;
-    [SerializeField] Transform mainCamera;
+    public float camRotationSpeed2D = 0.2f;
+    public Transform mainCamera;
 
     [Header("Path")]
-    [SerializeField] PathCreator pathCreator;
-    [SerializeField] float maxDistancePath = 0.5f;
-    [SerializeField] float distanceSpawn = 0f;
-    [SerializeField] float spawnYOffset = 0f;
-    [SerializeField] float adjustVelocity = 1.0f; //Velocity to push player towards the path
-    private float distanceOnPath;
+    public PathCreator pathCreator;
+    public float maxDistancePath = 0.5f;
+    public float distanceSpawn = 0f;
+    public float spawnYOffset = 0f;
+    public float adjustVelocity = 1.0f; //Velocity to push player towards the path
+    protected float distanceOnPath;
 
     [Header("References")]
-    [SerializeField] Slider staminaBar;
-    [SerializeField] CinemachineVirtualCamera virtualCam2D;
-    [SerializeField] PhysicMaterial friction;
-    private Rigidbody rb;
-    private Animator animController;
-    private CapsuleCollider tallCollider;
-    private CapsuleCollider shortCollider;
-    private BoxCollider boxCollider;
-    private PlayerInput input;
+    public Slider staminaBar;
+    public CinemachineVirtualCamera virtualCam2D;
+    public PhysicMaterial friction;
+    protected Rigidbody rb;
+    protected Animator animController;
+    protected CapsuleCollider tallCollider;
+    protected CapsuleCollider shortCollider;
+    protected BoxCollider boxCollider;
+    protected PlayerInput input;
 
     #endregion
 
     #region Internal Variables
 
-    private Vector3 prevInputDirection;
+    protected Vector3 prevInputDirection;
 
-    private bool isHeavyLand = false;
+    protected bool isHeavyLand = false;
 
     const float REDUCE_SPEED = 1.414214f;
     
@@ -225,7 +191,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     // Debug
     float currentMaxHeight = 0f;
-    private Vector3 velocity;
+    protected Vector3 velocity;
 
     #endregion
 
@@ -272,6 +238,11 @@ public class PlayerStateMachine : MonoBehaviour
         CoytoteTime();
 
         GroundCheck();
+    }
+
+    void FixedUpdate()
+    {
+        currentState.FixedUpdateState();
     }
 
     void JumpCooldownTimer()

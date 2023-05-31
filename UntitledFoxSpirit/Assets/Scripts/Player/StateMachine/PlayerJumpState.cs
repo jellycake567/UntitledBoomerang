@@ -9,19 +9,25 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void EnterState() 
     {
-        //JumpBuffer();
+        JumpBuffer();
     }
     public override void UpdateState() 
     {
-        //JumpBuffer();
-        //Jump();
+        JumpBuffer();
+        Jump();
 
         CheckSwitchState();
     }
+
+    public override void FixedUpdateState() 
+    {
+        ApplyGravity();
+    }
+
     public override void ExitState() { }
     public override void CheckSwitchState() 
     {
-        if (context.IsGrounded)
+        if (isGrounded)
         {
             SwitchState(factory.Grounded());
         }
@@ -29,84 +35,84 @@ public class PlayerJumpState : PlayerBaseState
     public override void InitializeSubState() { }
 
 
-    //void JumpBuffer()
-    //{
-    //    if (context.isJumpPressed)
-    //    {
-    //        context.JumpBufferCounter = context.JumpBufferTime;
-    //    }
-    //    else
-    //    {
-    //        context.JumpBufferCounter -= Time.deltaTime;
-    //    }
-    //}
+    void JumpBuffer()
+    {
+        if (input.isInputJumpHeld)
+        {
+            jumpBufferCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+    }
 
-    //void Jump()
-    //{
-    //    if (context.AnimController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump") && context.AnimController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
-    //    {
-    //        context.AnimController.SetBool("DoubleJump", false);
-    //    }
+    void Jump()
+    {
+        if (animController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump") && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
+        {
+            animController.SetBool("DoubleJump", false);
+        }
 
-    //    // Player jump input
-    //    if (context.JumpBufferCounter > 0f && context.JumpCoyoteCounter > 0f && context.JumpCounter <= 0f)
-    //    {
-    //        context.ReduceVelocityOnce = true;
+        // Player jump input
+        if (jumpBufferCounter > 0f && jumpCoyoteCounter > 0f && jumpCounter <= 0f)
+        {
+            reduceVelocityOnce = true;
 
-    //        // Calculate Velocity
-    //        float velocity = CalculateVelocity(context.JumpHeight);
+            // Calculate Velocity
+            float velocity = CalculateVelocity(humanJumpHeight);
 
-    //        // Jump
-    //        context.Rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
+            // Jump
+            rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
-    //        context.AnimController.SetBool("Jump", true);
+            animController.SetBool("Jump", true);
 
-    //        // Set jump cooldown
-    //        context.JumpCounter = context.JumpCooldown;
+            // Set jump cooldown
+            jumpCounter = jumpCooldown;
 
-    //        context.JumpCoyoteCounter = 0f; // So you don't triple jump
+            jumpCoyoteCounter = 0f; // So you don't triple jump
 
-    //    } //2nd jump
-    //    else if (context.isJumpPressed && context.CanDoubleJump)
-    //    {
-    //        context.IsHeavyLand = false;
-    //        context.CanDoubleJump = false;
+        } //2nd jump
+        else if (input.isInputJumpHeld && canDoubleJump)
+        {
+            isHeavyLand = false;
+            canDoubleJump = false;
 
-    //        float velocity = CalculateVelocity(context.JumpHeight * context.DoubleJumpHeightPercent);
+            float velocity = CalculateVelocity(humanJumpHeight * doubleJumpHeightPercent);
 
-    //        // Jump
-    //        context.Rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
+            // Jump
+            rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
 
-    //        context.AnimController.SetBool("DoubleJump", true);
+            animController.SetBool("DoubleJump", true);
 
-    //        // Set jump cooldown
-    //        context.JumpCounter = context.JumpCooldown;
-    //    }
-    //}
+            // Set jump cooldown
+            jumpCounter = jumpCooldown;
+        }
+    }
 
-    //float CalculateVelocity(float jumpHeight)
-    //{
-    //    float velocity = Mathf.Sqrt(-2 * context.Gravity * jumpHeight * context.GravityScale);
-    //    velocity += -context.Rb.velocity.y; // Cancel out current velocity
+    float CalculateVelocity(float jumpHeight)
+    {
+        float velocity = Mathf.Sqrt(-2 * gravity * jumpHeight * gravityScale);
+        velocity += -rb.velocity.y; // Cancel out current velocity
 
-    //    return velocity;
-    //}
+        return velocity;
+    }
 
-    //void ApplyGravity()
-    //{
-    //    if (context.Rb.velocity.y > 0f && !context.IsJumpHeld && context.ReduceVelocityOnce) // while jumping and not holding jump
-    //    {
-    //        context.ReduceVelocityOnce = false;
-    //        float percentageOfVelocity = context.Rb.velocity.y * context.ReduceVelocity;
-    //        context.Rb.velocity = new Vector3(context.Rb.velocity.x, context.Rb.velocity.y - percentageOfVelocity, context.Rb.velocity.z);
-    //    }
-    //    else
-    //    {
-    //        // Jumping while holding jump input
-    //        context.Rb.AddForce(new Vector3(0, context.Gravity, 0));
+    void ApplyGravity()
+    {
+        if (rb.velocity.y > 0f && !input.isInputJumpPressed && reduceVelocityOnce) // while jumping and not holding jump
+        {
+            reduceVelocityOnce = false;
+            float percentageOfVelocity = rb.velocity.y * reduceVelocity;
+            rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y - percentageOfVelocity, rb.velocity.z);
+        }
+        else
+        {
+            // Jumping while holding jump input
+            rb.AddForce(new Vector3(0, gravity, 0));
 
-    //        if (context.Rb.velocity.y < 0f)
-    //            context.ReduceVelocityOnce = false;
-    //    }
-    //}
+            if (rb.velocity.y < 0f)
+                reduceVelocityOnce = false;
+        }
+    }
 }

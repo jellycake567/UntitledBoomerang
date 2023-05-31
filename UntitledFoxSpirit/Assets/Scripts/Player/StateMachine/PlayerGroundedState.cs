@@ -12,26 +12,31 @@ public class PlayerGroundedState : PlayerBaseState
         //ApplyGravity();
         CheckSwitchState();
     }
+
+    public override void FixedUpdateState() 
+    {
+        ApplyGravity();
+    }
     public override void ExitState() { }
     public override void InitializeSubState() { }
     public override void CheckSwitchState() 
     {
-        if (context.IsJumpPressed && context.JumpCounter <= 0f)
+        if (input.isInputJumpPressed && jumpCounter <= 0f)
         {
             SwitchState(factory.Jump());
         }    
     }
 
-    //void ApplyGravity()
-    //{
-    //    if (context.Rb.velocity.y <= 0f)
-    //    {
-    //        // Player Falling
-    //        context.Rb.AddForce(new Vector3(0, context.Gravity, 0) * context.Rb.mass * fallGravityMultiplier);
+    void ApplyGravity()
+    {
+        if (rb.velocity.y <= 0f)
+        {
+            // Player Falling
+            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * fallGravityMultiplier);
 
-    //        if (!context.IsGrounded)
-    //            context.AnimController.SetBool("Fall", true);
-    //    }
-    //}
+            if (!isGrounded)
+                animController.SetBool("Fall", true);
+        }
+    }
 
 }

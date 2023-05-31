@@ -11,6 +11,8 @@ public class PlayerIdleState : PlayerBaseState
     {
         CheckSwitchState();
     }
+
+    public override void FixedUpdateState() { }
     public override void ExitState() { }
     public override void CheckSwitchState() { }
     public override void InitializeSubState() { }
