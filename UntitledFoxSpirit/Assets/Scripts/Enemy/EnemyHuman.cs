@@ -7,7 +7,7 @@ public class EnemyHuman : MonoBehaviour
 {
     public GameManager GM;
     private Vector3 playerPos;
-    float detectionLength = 4;
+    float detectionLength = 7;
     float decisionTimer = 0;
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
@@ -17,7 +17,7 @@ public class EnemyHuman : MonoBehaviour
     float initialStopDist;
     float smallerStopDist = 1.40f;
     bool hasAttacked = false;
-    bool in3Dmode = true;
+    bool in3Dmode = false;
 
     float initialAccel;
     public float runAccel = 3;
@@ -25,21 +25,29 @@ public class EnemyHuman : MonoBehaviour
     float distFromPlayer = 0;
     int optionCount = 0;
     int choice = 0;
-    float moveSpeed = 3f;
+    public float runSpeed = 8f;
+
     Rigidbody rb;
     Animator animControl;
+
 
     NavMeshAgent navAgent;
     Vector3 targetPoint;
 
     //Wandering 3D variables
     float wanderRadius = 3;
-    float wanderDistance = 5;
+    float wanderDistance = 2;
     float wanderJitter = 4;
     Vector3 wanderPreviousTarget;
     Vector3 newTarget;
+    bool isGroundAhead= true;
+    public LayerMask groundMask;
+    public LayerMask obstacleMask;
 
-    //debug wandering 3D
+
+    //debug
+    bool temp;
+    //wandering 3D
     Vector3 debug_wanderDistancePoint;
     float x;
     float z;
@@ -64,9 +72,10 @@ public class EnemyHuman : MonoBehaviour
         initialStopDist = navAgent.stoppingDistance;
         initialAccel = navAgent.acceleration;
 
-        wanderPreviousTarget.x = Random.Range(-wanderRadius, wanderRadius);
+        wanderPreviousTarget.x = transform.position.x + Random.Range(-wanderRadius, wanderRadius);
         wanderPreviousTarget.y = transform.position.y;
-        wanderPreviousTarget.z = Random.Range(-wanderRadius, wanderRadius);
+        wanderPreviousTarget.z = transform.position.z + Random.Range(-wanderRadius, wanderRadius);
+        wanderPreviousTarget = wanderPreviousTarget + transform.forward * wanderDistance;
         debug_wanderDistancePoint = new Vector3();
         newTarget = new Vector3();
     }
@@ -83,17 +92,21 @@ public class EnemyHuman : MonoBehaviour
             //2D
             if(!in3Dmode)
             {
-                if(navAgent.velocity == Vector3.zero)
+                if(rb.velocity.z == 0 && rb.velocity.x == 0)
                 {
-                    targetPoint = transform.forward * Random.Range(2,6);
-                    navAgent.destination = transform.position + targetPoint;
-                    FindPlayer();
+                    //targetPoint = transform.forward * Random.Range(2,6);
+                    //navAgent.destination = transform.position + targetPoint;
+
+                    rb.AddForce(transform.forward * 3, ForceMode.Impulse);
+
+                    
                 }
+                FindPlayer();
                 return;
             }
 
             WanderIn3D();
-
+            FindPlayer();
         }
     }
 
@@ -110,6 +123,7 @@ public class EnemyHuman : MonoBehaviour
         }
         else if (AIState == State.Combat)
         {
+            AdjustForwardBlend(AIState);
             animControl.SetBool("isChasing", true);
             Attack();
         }
@@ -130,7 +144,10 @@ public class EnemyHuman : MonoBehaviour
 
         debug_wanderDistancePoint = debug_wanderDistancePoint + transform.forward * wanderDistance;
 
+        //move this back when your done with it
+        isGroundAhead = CheckGround();
         //sin(theta) = o/h
+        temp = CheckForObstacle();
 
         //Debug.Log(newTarget.y);
     }
@@ -189,6 +206,7 @@ public class EnemyHuman : MonoBehaviour
         }
 
         navAgent.acceleration = runAccel;
+        navAgent.speed = runSpeed;
         navAgent.destination = playerPos;
 
 
@@ -213,12 +231,6 @@ public class EnemyHuman : MonoBehaviour
         if(distFromPlayer > navAgent.stoppingDistance + 3.0f)
         {
             navAgent.stoppingDistance = initialStopDist;
-        }
-
-        if (!hasAttacked)
-        {
-            
-
         }
 
     }
@@ -275,7 +287,7 @@ public class EnemyHuman : MonoBehaviour
     void FindPlayer()
     { 
         
-        Debug.DrawRay(transform.position, transform.forward * detectionLength, Color.red);
+        //Debug.DrawRay(transform.position, transform.forward * detectionLength, Color.red);
 
         playerPos = GM.playerPos;
         distFromPlayer = Vector3.Distance(transform.position, playerPos);
@@ -311,11 +323,12 @@ public class EnemyHuman : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, debug_wanderDistancePoint);        
-        Gizmos.DrawWireSphere(debug_wanderDistancePoint, wanderRadius);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, newTarget);        
+        //Gizmos.color = Color.blue;
+        //Gizmos.DrawLine(transform.position, debug_wanderDistancePoint);        
+        //Gizmos.DrawWireSphere(debug_wanderDistancePoint, wanderRadius);
+        //Gizmos.color = Color.yellow;
+        //Gizmos.DrawLine(transform.position, newTarget);
+  
     }
 
     IEnumerator AttackCycle()
@@ -361,36 +374,93 @@ public class EnemyHuman : MonoBehaviour
 
     void WanderIn3D()
     {
+
+        
+        if(!isGroundAhead)
+        {
+            //temporary code
+            AIState = State.Standing;
+            return;
+        }
+
         //newTarget = new Vector3();
         newTarget.x = wanderPreviousTarget.x + Random.Range(-wanderJitter, wanderJitter);
         newTarget.y = wanderPreviousTarget.y;
         newTarget.z = wanderPreviousTarget.z + Random.Range(-wanderJitter, wanderJitter);
 
-        //funky math 
-        
-        
+        Vector3 dirFromObjtoNewTarget = new Vector3();
+        dirFromObjtoNewTarget = newTarget - transform.position;
+        dirFromObjtoNewTarget.Normalize();
 
         //move new target onto circle
-        newTarget.Normalize();
-        newTarget.x = newTarget.x * wanderRadius;
-        newTarget.y = wanderPreviousTarget.y;
-        newTarget.z = newTarget.z * wanderRadius;
+       
+        newTarget = transform.position  + dirFromObjtoNewTarget * wanderRadius + transform.forward * wanderDistance;
 
-        newTarget = newTarget + transform.forward * wanderDistance;
+        if(CheckForObstacle())
+        {
 
-        Vector3 newTargetDirection = newTarget.normalized; 
-        
+        }
 
         rb.velocity = transform.forward * 3;
 
-        Vector3 dotProduct = new Vector3();
-        dotProduct.x = transform.right.x * newTarget.x;
-        angle = Vector3.Angle(transform.forward, newTarget);
-
+        float dotResult = Vector3.Dot(dirFromObjtoNewTarget, transform.right);
+        angle = Vector3.Angle(transform.forward, dirFromObjtoNewTarget);
+        if(dotResult < 0)
+        {
+            angle = -angle;
+        }
         transform.Rotate(new Vector3(0, angle, 0) * Time.deltaTime, Space.Self);
 
-
         wanderPreviousTarget = newTarget;
+    }
+
+    bool CheckGround()
+    {
+        
+        Vector3 direction = new Vector3();
+        direction = transform.forward;
+        direction.y = -0.095f;
+
+        Debug.DrawLine(transform.position, transform.position + direction * 5, Color.green);
+        RaycastHit hit;
+        if(Physics.Raycast(transform.position, direction, out hit, 5, groundMask))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    bool CheckForObstacle()
+    {
+
+        Vector3 direction = new Vector3();
+        direction = transform.forward + transform.right;
+        direction.Normalize();
+
+        float raycastLength = 4;
+
+        //right forward diagonal raycast
+        Debug.DrawLine(transform.position, transform.position + direction * raycastLength, Color.white);
+        if (Physics.Raycast(transform.position, direction, raycastLength, obstacleMask))
+        {
+            return true;
+        }
+
+        //left forward diagonal raycast
+        direction.x = -direction.x;
+        Debug.DrawLine(transform.position, transform.position + direction * raycastLength, Color.white);
+        if (Physics.Raycast(transform.position, direction, raycastLength, obstacleMask))
+        {
+            return true;
+        }
+
+        //forward raycast
+        Debug.DrawRay(transform.position, transform.forward * raycastLength, Color.white);
+        if (Physics.Raycast(transform.position, transform.forward, raycastLength, obstacleMask))
+        {
+            return true;
+        }
+        return true;
     }
 }
 
