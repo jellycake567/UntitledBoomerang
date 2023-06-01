@@ -119,7 +119,7 @@ public class EnemyHuman : MonoBehaviour
             animControl.SetBool("isWalking", false);
             animControl.SetBool("isChasing", false);
             AdjustForwardBlend(AIState);
-            Standing();
+            StandOrMove();
         }
         else if (AIState == State.Combat)
         {
@@ -133,7 +133,7 @@ public class EnemyHuman : MonoBehaviour
             animControl.SetBool("isWalking", true);
             animControl.SetBool("isChasing", false);
             AdjustForwardBlend(AIState);
-            Wander();
+            StandOrMove();
         }
 
         //Debug.Log("nav agent " + navAgent.velocity);
@@ -146,51 +146,12 @@ public class EnemyHuman : MonoBehaviour
 
         //move this back when your done with it
         isGroundAhead = CheckGround();
-        //sin(theta) = o/h
-        temp = CheckForObstacle();
-
-        //Debug.Log(newTarget.y);
-    }
-
-    void Standing()
-    {
+       
         
-     
-        if (decisionTimer <= 0)
-        {
-            //Does the AI move?
-            optionCount = 2;
-            choice = decideRandomly(optionCount);
-            if (choice == 0) //yes
-            {
-                AIState = State.Wander;
-            }
-            else if (choice == 1) //no
-            {
-                //dont move
-                rb.velocity = Vector3.zero;
-                AIState = State.Standing;
 
-                choice = decideRandomly(optionCount);
-
-                //does AI turn around?
-                if (!in3Dmode)
-                {
-                    if (choice == 0) //yes
-                    {
-                        //turn around
-                        Flip();
-                    }
-
-                }
-            }
-
-
-            decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
-        }
-
-
+        
     }
+
 
     void Attack()
     {
@@ -202,7 +163,7 @@ public class EnemyHuman : MonoBehaviour
 
         if (angle > 100f)
         {
-            Flip();
+            TurnAround();
         }
 
         navAgent.acceleration = runAccel;
@@ -234,48 +195,7 @@ public class EnemyHuman : MonoBehaviour
         }
 
     }
-    void Wander()
-    {
-        if (decisionTimer <= 0)
-        {
-            //move
-            //optionCount = 2;
-            choice = decideRandomly(optionCount);
-            //Debug.Log(choice);
-
-            if (choice == 0)
-            {
-                AIState = State.Wander;
-
-                choice = decideRandomly(optionCount);
-                
-            }
-            else if (choice == 1)
-            {
-                //dont move
-                rb.velocity = Vector3.zero;
-                AIState = State.Standing;
-
-                //does AI turn around?
-                if(!in3Dmode)
-                {
-                    if (choice == 0) //yes
-                    {
-                        //turn around
-                        Flip();
-                    }
-
-                }
-            }
-
-
-            decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
-        }
-         
-
-      
-    }
-
+    
     int decideRandomly(int optionCount)
     {
         int decision = 0;
@@ -306,7 +226,7 @@ public class EnemyHuman : MonoBehaviour
     /// <summary>
     /// Rotates the object
     /// </summary>
-    void Flip()
+    void TurnAround()
     {
         Vector3 rotation = transform.eulerAngles + Quaternion.Euler(new Vector3(0, 180f, 0)).eulerAngles;
         transform.rotation = Quaternion.Euler(rotation);
@@ -461,6 +381,43 @@ public class EnemyHuman : MonoBehaviour
             return true;
         }
         return true;
+    }
+
+    void StandOrMove()
+    {
+
+        if (decisionTimer <= 0)
+        {
+            //set number of options
+            optionCount = 2;
+
+            //Does the AI move?
+            choice = decideRandomly(optionCount);
+
+            if (choice == 0) //yes
+            {
+                AIState = State.Wander;
+                return;
+            }
+            
+            //no, dont move  
+            rb.velocity = Vector3.zero;
+            AIState = State.Standing;
+
+            //does AI turn around?
+            if (!in3Dmode)
+            {
+                choice = decideRandomly(optionCount);
+
+                if (choice == 0) //yes
+                {                    
+                    TurnAround();
+                }
+            }
+            
+
+            decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
+        }
     }
 }
 
