@@ -88,9 +88,18 @@ public class EnemyHuman : MonoBehaviour
             FindPlayer();
         }
         else if (AIState == State.Wander)
-        {             
+        {
+
+            if (!isGroundAhead)
+            {
+                //temporary code
+                AIState = State.Standing;
+                rb.velocity = Vector3.zero;
+                return;
+            }
+
             //2D
-            if(!in3Dmode)
+            if (!in3Dmode)
             {
                 if(rb.velocity.z == 0 && rb.velocity.x == 0)
                 {
@@ -99,7 +108,6 @@ public class EnemyHuman : MonoBehaviour
 
                     rb.AddForce(transform.forward * 3, ForceMode.Impulse);
 
-                    
                 }
                 FindPlayer();
                 return;
@@ -133,23 +141,18 @@ public class EnemyHuman : MonoBehaviour
             animControl.SetBool("isWalking", true);
             animControl.SetBool("isChasing", false);
             AdjustForwardBlend(AIState);
+            isGroundAhead = CheckGround();
             StandOrMove();
         }
 
         //Debug.Log("nav agent " + navAgent.velocity);
-
+        //debuging stuff
         debug_wanderDistancePoint.x = transform.position.x;
         debug_wanderDistancePoint.y = transform.position.y;
         debug_wanderDistancePoint.z = transform.position.z;
 
         debug_wanderDistancePoint = debug_wanderDistancePoint + transform.forward * wanderDistance;
 
-        //move this back when your done with it
-        isGroundAhead = CheckGround();
-       
-        
-
-        
     }
 
 
@@ -223,9 +226,6 @@ public class EnemyHuman : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Rotates the object
-    /// </summary>
     void TurnAround()
     {
         Vector3 rotation = transform.eulerAngles + Quaternion.Euler(new Vector3(0, 180f, 0)).eulerAngles;
@@ -268,11 +268,17 @@ public class EnemyHuman : MonoBehaviour
         switch (AIState)
         {
             case State.Wander:
-
-            case State.Standing:
                 velocity.x = rb.velocity.x;
                 velocity.y = 0;
                 velocity.z = rb.velocity.z;
+                velocityMag = Vector3.Magnitude(velocity);
+                animControl.SetFloat("forwardBlend", Mathf.Clamp(velocityMag, 0, 1));
+                break;
+
+            case State.Standing:
+                velocity.x = 0;
+                velocity.y = 0;
+                velocity.z = 0;
                 velocityMag = Vector3.Magnitude(velocity);
                 animControl.SetFloat("forwardBlend", Mathf.Clamp(velocityMag, 0, 1));
                 break;
@@ -295,11 +301,11 @@ public class EnemyHuman : MonoBehaviour
     void WanderIn3D()
     {
 
-        
         if(!isGroundAhead)
         {
             //temporary code
             AIState = State.Standing;
+            rb.velocity = Vector3.zero;
             return;
         }
 
@@ -339,7 +345,7 @@ public class EnemyHuman : MonoBehaviour
         
         Vector3 direction = new Vector3();
         direction = transform.forward;
-        direction.y = -0.095f;
+        direction.y = -0.080f;
 
         Debug.DrawLine(transform.position, transform.position + direction * 5, Color.green);
         RaycastHit hit;
@@ -397,6 +403,7 @@ public class EnemyHuman : MonoBehaviour
             if (choice == 0) //yes
             {
                 AIState = State.Wander;
+                decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
                 return;
             }
             
@@ -414,7 +421,6 @@ public class EnemyHuman : MonoBehaviour
                     TurnAround();
                 }
             }
-            
 
             decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
         }
