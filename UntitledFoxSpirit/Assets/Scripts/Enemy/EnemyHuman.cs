@@ -12,15 +12,14 @@ public class EnemyHuman : MonoBehaviour
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
     public float speed;
-    //public float velocity;
+    float initialAccel;
+    public float runAccel = 3;
     public float meleeAttackRange = 2;
     float initialStopDist;
     float smallerStopDist = 1.40f;
     bool hasAttacked = false;
     bool in3Dmode = false;
 
-    float initialAccel;
-    public float runAccel = 3;
 
     float distFromPlayer = 0;
     int optionCount = 0;
@@ -43,7 +42,7 @@ public class EnemyHuman : MonoBehaviour
     bool isGroundAhead= true;
     public LayerMask groundMask;
     public LayerMask obstacleMask;
-
+    private Vector3 lastGroundPos;
 
     //debug
     bool temp;
@@ -93,8 +92,10 @@ public class EnemyHuman : MonoBehaviour
             if (!isGroundAhead)
             {
                 //temporary code
-                AIState = State.Standing;
-                rb.velocity = Vector3.zero;
+                //AIState = State.Standing;
+                //rb.velocity = Vector3.zero;
+
+                rb.velocity *= 0.98f; //magic number
                 return;
             }
 
@@ -345,12 +346,13 @@ public class EnemyHuman : MonoBehaviour
         
         Vector3 direction = new Vector3();
         direction = transform.forward;
-        direction.y = -0.080f;
+        direction.y = -0.020f;
 
         Debug.DrawLine(transform.position, transform.position + direction * 5, Color.green);
         RaycastHit hit;
         if(Physics.Raycast(transform.position, direction, out hit, 5, groundMask))
         {
+            lastGroundPos = hit.point;
             return true;
         }
         return false;
@@ -424,6 +426,11 @@ public class EnemyHuman : MonoBehaviour
 
             decisionTimer = Random.Range(decisionTimerMin, decisionTimerMax);
         }
+    }
+
+    void SlowDownNearCliff()
+    {
+        
     }
 }
 
