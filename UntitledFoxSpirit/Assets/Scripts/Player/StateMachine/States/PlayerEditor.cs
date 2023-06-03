@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Analytics;
 using UnityEngine.WSA;
 
@@ -49,6 +50,8 @@ public class PlayerEditor : Editor
         {
             cachedEditor = Editor.CreateEditor(obj.vso);
         }
+
+        base.OnInspectorGUI();
 
         // Draw scriptable object variables in inspector
         cachedEditor.DrawDefaultInspector();

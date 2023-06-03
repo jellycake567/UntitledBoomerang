@@ -74,9 +74,6 @@ public class VariableScriptObject : ScriptableObject
     public float ledgeHangYOffset;
     public float distanceFromGround = 1f;
     public float ledgeHangCooldown = 1f;
-    public Transform wallCheck;
-    public Transform ledgeCheck;
-    public Transform ledgeRootJntTransform;
     public LayerMask groundLayer;
     
 
@@ -104,19 +101,13 @@ public class VariableScriptObject : ScriptableObject
 
     [Header("Camera")]
     public float camRotationSpeed2D = 0.2f;
-    public Transform mainCamera;
 
     [Header("Path")]
-    public PathCreator pathCreator;
+    
     public float maxDistancePath = 0.5f;
     public float distanceSpawn = 0f;
     public float spawnYOffset = 0f;
     public float adjustVelocity = 1.0f; //Velocity to push player towards the path
-
-    [Header("References")]
-    public Slider staminaBar;
-    public CinemachineVirtualCamera virtualCam2D;
-    public PhysicMaterial friction;
 
     #endregion                                                                                                                                                                                                                                                                
 }

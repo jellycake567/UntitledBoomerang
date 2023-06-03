@@ -7,10 +7,22 @@ using UnityEngine.UI;
 
 public class PlayerStateMachine : MonoBehaviour
 {
+    [HideInInspector]
     public VariableScriptObject vso;
 
+    [HideInInspector]
     public PlayerBaseState currentState;
     PlayerStateFactory states;
+
+    [Header("References")]
+    public Transform mainCamera;
+    public Transform wallCheck;
+    public Transform ledgeCheck;
+    public Transform ledgeRootJntTransform;
+    public PathCreator pathCreator;
+    public Slider staminaBar;
+    public CinemachineVirtualCamera virtualCam2D;
+    public PhysicMaterial friction;
 
     // Movement
     private float accelRatePerSec;
@@ -129,10 +141,10 @@ public class PlayerStateMachine : MonoBehaviour
         //Cursor.visible = false;
 
 
-        Vector3 spawnPos = vso.pathCreator.path.GetPointAtDistance(vso.distanceSpawn);
+        Vector3 spawnPos = pathCreator.path.GetPointAtDistance(vso.distanceSpawn);
         spawnPos.y += vso.spawnYOffset + 1.0f;
         transform.position = spawnPos;
-        distanceOnPath = vso.pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
 
 
         states = new PlayerStateFactory(this);
@@ -205,7 +217,7 @@ public class PlayerStateMachine : MonoBehaviour
                 disableMovement = false;
                 disableJumping = false;
                 disableInputRotations = false;
-                tallCollider.material = vso.friction;
+                tallCollider.material = friction;
                 isLandRolling = false;
             }
         }
@@ -403,7 +415,7 @@ public class PlayerStateMachine : MonoBehaviour
     void HandleRotation()
     {
         // Calculate player 2D rotation
-        distanceOnPath = vso.pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
 
         targetRot2D = Rotation2D(GetPathRotation(), input.GetMovementInput.normalized);
     }
@@ -464,8 +476,8 @@ public class PlayerStateMachine : MonoBehaviour
     void CameraRotation()
     {
         // Rotate camera 2d
-        Vector3 camEulerAngle = vso.mainCamera.rotation.eulerAngles;
-        vso.virtualCam2D.transform.rotation = Quaternion.Slerp(vso.mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, GetPathRotation().eulerAngles.y - 90f, camEulerAngle.z), vso.camRotationSpeed2D);
+        Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
+        virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, GetPathRotation().eulerAngles.y - 90f, camEulerAngle.z), vso.camRotationSpeed2D);
     }
 
     #endregion
@@ -473,7 +485,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     Quaternion GetPathRotation()
     {
-        return vso.pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+        return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
     }
 
 }

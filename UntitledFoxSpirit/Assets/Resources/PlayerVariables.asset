@@ -58,7 +58,7 @@ MonoBehaviour:
   ledgeRootJntTransform: {fileID: 0}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   attackCooldown: 2
   resetComboDelay: 1
   rootMotionAtkSpeed: 2
@@ -79,4 +79,4 @@ MonoBehaviour:
   adjustVelocity: 1
   staminaBar: {fileID: 0}
   virtualCam2D: {fileID: 0}
-  friction: {fileID: 0}
+  friction: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
