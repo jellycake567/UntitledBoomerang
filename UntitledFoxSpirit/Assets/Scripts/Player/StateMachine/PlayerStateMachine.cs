@@ -7,201 +7,113 @@ using UnityEngine.UI;
 
 public class PlayerStateMachine : MonoBehaviour
 {
-    protected PlayerBaseState currentState;
+    public VariableScriptObject vso;
+
+    public PlayerBaseState currentState;
     PlayerStateFactory states;
 
+    // Movement
+    private float accelRatePerSec;
+    private float decelRatePerSec;
+    private bool isAccel = false;
+    private bool isDecel = false;
+    private bool isRunning = false;
+    private bool disableMovement;
+    private float turnSmoothVelocity;
+    private float currentSpeed;
+    private float maxSpeed;
 
-    #region Movement / Rotation
+    // Rotation
+    private float dampedTargetRotationCurrentYVelocity;
+    private float dampedTargetRotationPassedTime;
+    private bool disableUpdateRotations = false;
+    private bool disableInputRotations = false;
+    private Quaternion previousRotation;
+    private Quaternion targetRot2D;
 
-    [Header("Movement")]
-    public float humanSpeed = 5.0f;
-    public float humanRunSpeed = 10.0f;
-    public float accelTimeToMaxSpeed = 2.0f;
-    public float decelTimeToZeroSpeed = 1.0f;
-    public float animJogSpeed = 1.17f;
-    public float animJogAccelSpeed = 0.8f;
-    public float animJogDecelSpeed = 0.8f;
-    protected float accelRatePerSec;
-    protected float decelRatePerSec;
-    protected bool isAccel = false;
-    protected bool isDecel = false;
-    protected bool isRunning = false;
-    protected bool disableMovement;
+    // Gravity
+    private bool reduceVelocityOnce = false;
+    private bool isGrounded;
+    private float updateMaxHeight = 100000f;
+    private float updateMaxHeight2 = 100000f;
+    private bool disableGravity = false;
 
-    public float turnSmoothTime2D = 0.03f;
-    public float turnSmoothTime3D = 0.1f;
-    public float maxVelocityChange = 10f;
-    public float frictionAmount = 0.2f;
-    protected float turnSmoothVelocity;
-    protected float currentSpeed;
-    protected float maxSpeed;
-
-    [Header("Rotation")]
-    public float timeToReachTargetRotation = 0.14f;
-    protected float dampedTargetRotationCurrentYVelocity;
-    protected float dampedTargetRotationPassedTime;
-    protected bool disableUpdateRotations = false;
-    protected bool disableInputRotations = false;
-    protected Quaternion previousRotation;
-    protected Quaternion targetRot2D;
-
-    [Header("Gravity")]
-    public float gravity = -9.81f;
-    public float gravityScale = 3f;
-    public float fallGravityMultiplier = 0.2f;
-    public float reduceVelocityPeak = 5f;
-    public float reduceVelocity = 5f;
-    public Vector3 groundCheckOffset;
-    public Vector3 groundCheckSize;
-    public LayerMask ignorePlayerMask;
-    protected bool reduceVelocityOnce = false;
-    protected bool isGrounded;
-    protected float updateMaxHeight = 100000f;
-    protected float updateMaxHeight2 = 100000f;
-    protected bool disableGravity = false;
-
-    #endregion
-
-    #region Player Actions
-
-    [Header("Jump")]
-    public float humanJumpHeight = 5f;
-    public float jumpRollVelocity = -5f;
-    public float rootMotionJumpRollSpeed = 2f;
-    protected bool isLanding = false;
-    protected bool isLandRolling = false;
-    protected bool disableJumping = false;
-    protected bool isHoldingJump = false;
-
-    public float jumpCooldown = 0.2f;
-    public float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
-    public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
-    public float jumpMultiplier = 1.0f;
-    public float doubleJumpHeightPercent = 0.5f;
-    protected float jumpCounter;
-    protected float jumpBufferCounter;
-    protected float jumpCoyoteCounter;
-    protected bool canDoubleJump;
-    protected float newGroundY = 1000000f;
-
-    [Header("Sneaking")]
-    public float sneakSpeed = 2f;
-    public Vector3 sneakCheckOffset;
-    public Vector3 sneakCheckSize;
-    protected bool canUnsneak = true;
-    protected bool isSneaking
+    // Sneaking
+    private bool canUnsneak = true;
+    private bool isSneaking
     {
         get { return animController.GetBool("isSneaking"); }
         set { animController.SetBool("isSneaking", value); }
     }
 
-    [Header("Dash")]
-    public float humanDashTime = 5.0f;
-    public float humanDashDistance = 4.0f;
-    public float dashCooldown = 1f;
-    protected float currentDashCooldown = 1f;
-    protected bool isDashing = false;
-    protected bool disableDashing = false;
+    // Jump
+    private bool isLanding = false;
+    private bool isLandRolling = false;
+    private bool disableJumping = false;
+    private bool isHoldingJump = false;
+    private float jumpCounter;
+    private float jumpBufferCounter;
+    private float jumpCoyoteCounter;
+    private bool canDoubleJump;
+    private float newGroundY = 1000000f;
 
-    [Header("Ledge Climb")]
-    public float wallCheckDistance = 3.0f;
-    public float ledgeHangDistanceOffset;
-    public float ledgeHangYOffset;
-    public float distanceFromGround = 1f;
-    public float ledgeHangCooldown = 1f;
-    public Transform wallCheck;
-    public Transform ledgeCheck;
-    public Transform ledgeRootJntTransform;
-    public LayerMask groundLayer;
-    protected float currentLedgeHangCooldown;
-    protected bool isClimbing = false;
-    protected bool isWallClimbing;
-    protected bool canClimbWall;
+    // Dash
+    private float currentDashCooldown = 1f;
+    private bool isDashing = false;
+    private bool disableDashing = false;
 
-    protected bool isTouchingWall;
-    protected bool isTouchingLedge;
-    [HideInInspector] public bool canClimbLedge = false;
-    [HideInInspector] public bool ledgeDetected;
+    // Ledge Climb
+    private float currentLedgeHangCooldown;
+    private bool isClimbing = false;
+    private bool isWallClimbing;
+    private bool canClimbWall;
+    
+    private bool isTouchingWall;
+    private bool isTouchingLedge;
+    private bool canClimbLedge = false;
+    private bool ledgeDetected;
 
-    [Header("Attack")]
-    public float attackCooldown = 2f;
-    public float resetComboDelay = 1f;
-    public float rootMotionAtkSpeed = 2f;
-    protected bool isAttacking = false;
-    protected float currentAttackCooldown;
-    protected int comboCounter;
-    protected int lastAttackInt;
-    protected bool resetAttack = true;
+    // Attack
+    private bool isAttacking = false;
+    private float currentAttackCooldown;
+    private int comboCounter;
+    private int lastAttackInt;
+    private bool resetAttack = true;
 
-    #endregion
+    // Stamina
+    private float currentStaminaCooldown = 0f;
+    private float currentStamina;
 
-    #region Other
+    // Take Damage
+    private bool isInvulnerable = false;
+    private float currentInvulnerableCooldown;
 
-    [Header("Stamina")]
-    public float staminaConsumption = 20f;
-    public float staminaRecovery = 5f;
-    public float staminaCooldown = 1f;
-    public float maxStamina = 100f;
-    protected float currentStaminaCooldown = 0f;
-    protected float currentStamina;
+    // Path
+    private float distanceOnPath;
 
-
-    [Header("Take Damage")]
-    public float invulnerableTime = 1f;
-    public float regainMovement = 0.5f;
-    public float horizontalKnockback = 10f;
-    public float verticalKnockback = 10f;
-    [HideInInspector] public bool isInvulnerable = false;
-    protected float currentInvulnerableCooldown;
-
-    [Header("Camera")]
-    public float camRotationSpeed2D = 0.2f;
-    public Transform mainCamera;
-
-    [Header("Path")]
-    public PathCreator pathCreator;
-    public float maxDistancePath = 0.5f;
-    public float distanceSpawn = 0f;
-    public float spawnYOffset = 0f;
-    public float adjustVelocity = 1.0f; //Velocity to push player towards the path
-    protected float distanceOnPath;
-
-    [Header("References")]
-    public Slider staminaBar;
-    public CinemachineVirtualCamera virtualCam2D;
-    public PhysicMaterial friction;
-    protected Rigidbody rb;
-    protected Animator animController;
-    protected CapsuleCollider tallCollider;
-    protected CapsuleCollider shortCollider;
-    protected BoxCollider boxCollider;
-    protected PlayerInput input;
-
-    #endregion
+    // References
+    private Rigidbody rb;
+    private Animator animController;
+    private CapsuleCollider tallCollider;
+    private CapsuleCollider shortCollider;
+    private BoxCollider boxCollider;
+    private PlayerInput input;
 
     #region Internal Variables
 
-    protected Vector3 prevInputDirection;
-
-    protected bool isHeavyLand = false;
-
+    private Vector3 prevInputDirection;
+    private bool isHeavyLand = false;
     const float REDUCE_SPEED = 1.414214f;
-    
-    
 
     // Debug
     float currentMaxHeight = 0f;
-    protected Vector3 velocity;
+    private Vector3 velocity;
 
-    #endregion
+    #endregion  
 
     // Start is called before the first frame update
     void Start()
     {
-        states = new PlayerStateFactory(this);
-        currentState = states.Grounded();
-        currentState.EnterState();
-
         rb = GetComponent<Rigidbody>();
         animController = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider>();
@@ -211,17 +123,21 @@ public class PlayerStateMachine : MonoBehaviour
         tallCollider = colliderArr[0];
         shortCollider = colliderArr[1];
 
-        currentStamina = maxStamina;
+        currentStamina = vso.maxStamina;
 
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
 
 
-        Vector3 spawnPos = pathCreator.path.GetPointAtDistance(distanceSpawn);
-        spawnPos.y += spawnYOffset + 1.0f;
+        Vector3 spawnPos = vso.pathCreator.path.GetPointAtDistance(vso.distanceSpawn);
+        spawnPos.y += vso.spawnYOffset + 1.0f;
         transform.position = spawnPos;
+        distanceOnPath = vso.pathCreator.path.GetClosestDistanceAlongPath(transform.position);
 
-        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+
+        states = new PlayerStateFactory(this);
+        currentState = new PlayerGroundedState(this, states);
+        currentState.EnterState();
     }
 
     // Update is called once per frame
@@ -245,6 +161,100 @@ public class PlayerStateMachine : MonoBehaviour
         currentState.FixedUpdateState();
     }
 
+    void OnAnimatorMove()
+    {
+        if (isClimbing && !animController.IsInTransition(0))
+        {
+            rb.velocity = animController.deltaPosition * vso.rootMotionAtkSpeed / Time.deltaTime;
+        }
+
+        // Attacking root motion
+        if (isAttacking && !disableDashing && !animController.IsInTransition(0))
+        {
+            float y = rb.velocity.y;
+
+            rb.velocity = animController.deltaPosition * vso.rootMotionAtkSpeed / Time.deltaTime;
+
+            rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+        }
+
+        // Jump Roll root motion
+        if (isLandRolling && animController.GetBool("Grounded") && !isLanding)
+        {
+            isLanding = true;
+            disableMovement = true;
+            disableInputRotations = true;
+            tallCollider.material = null;
+        }
+        if (isLanding)
+        {
+            AnimatorStateInfo jumpRollState = animController.GetCurrentAnimatorStateInfo(0);
+
+            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("Grounded") && animController.IsInTransition(0))
+            {
+                float y = rb.velocity.y;
+
+                rb.velocity = animController.deltaPosition * vso.rootMotionJumpRollSpeed / Time.deltaTime;
+
+                rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
+
+            }
+            else if (isGrounded)
+            {
+                isLanding = false;
+                disableMovement = false;
+                disableJumping = false;
+                disableInputRotations = false;
+                tallCollider.material = vso.friction;
+                isLandRolling = false;
+            }
+        }
+    }
+
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.matrix = Matrix4x4.identity;
+
+    //    // Spawn player position
+    //    if (vso.distanceSpawn >= 0 && vso.distanceSpawn <= vso.pathCreator.path.length)
+    //    {
+    //        Vector3 spawnPosition = vso.pathCreator.path.GetPointAtDistance(vso.distanceSpawn);
+    //        spawnPosition.y += vso.spawnYOffset;
+
+    //        Gizmos.color = Color.cyan;
+    //        Gizmos.DrawSphere(spawnPosition, 0.5f);
+    //    }
+
+    //    // Player ground check
+    //    Vector3 point = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
+    //    Gizmos.matrix = Matrix4x4.TRS(point, transform.rotation, transform.lossyScale);
+
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawWireCube(Vector3.zero, vso.groundCheckSize);
+
+    //    // Player head check
+    //    Vector3 centerPos = new Vector3(transform.position.x + vso.sneakCheckOffset.x, transform.position.y + vso.sneakCheckOffset.y, transform.position.z + vso.sneakCheckOffset.z) + Vector3.up;
+    //    Gizmos.matrix = Matrix4x4.TRS(centerPos, transform.rotation, transform.lossyScale);
+
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawWireCube(Vector3.zero, vso.sneakCheckSize);
+    //}
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Hitbox"))
+        {
+            EnemyNavigation enemyNav = other.GetComponentInParent<EnemyNavigation>();
+            Vector3 enemyPos = enemyNav.transform.position;
+
+            // Get dir from AI to player
+            Vector3 facingDir = (other.ClosestPointOnBounds(transform.position) - enemyPos).IgnoreYAxis();
+            Vector3 dir = enemyNav.CalculatePathFacingDir(enemyPos, facingDir);
+
+            //TakeDamage(dir);
+        }
+    }
+
     void JumpCooldownTimer()
     {
         if (jumpCounter <= 0f)
@@ -262,7 +272,7 @@ public class PlayerStateMachine : MonoBehaviour
         {
             canDoubleJump = true;
 
-            jumpCoyoteCounter = jumpCoyoteTime;
+            jumpCoyoteCounter = vso.jumpCoyoteTime;
         }
         else
         {
@@ -270,16 +280,15 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
-
     void GroundCheck()
     {
-        Vector3 centerPos = new Vector3(transform.position.x + groundCheckOffset.x, transform.position.y + groundCheckOffset.y, transform.position.z + groundCheckOffset.z) + Vector3.down;
+        Vector3 centerPos = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
         //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
-        bool overlap = Physics.CheckBox(centerPos, groundCheckSize / 2, transform.rotation, ~ignorePlayerMask);
+        bool overlap = Physics.CheckBox(centerPos, vso.groundCheckSize / 2, transform.rotation, ~vso.ignorePlayerMask);
 
         RaycastHit hit;
-        if (Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~ignorePlayerMask))
+        if (Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~vso.ignorePlayerMask))
         {
             newGroundY = hit.point.y;
         }
@@ -336,7 +345,7 @@ public class PlayerStateMachine : MonoBehaviour
                 isAccel = false;
                 isDecel = true;
 
-                animController.speed = animJogDecelSpeed;
+                animController.speed = vso.animJogDecelSpeed;
                 StartCoroutine(Deceleration());
             }
         }
@@ -355,11 +364,11 @@ public class PlayerStateMachine : MonoBehaviour
         if (!isAccel && !isDecel)
         {
             isAccel = true;
-            animController.speed = animJogAccelSpeed; // Set to accel jogging speed
+            animController.speed = vso.animJogAccelSpeed; // Set to accel jogging speed
         }
         else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
         {
-            animController.speed = animJogSpeed;
+            animController.speed = vso.animJogSpeed;
         }
 
 
@@ -370,7 +379,7 @@ public class PlayerStateMachine : MonoBehaviour
     IEnumerator Deceleration()
     {
         float time = 0f;
-        float timeToZero = decelTimeToZeroSpeed * currentSpeed;
+        float timeToZero = vso.decelTimeToZeroSpeed * currentSpeed;
 
         // Waiting for deceleration to reach zero (Match decel anim with player movement)
         while (time < timeToZero)
@@ -394,7 +403,7 @@ public class PlayerStateMachine : MonoBehaviour
     void HandleRotation()
     {
         // Calculate player 2D rotation
-        distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        distanceOnPath = vso.pathCreator.path.GetClosestDistanceAlongPath(transform.position);
 
         targetRot2D = Rotation2D(GetPathRotation(), input.GetMovementInput.normalized);
     }
@@ -445,7 +454,7 @@ public class PlayerStateMachine : MonoBehaviour
             return;
         }
 
-        float smoothedYAngle = Mathf.SmoothDampAngle(currentYAngle, targetRot2D.eulerAngles.y, ref dampedTargetRotationCurrentYVelocity, timeToReachTargetRotation - dampedTargetRotationPassedTime);
+        float smoothedYAngle = Mathf.SmoothDampAngle(currentYAngle, targetRot2D.eulerAngles.y, ref dampedTargetRotationCurrentYVelocity, vso.timeToReachTargetRotation - dampedTargetRotationPassedTime);
         dampedTargetRotationPassedTime += Time.deltaTime;
 
         Quaternion targetRotation = Quaternion.Euler(0f, smoothedYAngle, 0f);
@@ -455,8 +464,8 @@ public class PlayerStateMachine : MonoBehaviour
     void CameraRotation()
     {
         // Rotate camera 2d
-        Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
-        virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, GetPathRotation().eulerAngles.y - 90f, camEulerAngle.z), camRotationSpeed2D);
+        Vector3 camEulerAngle = vso.mainCamera.rotation.eulerAngles;
+        vso.virtualCam2D.transform.rotation = Quaternion.Slerp(vso.mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, GetPathRotation().eulerAngles.y - 90f, camEulerAngle.z), vso.camRotationSpeed2D);
     }
 
     #endregion
@@ -464,7 +473,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     Quaternion GetPathRotation()
     {
-        return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+        return vso.pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
     }
 
 }

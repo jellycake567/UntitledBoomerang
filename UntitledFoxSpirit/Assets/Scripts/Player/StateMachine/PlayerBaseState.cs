@@ -1,5 +1,5 @@
 ﻿
-public abstract class PlayerBaseState : PlayerStateMachine
+public abstract class PlayerBaseState
 {
     protected PlayerStateMachine context;
     protected PlayerStateFactory factory;
@@ -23,7 +23,7 @@ public abstract class PlayerBaseState : PlayerStateMachine
 
         newState.EnterState();
 
-        currentState = newState;
+        context.currentState = newState;
     }
     protected void SetSuperState() { }
     protected void SetSubState() { }

@@ -16543,8 +16543,8 @@ GameObject:
   - component: {fileID: 673392382441448550}
   - component: {fileID: 673392382441448551}
   - component: {fileID: 673392382441448568}
-  - component: {fileID: 673392382441448573}
   - component: {fileID: 673392382441448574}
+  - component: {fileID: 673392382441448573}
   m_Layer: 8
   m_Name: Player New
   m_TagString: Player
@@ -16564,77 +16564,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c108ea329810ea24e914a449f1ee699c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  humanSpeed: 5
-  humanRunSpeed: 10
-  accelTimeToMaxSpeed: 2
-  decelTimeToZeroSpeed: 1
-  animJogSpeed: 1.17
-  animJogAccelSpeed: 0.8
-  animJogDecelSpeed: 0.8
-  turnSmoothTime2D: 0.03
-  turnSmoothTime3D: 0.1
-  maxVelocityChange: 10
-  frictionAmount: 0.2
-  timeToReachTargetRotation: 0.14
-  gravity: -9.81
-  gravityScale: 3
-  fallGravityMultiplier: 0.2
-  reduceVelocityPeak: 5
-  reduceVelocity: 5
-  groundCheckOffset: {x: 0, y: 0, z: 0}
-  groundCheckSize: {x: 0, y: 0, z: 0}
-  ignorePlayerMask:
-    serializedVersion: 2
-    m_Bits: 256
-  humanJumpHeight: 5
-  jumpRollVelocity: -5
-  rootMotionJumpRollSpeed: 2
-  jumpCooldown: 0.2
-  jumpBufferTime: 0.1
-  jumpCoyoteTime: 0.2
-  jumpMultiplier: 1
-  doubleJumpHeightPercent: 0.5
-  sneakSpeed: 2
-  sneakCheckOffset: {x: 0, y: 0, z: 0}
-  sneakCheckSize: {x: 0, y: 0, z: 0}
-  humanDashTime: 5
-  humanDashDistance: 4
-  dashCooldown: 1
-  wallCheckDistance: 3
-  ledgeHangDistanceOffset: 0
-  ledgeHangYOffset: 0
-  distanceFromGround: 1
-  ledgeHangCooldown: 1
-  wallCheck: {fileID: 0}
-  ledgeCheck: {fileID: 0}
-  ledgeRootJntTransform: {fileID: 0}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 512
-  canClimbLedge: 0
-  ledgeDetected: 0
-  attackCooldown: 2
-  resetComboDelay: 1
-  rootMotionAtkSpeed: 2
-  staminaConsumption: 20
-  staminaRecovery: 5
-  staminaCooldown: 1
-  maxStamina: 100
-  invulnerableTime: 1
-  regainMovement: 0.5
-  horizontalKnockback: 10
-  verticalKnockback: 10
-  isInvulnerable: 0
-  camRotationSpeed2D: 0.2
-  mainCamera: {fileID: 1865382425}
-  pathCreator: {fileID: 988442859}
-  maxDistancePath: 0.5
-  distanceSpawn: 15
-  spawnYOffset: 0
-  adjustVelocity: 5
-  staminaBar: {fileID: 1558228989}
-  virtualCam2D: {fileID: 1387391290}
-  friction: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
+  vso: {fileID: 11400000, guid: 39ce840a76f166a408c09f8898c3eb1d, type: 2}
 --- !u!114 &673392382441448574
 MonoBehaviour:
   m_ObjectHideFlags: 0
