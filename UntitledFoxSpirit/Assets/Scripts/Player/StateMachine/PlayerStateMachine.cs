@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class PlayerStateMachine : MonoBehaviour
 {
     public string debugState;
+    public string subState;
 
     [HideInInspector]
     public VariableScriptObject vso;
@@ -98,13 +99,14 @@ public class PlayerStateMachine : MonoBehaviour
 
     [HideInInspector] public Vector3 prevInputDirection;
     [HideInInspector] public bool isHeavyLand = false;
-    [HideInInspector] public const float REDUCE_SPEED = 1.414214f;
 
     // Debug
     [HideInInspector] public float currentMaxHeight = 0f;
     [HideInInspector] public Vector3 velocity;
 
-    #endregion  
+    #endregion
+
+    #region Unity Functions
 
     // Start is called before the first frame update
     void Start()
@@ -138,9 +140,18 @@ public class PlayerStateMachine : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        currentState.UpdateState();
+        if (rb.velocity.y > 0)
+        {
+            currentMaxHeight = transform.position.y;
+        }
+
+        currentState.UpdateStates();
+        if (currentState.currentSubState != null)
+        {
+            subState = currentState.currentSubState.ToString();
+        }
         debugState = currentState.ToString();
-        Debug.Log(debugState);
+        Debug.Log(subState);
 
         // Rotation
         HandleRotation();
@@ -150,12 +161,13 @@ public class PlayerStateMachine : MonoBehaviour
         JumpCooldownTimer();
         CoytoteTime();
 
+        // Ground
         GroundCheck();
     }
 
     void FixedUpdate()
     {
-        currentState.FixedUpdateState();
+        currentState.FixedUpdateStates();
     }
 
     void OnAnimatorMove()
@@ -252,6 +264,8 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    #endregion
+
     #region Jump
 
     void JumpCooldownTimer()
@@ -308,6 +322,25 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    public void AdjustPlayerOnPath()
+    {
+        Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+        //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+
+        // Distance between path and player
+        float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
+
+        // Direction from path towards player
+        Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
+        Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * vso.maxDistancePath, Color.blue);
+
+        // Keeps player on the path
+        if (distance > vso.maxDistancePath)
+        {
+            Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
+            rb.AddForce(dirTowardPath * vso.adjustVelocity, ForceMode.Impulse);
+        }
+    }
 
     #region Animation Jog Speed
 
@@ -316,20 +349,8 @@ public class PlayerStateMachine : MonoBehaviour
         #region Detect animation player input
         if (direction.magnitude > 0.1f)
         {
-            // Currently decelerating, but if input is pressed, stop decel and start accel
-            if (!isAccel && isDecel)
-                isDecel = false;
-
             if (!disableMovement)
                 animController.SetBool("isMoving", true);
-
-            // Store when player presses left or right
-            if (prevInputDirection != direction)
-            {
-                // Reset speed when turning around
-                currentSpeed = 2f;
-                prevInputDirection = direction;
-            }
         }
         else
         {
@@ -338,63 +359,12 @@ public class PlayerStateMachine : MonoBehaviour
                 animController.SetBool("isMoving", false);
             }
             animController.SetBool("isSprinting", false);
-
-            // If currently accelerating, but input is released, stop accel and start decel
-            if (isAccel)
-            {
-                isAccel = false;
-                isDecel = true;
-
-                animController.speed = vso.animJogDecelSpeed;
-                StartCoroutine(Deceleration());
-            }
         }
         #endregion
 
-        #region Acceleraction / Deceleration Animation
-
-        // Is player currently in jogging state
-        if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
-        {
-            animController.speed = 1f;
-            return;
-        }
-
-        // Start acceleration when entering state
-        if (!isAccel && !isDecel)
-        {
-            isAccel = true;
-            animController.speed = vso.animJogAccelSpeed; // Set to accel jogging speed
-        }
-        else if (currentSpeed >= maxSpeed && !isDecel) // If reached max speed, set anim speed to normal jogging speed
-        {
-            animController.speed = vso.animJogSpeed;
-        }
-
-
-
-        #endregion
     }
 
-    IEnumerator Deceleration()
-    {
-        float time = 0f;
-        float timeToZero = vso.decelTimeToZeroSpeed * currentSpeed;
-
-        // Waiting for deceleration to reach zero (Match decel anim with player movement)
-        while (time < timeToZero)
-        {
-            time += -decelRatePerSec * Time.deltaTime;
-
-            if (!isDecel)
-                break;
-
-            yield return new WaitForEndOfFrame();
-        }
-
-        if (isDecel)
-            animController.SetBool("isMoving", false);
-    }
+    
 
     #endregion
 

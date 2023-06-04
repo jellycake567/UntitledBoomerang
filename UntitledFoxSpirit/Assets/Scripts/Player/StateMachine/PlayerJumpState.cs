@@ -5,7 +5,11 @@ using UnityEngine;
 
 public class PlayerJumpState : PlayerBaseState
 {
-    public PlayerJumpState(PlayerStateMachine context, PlayerStateFactory playerStateFactory, VariableScriptObject vso) : base(context, playerStateFactory, vso) { }
+    public PlayerJumpState(PlayerStateMachine context, PlayerStateFactory playerStateFactory, VariableScriptObject vso) : base(context, playerStateFactory, vso) 
+    {
+        isRootState = true;
+        InitializeSubState();
+    }
 
     public override void EnterState()
     {
@@ -28,12 +32,22 @@ public class PlayerJumpState : PlayerBaseState
     public override void ExitState() { }
     public override void CheckSwitchState()
     {
-        if (ctx.isGrounded && ctx.jumpCounter <= 0f)
+        if (ctx.isGrounded)
         {
             SwitchState(factory.Grounded());
         }
     }
-    public override void InitializeSubState() { }
+    public override void InitializeSubState() 
+    {
+        if (ctx.input.isMovementHeld && ctx.isRunning)
+        {
+            SetSubState(factory.Run());
+        }
+        else if (ctx.input.isMovementHeld)
+        {
+            SetSubState(factory.Walk());
+        }
+    }
 
 
     void JumpBuffer()
@@ -48,14 +62,11 @@ public class PlayerJumpState : PlayerBaseState
         }
     }
 
-
     void FirstJump()
     {
         //Player jump input
         if (ctx.jumpBufferCounter > 0f && ctx.jumpCoyoteCounter > 0f && ctx.jumpCounter <= 0f)
         {
-            Debug.Log("jump");
-
             ctx.reduceVelocityOnce = true;
 
             //Calculate Velocity

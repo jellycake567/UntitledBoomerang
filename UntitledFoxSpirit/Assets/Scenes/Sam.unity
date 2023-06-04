@@ -16565,6 +16565,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugState: 
+  subState: 
   vso: {fileID: 11400000, guid: 39ce840a76f166a408c09f8898c3eb1d, type: 2}
   mainCamera: {fileID: 1865382425}
   wallCheck: {fileID: 673392381368541399}

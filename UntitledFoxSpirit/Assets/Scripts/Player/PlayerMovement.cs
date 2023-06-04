@@ -479,7 +479,7 @@ public class PlayerMovement : MonoBehaviour
 
         #region Acceleraction / Deceleration Animation
 
-        // Is player currently in jogging state
+        // Is player currently in idle state
         if (!animController.GetCurrentAnimatorStateInfo(0).IsTag("Run"))
         {
             animController.speed = 1f;

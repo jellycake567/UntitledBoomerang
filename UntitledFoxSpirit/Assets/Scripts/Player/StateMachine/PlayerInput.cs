@@ -5,16 +5,29 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
+    private bool isHoldingDown;
+
     private Vector3 _movementVector;
     private bool _isInputHeld;
+    private bool _isInputReleased;
     private bool _isInputJumpHeld;
     private bool _isInputJumpPressed;
     private bool _isInputDashPressed;
     private bool _isInputAttackPressed;
     private bool _isInputCrouchPressed;
 
+    public bool isMovementHeld 
+    { 
+        get { 
+            if (_movementVector.x != 0)
+                return true;
+            return false; 
+        } 
+    }
+
     public Vector3 GetMovementInput { get { return _movementVector; } }
     public bool isInputHeld { get { return _isInputHeld; } }
+    public bool isInputReleased { get { return _isInputReleased; } }
     public bool isInputJumpHeld { get { return _isInputJumpHeld; } }
     public bool isInputJumpPressed { get { return _isInputJumpPressed; } }
     public bool isInputDashPressed { get { return _isInputDashPressed; } }
@@ -39,5 +52,24 @@ public class PlayerInput : MonoBehaviour
         _isInputDashPressed = Input.GetKeyDown(KeyCode.LeftShift) ? true : false;
         _isInputAttackPressed = Input.GetKeyDown(KeyCode.Mouse0) ? true : false;
         _isInputCrouchPressed = Input.GetKeyDown(KeyCode.C) ? true : false;
+
+
+        InputReleased();
+    }
+
+    void InputReleased()
+    {
+        _isInputReleased = false;
+
+        if (_isInputHeld && !isHoldingDown)
+        {
+            isHoldingDown = true;
+
+        }
+        else if (!_isInputHeld && isHoldingDown)
+        {
+            isHoldingDown = false;
+            _isInputReleased = true;
+        }
     }
 }

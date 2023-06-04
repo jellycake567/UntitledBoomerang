@@ -14,6 +14,16 @@ public class PlayerRunState : PlayerBaseState
 
     public override void FixedUpdateState() { }
     public override void ExitState() { }
-    public override void CheckSwitchState() { }
+    public override void CheckSwitchState() 
+    {
+        if (!ctx.input.isMovementHeld)
+        {
+            SwitchState(factory.Idle());
+        }
+        else if (ctx.input.isMovementHeld && !ctx.isRunning)
+        {
+            SwitchState(factory.Walk());
+        }
+    }
     public override void InitializeSubState() { }
 }
