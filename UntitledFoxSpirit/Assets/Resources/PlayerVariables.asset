@@ -12,31 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e827db581a1ba844966f1c9c22835b5, type: 3}
   m_Name: PlayerVariables
   m_EditorClassIdentifier: 
-  humanSpeed: 2
-  humanRunSpeed: 10
-  accelTimeToMaxSpeed: 2
-  decelTimeToZeroSpeed: 1
-  animJogSpeed: 1.17
-  animJogAccelSpeed: 0.8
-  animJogDecelSpeed: 0.8
+  humanSpeed: 4
+  humanRunSpeed: 5.5
+  accelTimeToMaxSpeed: 0.6
+  decelTimeToZeroSpeed: 0.4
+  animJogSpeed: 1
+  animJogAccelSpeed: 0.9
+  animJogDecelSpeed: 0.7
   turnSmoothTime2D: 0.03
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
-  frictionAmount: 0.2
+  frictionAmount: 0.5
   timeToReachTargetRotation: 0.14
   gravity: -9.81
-  gravityScale: 3
-  fallGravityMultiplier: 0.2
-  reduceVelocityPeak: 5
-  reduceVelocity: 5
-  groundCheckOffset: {x: 0, y: 0, z: 0}
-  groundCheckSize: {x: 0, y: 0, z: 0}
+  gravityScale: 1
+  fallGravityMultiplier: 1.25
+  reduceVelocityPeak: 2
+  reduceVelocity: 0.4
+  groundCheckOffset: {x: 0, y: 1, z: 0}
+  groundCheckSize: {x: 0.45, y: 0.1, z: 0.45}
   ignorePlayerMask:
     serializedVersion: 2
-    m_Bits: 0
-  humanJumpHeight: 5
-  jumpRollVelocity: -5
-  rootMotionJumpRollSpeed: 2
+    m_Bits: 256
+  humanJumpHeight: 8
+  jumpRollVelocity: -15
+  rootMotionJumpRollSpeed: 2.5
   jumpCooldown: 0.2
   jumpBufferTime: 0.1
   jumpCoyoteTime: 0.2
@@ -44,39 +44,31 @@ MonoBehaviour:
   doubleJumpHeightPercent: 0.5
   sneakSpeed: 2
   sneakCheckOffset: {x: 0, y: 0, z: 0}
-  sneakCheckSize: {x: 0, y: 0, z: 0}
-  humanDashTime: 5
+  sneakCheckSize: {x: 0.5, y: 0.5, z: 0.5}
+  humanDashTime: 0.5
   humanDashDistance: 4
-  dashCooldown: 1
-  wallCheckDistance: 3
-  ledgeHangDistanceOffset: 0
-  ledgeHangYOffset: 0
+  dashCooldown: 0.6
+  wallCheckDistance: 0.5
+  ledgeHangDistanceOffset: -0.3
+  ledgeHangYOffset: 1.42
   distanceFromGround: 1
-  ledgeHangCooldown: 1
-  wallCheck: {fileID: 0}
-  ledgeCheck: {fileID: 0}
-  ledgeRootJntTransform: {fileID: 0}
+  ledgeHangCooldown: 0.3
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
-  attackCooldown: 2
-  resetComboDelay: 1
+  attackCooldown: 0.1
+  resetComboDelay: 2
   rootMotionAtkSpeed: 2
   staminaConsumption: 20
-  staminaRecovery: 5
+  staminaRecovery: 1
   staminaCooldown: 1
   maxStamina: 100
-  invulnerableTime: 1
-  regainMovement: 0.5
+  invulnerableTime: 0.5
+  regainMovement: 0.3
   horizontalKnockback: 10
   verticalKnockback: 10
-  camRotationSpeed2D: 0.2
-  mainCamera: {fileID: 0}
-  pathCreator: {fileID: 0}
-  maxDistancePath: 0.5
-  distanceSpawn: 0
+  camRotationSpeed2D: 0.1
+  maxDistancePath: 0.1
+  distanceSpawn: 17
   spawnYOffset: 0
-  adjustVelocity: 1
-  staminaBar: {fileID: 0}
-  virtualCam2D: {fileID: 0}
-  friction: {fileID: 13400000, guid: a26d6df524d5332419a70fd53d0edee2, type: 2}
+  adjustVelocity: 5

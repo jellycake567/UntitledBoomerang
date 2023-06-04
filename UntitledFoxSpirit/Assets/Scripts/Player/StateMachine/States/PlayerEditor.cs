@@ -51,10 +51,10 @@ public class PlayerEditor : Editor
             cachedEditor = Editor.CreateEditor(obj.vso);
         }
 
-        base.OnInspectorGUI();
-
         // Draw scriptable object variables in inspector
         cachedEditor.DrawDefaultInspector();
+
+        base.OnInspectorGUI();
 
         //Component[] comArr = (Component[])targetObject.GetComponents<Component>();
         //foreach (Component com in comArr)

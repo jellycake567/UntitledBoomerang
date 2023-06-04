@@ -1,4 +1,5 @@
 ﻿using Cinemachine;
+using NUnit.Framework.Internal;
 using PathCreation;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,12 +8,13 @@ using UnityEngine.UI;
 
 public class PlayerStateMachine : MonoBehaviour
 {
+    public string debugState;
+
     [HideInInspector]
     public VariableScriptObject vso;
 
-    [HideInInspector]
     public PlayerBaseState currentState;
-    PlayerStateFactory states;
+    private PlayerStateFactory states;
 
     [Header("References")]
     public Transform mainCamera;
@@ -24,102 +26,83 @@ public class PlayerStateMachine : MonoBehaviour
     public CinemachineVirtualCamera virtualCam2D;
     public PhysicMaterial friction;
 
+    #region Movement
+
     // Movement
-    private float accelRatePerSec;
-    private float decelRatePerSec;
-    private bool isAccel = false;
-    private bool isDecel = false;
-    private bool isRunning = false;
-    private bool disableMovement;
-    private float turnSmoothVelocity;
-    private float currentSpeed;
-    private float maxSpeed;
+    [HideInInspector] public float accelRatePerSec, decelRatePerSec, turnSmoothVelocity, currentSpeed, maxSpeed;
+    [HideInInspector] public bool isAccel = false, isDecel = false, isRunning = false, disableMovement;
+
 
     // Rotation
-    private float dampedTargetRotationCurrentYVelocity;
-    private float dampedTargetRotationPassedTime;
-    private bool disableUpdateRotations = false;
-    private bool disableInputRotations = false;
-    private Quaternion previousRotation;
-    private Quaternion targetRot2D;
+    [HideInInspector] public float dampedTargetRotationCurrentYVelocity, dampedTargetRotationPassedTime;
+    [HideInInspector] public bool disableUpdateRotations = false, disableInputRotations = false;
+    [HideInInspector] public Quaternion previousRotation, targetRot2D;
 
     // Gravity
-    private bool reduceVelocityOnce = false;
-    private bool isGrounded;
-    private float updateMaxHeight = 100000f;
-    private float updateMaxHeight2 = 100000f;
-    private bool disableGravity = false;
+    [HideInInspector] public bool reduceVelocityOnce = false, disableGravity = false, isGrounded;
+    [HideInInspector] public float updateMaxHeight = 100000f, updateMaxHeight2 = 100000f;
+
+    #endregion
+
+    #region Actions
 
     // Sneaking
-    private bool canUnsneak = true;
-    private bool isSneaking
+    [HideInInspector] public bool canUnsneak = true;
+    [HideInInspector] public bool isSneaking
     {
         get { return animController.GetBool("isSneaking"); }
         set { animController.SetBool("isSneaking", value); }
     }
 
     // Jump
-    private bool isLanding = false;
-    private bool isLandRolling = false;
-    private bool disableJumping = false;
-    private bool isHoldingJump = false;
-    private float jumpCounter;
-    private float jumpBufferCounter;
-    private float jumpCoyoteCounter;
-    private bool canDoubleJump;
-    private float newGroundY = 1000000f;
-
+    [HideInInspector] public bool isLanding = false, isLandRolling = false, disableJumping = false, canDoubleJump;
+    [HideInInspector] public float newGroundY = 1000000f, jumpCounter, jumpBufferCounter, jumpCoyoteCounter;
     // Dash
-    private float currentDashCooldown = 1f;
-    private bool isDashing = false;
-    private bool disableDashing = false;
+    [HideInInspector] public float currentDashCooldown { get; } = 1f;
+    [HideInInspector] public bool isDashing = false, disableDashing = false;
 
     // Ledge Climb
-    private float currentLedgeHangCooldown;
-    private bool isClimbing = false;
-    private bool isWallClimbing;
-    private bool canClimbWall;
-    
-    private bool isTouchingWall;
-    private bool isTouchingLedge;
-    private bool canClimbLedge = false;
-    private bool ledgeDetected;
+    [HideInInspector] public float currentLedgeHangCooldown;
+    [HideInInspector] public bool isClimbing = false, isWallClimbing, canClimbWall, isTouchingWall, isTouchingLedge, canClimbLedge, ledgeDetected;
 
     // Attack
-    private bool isAttacking = false;
-    private float currentAttackCooldown;
-    private int comboCounter;
-    private int lastAttackInt;
-    private bool resetAttack = true;
+    [HideInInspector] public bool isAttacking = false, resetAttack  = true;
+    [HideInInspector] public float currentAttackCooldown;
+    [HideInInspector] public int comboCounter, lastAttackInt;
+
+    #endregion
+
+    #region Other
 
     // Stamina
-    private float currentStaminaCooldown = 0f;
-    private float currentStamina;
+    [HideInInspector] public float currentStaminaCooldown, currentStamina;
 
     // Take Damage
-    private bool isInvulnerable = false;
-    private float currentInvulnerableCooldown;
+    [HideInInspector] public bool isInvulnerable = false;
+    [HideInInspector] public float currentInvulnerableCooldown;
 
     // Path
-    private float distanceOnPath;
+    [HideInInspector] public float distanceOnPath;
 
     // References
-    private Rigidbody rb;
-    private Animator animController;
-    private CapsuleCollider tallCollider;
-    private CapsuleCollider shortCollider;
-    private BoxCollider boxCollider;
-    private PlayerInput input;
+    [HideInInspector] public Rigidbody rb;
+    [HideInInspector] public Animator animController;
+    [HideInInspector] public CapsuleCollider tallCollider;
+    [HideInInspector] public CapsuleCollider shortCollider;
+    [HideInInspector] public BoxCollider boxCollider;
+    [HideInInspector] public PlayerInput input;
+
+    #endregion
 
     #region Internal Variables
 
-    private Vector3 prevInputDirection;
-    private bool isHeavyLand = false;
-    const float REDUCE_SPEED = 1.414214f;
+    [HideInInspector] public Vector3 prevInputDirection;
+    [HideInInspector] public bool isHeavyLand = false;
+    [HideInInspector] public const float REDUCE_SPEED = 1.414214f;
 
     // Debug
-    float currentMaxHeight = 0f;
-    private Vector3 velocity;
+    [HideInInspector] public float currentMaxHeight = 0f;
+    [HideInInspector] public Vector3 velocity;
 
     #endregion  
 
@@ -147,8 +130,8 @@ public class PlayerStateMachine : MonoBehaviour
         distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
 
 
-        states = new PlayerStateFactory(this);
-        currentState = new PlayerGroundedState(this, states);
+        states = new PlayerStateFactory(this, vso);
+        currentState = new PlayerGroundedState(this, states, vso);
         currentState.EnterState();
     }
 
@@ -156,6 +139,7 @@ public class PlayerStateMachine : MonoBehaviour
     void Update()
     {
         currentState.UpdateState();
+        debugState = currentState.ToString();
 
         // Rotation
         HandleRotation();
@@ -223,34 +207,34 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
-    //private void OnDrawGizmos()
-    //{
-    //    Gizmos.matrix = Matrix4x4.identity;
+    private void OnDrawGizmos()
+    {
+        Gizmos.matrix = Matrix4x4.identity;
 
-    //    // Spawn player position
-    //    if (vso.distanceSpawn >= 0 && vso.distanceSpawn <= vso.pathCreator.path.length)
-    //    {
-    //        Vector3 spawnPosition = vso.pathCreator.path.GetPointAtDistance(vso.distanceSpawn);
-    //        spawnPosition.y += vso.spawnYOffset;
+        // Spawn player position
+        if (vso.distanceSpawn >= 0 && vso.distanceSpawn <= pathCreator.path.length)
+        {
+            Vector3 spawnPosition = pathCreator.path.GetPointAtDistance(vso.distanceSpawn);
+            spawnPosition.y += vso.spawnYOffset;
 
-    //        Gizmos.color = Color.cyan;
-    //        Gizmos.DrawSphere(spawnPosition, 0.5f);
-    //    }
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(spawnPosition, 0.5f);
+        }
 
-    //    // Player ground check
-    //    Vector3 point = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
-    //    Gizmos.matrix = Matrix4x4.TRS(point, transform.rotation, transform.lossyScale);
+        // Player ground check
+        Vector3 point = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
+        Gizmos.matrix = Matrix4x4.TRS(point, transform.rotation, transform.lossyScale);
 
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireCube(Vector3.zero, vso.groundCheckSize);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(Vector3.zero, vso.groundCheckSize);
 
-    //    // Player head check
-    //    Vector3 centerPos = new Vector3(transform.position.x + vso.sneakCheckOffset.x, transform.position.y + vso.sneakCheckOffset.y, transform.position.z + vso.sneakCheckOffset.z) + Vector3.up;
-    //    Gizmos.matrix = Matrix4x4.TRS(centerPos, transform.rotation, transform.lossyScale);
+        // Player head check
+        Vector3 centerPos = new Vector3(transform.position.x + vso.sneakCheckOffset.x, transform.position.y + vso.sneakCheckOffset.y, transform.position.z + vso.sneakCheckOffset.z) + Vector3.up;
+        Gizmos.matrix = Matrix4x4.TRS(centerPos, transform.rotation, transform.lossyScale);
 
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireCube(Vector3.zero, vso.sneakCheckSize);
-    //}
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(Vector3.zero, vso.sneakCheckSize);
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -267,9 +251,11 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    #region Jump
+
     void JumpCooldownTimer()
     {
-        if (jumpCounter <= 0f)
+        if (jumpCounter > 0f)
         {
             animController.SetBool("Jump", false);
 
@@ -291,6 +277,8 @@ public class PlayerStateMachine : MonoBehaviour
             jumpCoyoteCounter -= Time.deltaTime;
         }
     }
+
+    #endregion
 
     void GroundCheck()
     {

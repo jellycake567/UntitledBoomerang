@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerGroundedState : PlayerBaseState
 {
-    public PlayerGroundedState(PlayerStateMachine context, PlayerStateFactory playerStateFactory) : base(context, playerStateFactory) { }
+    public PlayerGroundedState(PlayerStateMachine context, PlayerStateFactory playerStateFactory, VariableScriptObject vso) : base(context, playerStateFactory, vso) { }
 
     public override void EnterState() { }
     public override void UpdateState()
@@ -14,28 +14,27 @@ public class PlayerGroundedState : PlayerBaseState
 
     public override void FixedUpdateState()
     {
-        //ApplyGravity();
+        ApplyGravity();
     }
     public override void ExitState() { }
     public override void InitializeSubState() { }
     public override void CheckSwitchState()
     {
-        //if (input.isInputJumpPressed && jumpCounter <= 0f)
-        //{
-        //    SwitchState(factory.Jump());
-        //}
+        if (ctx.input.isInputJumpPressed && ctx.jumpCounter <= 0f)
+        {
+            SwitchState(factory.Jump());
+        }
     }
 
-    //void ApplyGravity()
-    //{
-    //    if (rb.velocity.y <= 0f)
-    //    {
-    //        // Player Falling
-    //        rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * fallGravityMultiplier);
+    void ApplyGravity()
+    {
+        if (ctx.rb.velocity.y <= 0f)
+        {
+            // Player Falling
+            ctx.rb.AddForce(new Vector3(0, vso.gravity, 0) * ctx.rb.mass * vso.fallGravityMultiplier);
 
-    //        if (!isGrounded)
-    //            animController.SetBool("Fall", true);
-    //    }
-    //}
-
+            if (!ctx.isGrounded)
+                ctx.animController.SetBool("Fall", true);
+        }
+    }
 }

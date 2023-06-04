@@ -1,12 +1,15 @@
 ﻿
 public abstract class PlayerBaseState
 {
-    protected PlayerStateMachine context;
+    protected PlayerStateMachine ctx;
     protected PlayerStateFactory factory;
-    public PlayerBaseState(PlayerStateMachine context, PlayerStateFactory factory)
+    protected VariableScriptObject vso;
+
+    public PlayerBaseState(PlayerStateMachine context, PlayerStateFactory factory, VariableScriptObject vso)
     {
-        this.context = context;
+        this.ctx = context;
         this.factory = factory;
+        this.vso = vso;
     }
 
     public abstract void EnterState();
@@ -23,7 +26,7 @@ public abstract class PlayerBaseState
 
         newState.EnterState();
 
-        context.currentState = newState;
+        ctx.currentState = newState;
     }
     protected void SetSuperState() { }
     protected void SetSubState() { }
