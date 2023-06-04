@@ -13,10 +13,11 @@ public class PlayerJumpState : PlayerBaseState
     }
     public override void UpdateState()
     {
-        JumpBuffer();
-        Jump();
-
         CheckSwitchState();
+
+        JumpBuffer();
+        FirstJump();
+        DoubleJump();
     }
 
     public override void FixedUpdateState()
@@ -27,7 +28,7 @@ public class PlayerJumpState : PlayerBaseState
     public override void ExitState() { }
     public override void CheckSwitchState()
     {
-        if (ctx.isGrounded)
+        if (ctx.isGrounded && ctx.jumpCounter <= 0f)
         {
             SwitchState(factory.Grounded());
         }
@@ -37,7 +38,7 @@ public class PlayerJumpState : PlayerBaseState
 
     void JumpBuffer()
     {
-        if (ctx.input.isInputJumpHeld)
+        if (ctx.input.isInputJumpPressed)
         {
             ctx.jumpBufferCounter = vso.jumpBufferTime;
         }
@@ -47,16 +48,14 @@ public class PlayerJumpState : PlayerBaseState
         }
     }
 
-    void Jump()
-    {
-        if (ctx.animController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump") && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
-        {
-            ctx.animController.SetBool("DoubleJump", false);
-        }
 
+    void FirstJump()
+    {
         //Player jump input
         if (ctx.jumpBufferCounter > 0f && ctx.jumpCoyoteCounter > 0f && ctx.jumpCounter <= 0f)
         {
+            Debug.Log("jump");
+
             ctx.reduceVelocityOnce = true;
 
             //Calculate Velocity
@@ -71,9 +70,18 @@ public class PlayerJumpState : PlayerBaseState
             ctx.jumpCounter = vso.jumpCooldown;
 
             ctx.jumpCoyoteCounter = 0f; // So you don't triple jump
+        }
+    }
 
-        } //2nd jump
-        else if (ctx.input.isInputJumpHeld && ctx.canDoubleJump)
+    void DoubleJump()
+    {
+        if (ctx.animController.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump") && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f)
+        {
+            ctx.animController.SetBool("DoubleJump", false);
+        }
+
+         //Double jump
+        if (ctx.input.isInputJumpPressed && ctx.canDoubleJump)
         {
             ctx.isHeavyLand = false;
             ctx.canDoubleJump = false;
@@ -100,7 +108,15 @@ public class PlayerJumpState : PlayerBaseState
 
     void ApplyGravity()
     {
-        if (ctx.rb.velocity.y > 0f && !ctx.input.isInputJumpPressed && ctx.reduceVelocityOnce) // while jumping and not holding jump
+        if (ctx.rb.velocity.y <= 0f)
+        {
+            // Player Falling
+            ctx.rb.AddForce(new Vector3(0, vso.gravity, 0) * ctx.rb.mass * vso.fallGravityMultiplier);
+
+            if (!ctx.isGrounded)
+                ctx.animController.SetBool("Fall", true);
+        }
+        else if (ctx.rb.velocity.y > 0f && !ctx.input.isInputJumpHeld && ctx.reduceVelocityOnce) // while jumping and not holding jump
         {
             ctx.reduceVelocityOnce = false;
             float percentageOfVelocity = ctx.rb.velocity.y * vso.reduceVelocity;

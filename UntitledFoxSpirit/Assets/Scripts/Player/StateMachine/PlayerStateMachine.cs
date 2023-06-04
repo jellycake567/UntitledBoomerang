@@ -140,6 +140,7 @@ public class PlayerStateMachine : MonoBehaviour
     {
         currentState.UpdateState();
         debugState = currentState.ToString();
+        Debug.Log(debugState);
 
         // Rotation
         HandleRotation();
@@ -283,7 +284,6 @@ public class PlayerStateMachine : MonoBehaviour
     void GroundCheck()
     {
         Vector3 centerPos = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
-        //Vector3 size = isFox ? new Vector3(0.9f, 0.1f, 1.9f) : new Vector3(0.8f, 0.1f, 0.8f);
 
         bool overlap = Physics.CheckBox(centerPos, vso.groundCheckSize / 2, transform.rotation, ~vso.ignorePlayerMask);
 

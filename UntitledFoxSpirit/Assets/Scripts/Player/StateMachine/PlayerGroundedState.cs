@@ -20,7 +20,7 @@ public class PlayerGroundedState : PlayerBaseState
     public override void InitializeSubState() { }
     public override void CheckSwitchState()
     {
-        if (ctx.input.isInputJumpPressed && ctx.jumpCounter <= 0f)
+        if (ctx.input.isInputJumpPressed || !ctx.isGrounded)
         {
             SwitchState(factory.Jump());
         }
@@ -32,7 +32,7 @@ public class PlayerGroundedState : PlayerBaseState
         {
             // Player Falling
             ctx.rb.AddForce(new Vector3(0, vso.gravity, 0) * ctx.rb.mass * vso.fallGravityMultiplier);
-
+        
             if (!ctx.isGrounded)
                 ctx.animController.SetBool("Fall", true);
         }
