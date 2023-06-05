@@ -1,4 +1,4 @@
-﻿using Cinemachine;
+using Cinemachine;
 using NUnit.Framework.Internal;
 using PathCreation;
 using System.Collections;
@@ -348,7 +348,7 @@ public class PlayerStateMachine : MonoBehaviour
     void StoreInputMovement()
     {
         // Store when player presses left or right
-        if (input.isMovementHeld)
+        if (prevInputDirection != input.GetMovementInput.normalized)
         {
             // Reset speed when turning around
             currentSpeed = 2f;
