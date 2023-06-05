@@ -348,7 +348,7 @@ public class PlayerStateMachine : MonoBehaviour
     void StoreInputMovement()
     {
         // Store when player presses left or right
-        if (prevInputDirection != input.GetMovementInput.normalized)
+        if (input.isMovementHeld)
         {
             // Reset speed when turning around
             currentSpeed = 2f;
@@ -412,7 +412,7 @@ public class PlayerStateMachine : MonoBehaviour
             UpdateRotation(targetRot2D);
 
 
-        if (direction.magnitude > 0.01f)
+        if (input.isMovementHeld)
         {
             if (previousRotation != targetRot2D)
             {
@@ -432,6 +432,8 @@ public class PlayerStateMachine : MonoBehaviour
 
     void UpdateRotation(Quaternion targetRot2D)
     {
+        
+
         float currentYAngle = rb.rotation.eulerAngles.y;
         if (currentYAngle == previousRotation.eulerAngles.y)
         {

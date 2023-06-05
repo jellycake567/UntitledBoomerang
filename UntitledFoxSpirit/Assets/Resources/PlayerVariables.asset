@@ -79,9 +79,9 @@ MonoBehaviour:
   verticalKnockback: 10
   CAMERA: 0
   camRotationSpeed2D: 0.1
-  PATH: 1
+  PATH: 0
   maxDistancePath: 0.1
   distanceSpawn: 17
   spawnYOffset: 0
   adjustVelocity: 5
-  OTHER: 0
+  OTHER: 1
