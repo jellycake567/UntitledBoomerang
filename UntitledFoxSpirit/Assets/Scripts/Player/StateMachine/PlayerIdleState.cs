@@ -11,7 +11,6 @@ public class PlayerIdleState : PlayerBaseState
         Debug.Log("Idle State");
         ctx.animController.SetBool("isMoving", false);
         ctx.animController.SetFloat("ForwardSpeed", 0f);
-        ctx.animController.speed = 1f;
     }
     public override void UpdateState() 
     {
@@ -22,9 +21,9 @@ public class PlayerIdleState : PlayerBaseState
     public override void ExitState() { }
     public override void CheckSwitchState() 
     {
-        if (ctx.input.isMovementHeld && ctx.isRunning)
+        if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f)
         {
-            SwitchState(factory.Run());
+            SwitchState(factory.Dash());
         }
         else if (ctx.input.isMovementHeld)
         {

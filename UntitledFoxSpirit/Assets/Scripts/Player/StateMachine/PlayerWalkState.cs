@@ -25,7 +25,10 @@ public class PlayerWalkState : PlayerBaseState
         Movement();
     }
 
-    public override void ExitState() { }
+    public override void ExitState() 
+    {
+        ctx.animController.speed = 1f;
+    }
     public override void CheckSwitchState() 
     {
         // Any time input is released, stop accel and start decel
@@ -34,9 +37,9 @@ public class PlayerWalkState : PlayerBaseState
             ctx.animController.speed = vso.animJogDecelSpeed;
             ctx.StartCoroutine(Deceleration());
         }
-        else if (ctx.input.isMovementHeld && ctx.isRunning)
+        else if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f && ctx.isGrounded)
         {
-            SwitchState(factory.Run());
+            SwitchState(factory.Dash());
         }
     }
 
@@ -117,10 +120,9 @@ public class PlayerWalkState : PlayerBaseState
             ctx.shortCollider.material = null;
 
             // ============================================== TODO BOOLS ==============================================
-            if (ctx.animController.GetCurrentAnimatorStateInfo(0).IsName("Running") || ctx.isRunning || ctx.isDashing)
+            if (ctx.animIsRunning || ctx.animIsDashing)
             {
                 ctx.currentSpeed = vso.humanRunSpeed;
-                ctx.isRunning = true;
             }
 
             if (ctx.animController.GetCurrentAnimatorStateInfo(0).IsTag("Land"))
@@ -144,6 +146,7 @@ public class PlayerWalkState : PlayerBaseState
         ctx.animController.SetFloat("ForwardSpeed", ctx.currentSpeed);
 
         #endregion
+
 
         #region Calculate Velocity
 

@@ -12,14 +12,16 @@ public class VariableScriptObject : ScriptableObject
 
     public bool MOVEMENT = false; // Never use, editor stuff
 
+    [Header("Player")]
     public float humanSpeed = 5.0f;
     public float humanRunSpeed = 10.0f;
+    [Header("Animation")]
     public float accelTimeToMaxSpeed = 2.0f;
     public float decelTimeToZeroSpeed = 1.0f;
     public float animJogSpeed = 1.17f;
     public float animJogAccelSpeed = 0.8f;
     public float animJogDecelSpeed = 0.8f;
-    
+    [Header("Velocity")]
     public float turnSmoothTime2D = 0.03f;
     public float turnSmoothTime3D = 0.1f;
     public float maxVelocityChange = 10f;
@@ -33,11 +35,12 @@ public class VariableScriptObject : ScriptableObject
 
     public bool GRAVITY = false; // Never use, editor stuff
 
+    [Header("Player")]
     public float gravity = -9.81f;
     public float gravityScale = 3f;
     public float fallGravityMultiplier = 0.2f;
-    public float reduceVelocityPeak = 5f;
     public float reduceVelocity = 5f;
+    [Header("Ground Check")]
     public Vector3 groundCheckOffset;
     public Vector3 groundCheckSize;
     public LayerMask ignorePlayerMask;
@@ -48,14 +51,16 @@ public class VariableScriptObject : ScriptableObject
 
     public bool JUMP = false; // Never use, editor stuff
 
+    [Header("Player")]
     public float humanJumpHeight = 5f;
-    public float jumpRollVelocity = -5f;
-    public float rootMotionJumpRollSpeed = 2f;
     public float jumpCooldown = 0.2f;
     public float jumpBufferTime = 0.1f;   // Detect jump input before touching the ground
     public float jumpCoyoteTime = 0.2f;   // Allow you to jump when you walk off platform
     public float jumpMultiplier = 1.0f;
     public float doubleJumpHeightPercent = 0.5f;
+    [Header("Roll")]
+    public float jumpRollVelocity = -5f;
+    public float rootMotionJumpRollSpeed = 2f;
 
 
     public bool SNEAKING = false; // Never use, editor stuff

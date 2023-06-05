@@ -1,4 +1,4 @@
-using Cinemachine;
+﻿using Cinemachine;
 using NUnit.Framework.Internal;
 using PathCreation;
 using System.Collections;
@@ -50,7 +50,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     // Sneaking
     [HideInInspector] public bool canUnsneak = true;
-    [HideInInspector] public bool isSneaking
+    [HideInInspector] public bool animIsSneaking
     {
         get { return animController.GetBool("isSneaking"); }
         set { animController.SetBool("isSneaking", value); }
@@ -60,8 +60,16 @@ public class PlayerStateMachine : MonoBehaviour
     [HideInInspector] public bool isLanding = false, isLandRolling = false, disableJumping = false, canDoubleJump;
     [HideInInspector] public float newGroundY = 1000000f, jumpCounter, jumpBufferCounter, jumpCoyoteCounter;
     // Dash
-    [HideInInspector] public float currentDashCooldown { get; } = 1f;
-    [HideInInspector] public bool isDashing = false, disableDashing = false;
+    [HideInInspector] public float currentDashCooldown = 1f;
+    [HideInInspector] bool disableDashing = false;
+    [HideInInspector] public bool animIsDashing
+    {
+        get { return animController.GetBool("Dash"); }
+    }
+    [HideInInspector] public bool animIsRunning
+    {
+        get { return animController.GetBool("isSprinting"); }
+    }
 
     // Ledge Climb
     [HideInInspector] public float currentLedgeHangCooldown;
@@ -163,6 +171,9 @@ public class PlayerStateMachine : MonoBehaviour
         // Jump
         JumpCooldownTimer();
         CoytoteTime();
+
+        // Dash
+        DashCooldown();
 
         // Ground
         GroundCheck();
@@ -298,6 +309,14 @@ public class PlayerStateMachine : MonoBehaviour
 
     #endregion
 
+    void DashCooldown()
+    {
+        if (currentDashCooldown > 0f)
+        {
+            currentDashCooldown -= Time.deltaTime;
+        }
+    }
+
     void GroundCheck()
     {
         Vector3 centerPos = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
@@ -368,7 +387,7 @@ public class PlayerStateMachine : MonoBehaviour
         }
         else
         {
-            if (isDashing || animController.GetBool("isSneaking"))
+            if (animIsDashing || animController.GetBool("isSneaking"))
             {
                 animController.SetBool("isMoving", false);
             }
@@ -457,7 +476,7 @@ public class PlayerStateMachine : MonoBehaviour
     #endregion
 
 
-    Quaternion GetPathRotation()
+    public Quaternion GetPathRotation()
     {
         return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
     }

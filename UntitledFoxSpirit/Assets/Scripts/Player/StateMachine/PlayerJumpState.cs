@@ -42,11 +42,7 @@ public class PlayerJumpState : PlayerBaseState
     }
     public override void InitializeSubState() 
     {
-        if (ctx.input.isMovementHeld && ctx.isRunning)
-        {
-            SetSubState(factory.Run());
-        }
-        else if (ctx.input.isMovementHeld)
+        if (ctx.input.isMovementHeld)
         {
             SetSubState(factory.Walk());
         }
@@ -54,7 +50,6 @@ public class PlayerJumpState : PlayerBaseState
         {
             SetSubState(factory.Idle());
         }
-        
     }
 
 

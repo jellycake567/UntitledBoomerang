@@ -1,4 +1,7 @@
 ﻿
+using System;
+using UnityEngine;
+
 public abstract class PlayerBaseState
 {
     protected bool isRootState = false;
@@ -6,7 +9,7 @@ public abstract class PlayerBaseState
     protected PlayerStateFactory factory;
     protected VariableScriptObject vso;
     protected PlayerBaseState currentSuperState;
-    public PlayerBaseState currentSubState;
+    public PlayerBaseState currentSubState; // CHANGE TO PROTECTED LATER
 
     public PlayerBaseState(PlayerStateMachine context, PlayerStateFactory factory, VariableScriptObject vso)
     {
@@ -57,10 +60,17 @@ public abstract class PlayerBaseState
     }
     protected void SetSuperState(PlayerBaseState newSuperState) 
     {
+        // Set parent state
         currentSuperState = newSuperState;
     }
     protected void SetSubState(PlayerBaseState newSubState) 
     {
+        if (currentSubState != null && currentSubState != newSubState)
+        {
+            currentSubState.ExitState();
+        }
+
+        // Set child state
         currentSubState = newSubState;
         newSubState.SetSuperState(this);
     }

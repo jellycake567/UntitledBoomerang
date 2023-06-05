@@ -20,7 +20,7 @@ public class PlayerStateFactory
     {
         return new PlayerWalkState(context, this, vso);
     }
-    public PlayerBaseState Run()
+    public PlayerBaseState Dash()
     {
         return new PlayerRunState(context, this, vso);
     }
