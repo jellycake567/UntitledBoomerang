@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e827db581a1ba844966f1c9c22835b5, type: 3}
   m_Name: PlayerVariables
   m_EditorClassIdentifier: 
+  MOVEMENT: 0
   humanSpeed: 4
   humanRunSpeed: 5.5
   accelTimeToMaxSpeed: 0.6
@@ -23,7 +24,9 @@ MonoBehaviour:
   turnSmoothTime3D: 0.1
   maxVelocityChange: 10
   frictionAmount: 0.5
+  ROTATION: 0
   timeToReachTargetRotation: 0.14
+  GRAVITY: 0
   gravity: -9.81
   gravityScale: 1
   fallGravityMultiplier: 1.25
@@ -34,6 +37,7 @@ MonoBehaviour:
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
+  JUMP: 0
   humanJumpHeight: 8
   jumpRollVelocity: -15
   rootMotionJumpRollSpeed: 2.5
@@ -42,12 +46,15 @@ MonoBehaviour:
   jumpCoyoteTime: 0.2
   jumpMultiplier: 1
   doubleJumpHeightPercent: 0.5
+  SNEAKING: 0
   sneakSpeed: 2
   sneakCheckOffset: {x: 0, y: 0, z: 0}
   sneakCheckSize: {x: 0.5, y: 0.5, z: 0.5}
+  DASH: 0
   humanDashTime: 0.5
   humanDashDistance: 4
   dashCooldown: 0.6
+  LEDGE_CLIMB: 0
   wallCheckDistance: 0.5
   ledgeHangDistanceOffset: -0.3
   ledgeHangYOffset: 1.42
@@ -56,19 +63,25 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
+  ATTACK: 0
   attackCooldown: 0.1
   resetComboDelay: 2
   rootMotionAtkSpeed: 2
+  STAMINA: 0
   staminaConsumption: 20
   staminaRecovery: 1
   staminaCooldown: 1
   maxStamina: 100
+  TAKE_DAMAGE: 0
   invulnerableTime: 0.5
   regainMovement: 0.3
   horizontalKnockback: 10
   verticalKnockback: 10
+  CAMERA: 0
   camRotationSpeed2D: 0.1
+  PATH: 1
   maxDistancePath: 0.1
   distanceSpawn: 17
   spawnYOffset: 0
   adjustVelocity: 5
+  OTHER: 0
