@@ -11,6 +11,7 @@ public class PlayerWalkState : PlayerBaseState
 
     public override void EnterState() 
     {
+        Debug.Log("Walk State");
         ctx.animController.SetBool("isMoving", true);
     }
     public override void UpdateState()
@@ -18,7 +19,6 @@ public class PlayerWalkState : PlayerBaseState
         CheckSwitchState();
 
         AccelAndDecel();
-        StoreInputMovement();
     }
     public override void FixedUpdateState() 
     {
@@ -42,16 +42,7 @@ public class PlayerWalkState : PlayerBaseState
 
     public override void InitializeSubState() { }
 
-    void StoreInputMovement()
-    {
-        // Store when player presses left or right
-        if (ctx.prevInputDirection != ctx.input.GetMovementInput.normalized)
-        {
-            // Reset speed when turning around
-            ctx.currentSpeed = 2f;
-            ctx.prevInputDirection = ctx.input.GetMovementInput.normalized;
-        }
-    }
+    
 
     void AccelAndDecel()
     {
@@ -149,6 +140,7 @@ public class PlayerWalkState : PlayerBaseState
             ctx.isRunning = false;
         }
 
+
         ctx.animController.SetFloat("ForwardSpeed", ctx.currentSpeed);
 
         #endregion
@@ -186,8 +178,6 @@ public class PlayerWalkState : PlayerBaseState
         velocityChange.x = Mathf.Clamp(velocityChange.x, -vso.maxVelocityChange, vso.maxVelocityChange);
         velocityChange.z = Mathf.Clamp(velocityChange.z, -vso.maxVelocityChange, vso.maxVelocityChange);
         velocityChange.y = 0;
-
-        Debug.Log(velocityChange);
 
         ctx.rb.AddForce(velocityChange, ForceMode.VelocityChange);
 

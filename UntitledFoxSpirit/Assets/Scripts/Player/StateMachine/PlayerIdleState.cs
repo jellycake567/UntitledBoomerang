@@ -8,6 +8,7 @@ public class PlayerIdleState : PlayerBaseState
 
     public override void EnterState() 
     {
+        Debug.Log("Idle State");
         ctx.animController.SetBool("isMoving", false);
         ctx.animController.SetFloat("ForwardSpeed", 0f);
         ctx.animController.speed = 1f;
@@ -29,6 +30,7 @@ public class PlayerIdleState : PlayerBaseState
         {
             SwitchState(factory.Walk());
         }
+
     }
     public override void InitializeSubState() { }
 }

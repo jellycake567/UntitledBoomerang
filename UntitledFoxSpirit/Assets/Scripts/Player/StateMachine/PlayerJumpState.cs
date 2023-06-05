@@ -13,7 +13,9 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void EnterState()
     {
+        Debug.Log("Jump State");
         JumpBuffer();
+        FirstJump();
     }
     public override void UpdateState()
     {
@@ -36,6 +38,7 @@ public class PlayerJumpState : PlayerBaseState
         {
             SwitchState(factory.Grounded());
         }
+       
     }
     public override void InitializeSubState() 
     {
@@ -47,6 +50,11 @@ public class PlayerJumpState : PlayerBaseState
         {
             SetSubState(factory.Walk());
         }
+        else
+        {
+            SetSubState(factory.Idle());
+        }
+        
     }
 
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[SelectionBase]
 public class PlayerStateMachine : MonoBehaviour
 {
     public string debugState;
@@ -151,7 +152,9 @@ public class PlayerStateMachine : MonoBehaviour
             subState = currentState.currentSubState.ToString();
         }
         debugState = currentState.ToString();
-        Debug.Log(subState);
+        //Debug.Log(subState);
+
+        StoreInputMovement();
 
         // Rotation
         HandleRotation();
@@ -339,6 +342,17 @@ public class PlayerStateMachine : MonoBehaviour
         {
             Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
             rb.AddForce(dirTowardPath * vso.adjustVelocity, ForceMode.Impulse);
+        }
+    }
+
+    void StoreInputMovement()
+    {
+        // Store when player presses left or right
+        if (prevInputDirection != input.GetMovementInput.normalized)
+        {
+            // Reset speed when turning around
+            currentSpeed = 2f;
+            prevInputDirection = input.GetMovementInput.normalized;
         }
     }
 

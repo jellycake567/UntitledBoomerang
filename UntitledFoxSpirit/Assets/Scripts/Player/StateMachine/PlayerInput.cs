@@ -45,6 +45,7 @@ public class PlayerInput : MonoBehaviour
     void Update()
     {
         _movementVector = new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0);
+        
 
         _isInputHeld = Input.anyKey ? true : false;
         _isInputJumpHeld = Input.GetKey(KeyCode.Space) ? true : false;

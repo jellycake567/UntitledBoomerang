@@ -10,7 +10,10 @@ public class PlayerGroundedState : PlayerBaseState
         InitializeSubState();
     }
 
-    public override void EnterState() { }
+    public override void EnterState() 
+    {
+        Debug.Log("Grounded State");
+    }
     public override void UpdateState()
     {
         CheckSwitchState();

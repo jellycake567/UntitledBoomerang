@@ -29,8 +29,8 @@ MonoBehaviour:
   fallGravityMultiplier: 1.25
   reduceVelocityPeak: 2
   reduceVelocity: 0.4
-  groundCheckOffset: {x: 0, y: 1, z: 0}
-  groundCheckSize: {x: 0.45, y: 0.1, z: 0.45}
+  groundCheckOffset: {x: 0, y: 0.98, z: 0}
+  groundCheckSize: {x: 0.45, y: 0.04, z: 0.45}
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
