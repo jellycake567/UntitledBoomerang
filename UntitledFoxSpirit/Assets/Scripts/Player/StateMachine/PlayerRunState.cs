@@ -20,18 +20,17 @@ public class PlayerRunState : PlayerBaseState
     public override void FixedUpdateState() { }
     public override void ExitState() 
     {
-        ctx.StopCoroutine(Dash(true));
         ctx.disableInputRotations = false;
-        ctx.animController.SetBool("Dash", false);
+        ctx.isDashing = false;
         ctx.animController.SetBool("isSprinting", true);
     }
     public override void CheckSwitchState() 
     {
-        if (!ctx.input.isMovementHeld && !ctx.animIsDashing)
+        if (!ctx.input.isMovementHeld && !ctx.isDashing)
         {
             SwitchState(factory.Idle());
         }
-        else if (ctx.input.isMovementHeld && !ctx.animIsDashing || ctx.animIsRunning)
+        else if (ctx.input.isMovementHeld && !ctx.isDashing || ctx.animIsRunning)
         {
             SwitchState(factory.Walk());
         }
@@ -40,7 +39,8 @@ public class PlayerRunState : PlayerBaseState
 
     void DashInput()
     {
-        ctx.animController.SetBool("Dash", true);
+        ctx.isDashing = true;
+        ctx.animController.SetTrigger("DashTrigger");
         ctx.disableInputRotations = true;
 
         ctx.currentDashCooldown = vso.dashCooldown;
@@ -77,6 +77,9 @@ public class PlayerRunState : PlayerBaseState
 
         while (currentDashTime > 0f)
         {
+            if (!ctx.isDashing)
+                break;
+
             currentDashTime -= Time.deltaTime;
 
             #region Rotation
@@ -119,7 +122,6 @@ public class PlayerRunState : PlayerBaseState
 
             yield return new WaitForEndOfFrame();
         }
-
 
         ctx.animController.SetBool("isSprinting", true);
     }

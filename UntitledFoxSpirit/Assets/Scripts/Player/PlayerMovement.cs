@@ -887,7 +887,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (isDashing)
             {
-                animController.SetBool("Dash", false);
+                
                 isDashing = false;
             }
 
@@ -904,7 +904,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
-                animController.SetBool("Dash", true);
+                animController.SetTrigger("DashTrigger");
                 disableMovement = true;
                 disableDashing = true;
                 disableInputRotations = true;

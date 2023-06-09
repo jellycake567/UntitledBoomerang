@@ -51,6 +51,11 @@ public abstract class PlayerBaseState
 
         if (isRootState)
         {
+            if (currentSubState.ToString() != newState.currentSubState.ToString())
+            {
+                currentSubState.ExitState();
+            }
+
             ctx.currentState = newState;
         }
         else if (currentSuperState != null)
@@ -60,18 +65,14 @@ public abstract class PlayerBaseState
     }
     protected void SetSuperState(PlayerBaseState newSuperState) 
     {
-        // Set parent state
         currentSuperState = newSuperState;
     }
-    protected void SetSubState(PlayerBaseState newSubState) 
+    protected void SetSubState(PlayerBaseState newSubState)
     {
-        if (currentSubState != null && currentSubState != newSubState)
-        {
-            currentSubState.ExitState();
-        }
-
-        // Set child state
+        // Sets the supers sub state
         currentSubState = newSubState;
+
+        // Set the sub's super state
         newSubState.SetSuperState(this);
     }
 

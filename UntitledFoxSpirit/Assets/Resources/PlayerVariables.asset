@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e827db581a1ba844966f1c9c22835b5, type: 3}
   m_Name: PlayerVariables
   m_EditorClassIdentifier: 
-  MOVEMENT: 1
+  MOVEMENT: 0
   humanSpeed: 4
   humanRunSpeed: 5.5
   accelTimeToMaxSpeed: 0.6
@@ -49,7 +49,7 @@ MonoBehaviour:
   sneakSpeed: 2
   sneakCheckOffset: {x: 0, y: 0, z: 0}
   sneakCheckSize: {x: 0.5, y: 0.5, z: 0.5}
-  DASH: 0
+  DASH: 1
   humanDashTime: 0.5
   humanDashDistance: 4
   dashCooldown: 0.6

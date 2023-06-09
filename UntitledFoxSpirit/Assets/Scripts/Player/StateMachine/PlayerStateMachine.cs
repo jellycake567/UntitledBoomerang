@@ -61,11 +61,7 @@ public class PlayerStateMachine : MonoBehaviour
     [HideInInspector] public float newGroundY = 1000000f, jumpCounter, jumpBufferCounter, jumpCoyoteCounter;
     // Dash
     [HideInInspector] public float currentDashCooldown = 1f;
-    [HideInInspector] bool disableDashing = false;
-    [HideInInspector] public bool animIsDashing
-    {
-        get { return animController.GetBool("Dash"); }
-    }
+    [HideInInspector] public bool disableDashing = false, isDashing = false;
     [HideInInspector] public bool animIsRunning
     {
         get { return animController.GetBool("isSprinting"); }
@@ -287,9 +283,11 @@ public class PlayerStateMachine : MonoBehaviour
     {
         if (jumpCounter > 0f)
         {
-            animController.SetBool("Jump", false);
-
             jumpCounter -= Time.deltaTime;
+        }
+        else
+        {
+            animController.SetBool("Jump", false);
         }
     }
 
@@ -370,8 +368,10 @@ public class PlayerStateMachine : MonoBehaviour
         // Store when player presses left or right when moving
         if (prevInputDirection != input.GetMovementInput.normalized && input.isMovementHeld)
         {
-            // Reset speed when turning around
-            currentSpeed = 2f;
+            // Reset speed when turning around in the air
+            if (!isGrounded)
+                currentSpeed = 2f; // ============================================== MAKE VARIABLE ==============================================
+
             prevInputDirection = input.GetMovementInput.normalized;
         }
     }
@@ -388,11 +388,11 @@ public class PlayerStateMachine : MonoBehaviour
         }
         else
         {
-            if (animIsDashing || animController.GetBool("isSneaking"))
-            {
-                animController.SetBool("isMoving", false);
-            }
-            animController.SetBool("isSprinting", false);
+            //if (animIsDashing || animController.GetBool("isSneaking"))
+            //{
+            //    animController.SetBool("isMoving", false);
+            //}
+            //animController.SetBool("isSprinting", false);
         }
         #endregion
 

@@ -25,14 +25,18 @@ public class PlayerWalkState : PlayerBaseState
         Movement();
     }
 
-    public override void ExitState() 
+    public override void ExitState()
     {
+        Debug.Log("exit walk");
+
         ctx.animController.speed = 1f;
+        ctx.animController.SetBool("isSprinting", false);
     }
-    public override void CheckSwitchState() 
+
+    public override void CheckSwitchState()
     {
         // Any time input is released, stop accel and start decel
-        if (ctx.input.isInputReleased && !ctx.input.isMovementHeld)
+        if (ctx.input.isInputReleased && !ctx.input.isMovementHeld && !ctx.animIsRunning)
         {
             ctx.animController.speed = vso.animJogDecelSpeed;
             ctx.StartCoroutine(Deceleration());
@@ -40,6 +44,12 @@ public class PlayerWalkState : PlayerBaseState
         else if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f && ctx.isGrounded)
         {
             SwitchState(factory.Dash());
+        }
+        else if (!ctx.input.isMovementHeld && ctx.animIsRunning && ctx.currentSpeed < 4f)
+        {
+            SwitchState(factory.Idle());
+            // ============================================== MAKE VARIABLE ==============================================
+            ctx.rb.velocity = new Vector3(-2f * ctx.prevInputDirection.x, 0f, 0f);
         }
     }
 
@@ -54,8 +64,8 @@ public class PlayerWalkState : PlayerBaseState
         ctx.accelRatePerSec = maxSpeed / vso.accelTimeToMaxSpeed;
         ctx.decelRatePerSec = -maxSpeed / vso.decelTimeToZeroSpeed;
 
-        // If input is not being held
-        if (!ctx.input.isMovementHeld)
+        // If input is not being held or is running
+        if (!ctx.input.isMovementHeld || ctx.animIsRunning)
             return;
 
         // Accel to max speed
@@ -120,7 +130,7 @@ public class PlayerWalkState : PlayerBaseState
             ctx.shortCollider.material = null;
 
             // ============================================== TODO BOOLS ==============================================
-            if (ctx.animIsRunning || ctx.animIsDashing)
+            if (ctx.animIsRunning)
             {
                 ctx.currentSpeed = vso.humanRunSpeed;
             }
@@ -139,11 +149,11 @@ public class PlayerWalkState : PlayerBaseState
             ctx.tallCollider.material = ctx.friction;
             ctx.shortCollider.material = ctx.friction;
 
-            ctx.isRunning = false;
+            //ctx.isRunning = false;
         }
 
-
         ctx.animController.SetFloat("ForwardSpeed", ctx.currentSpeed);
+
 
         #endregion
 
