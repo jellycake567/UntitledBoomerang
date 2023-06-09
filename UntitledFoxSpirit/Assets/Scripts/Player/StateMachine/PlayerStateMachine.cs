@@ -106,7 +106,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     #region Internal Variables
 
-    [HideInInspector] public Vector3 prevInputDirection;
+     public Vector3 prevInputDirection;
     [HideInInspector] public bool isHeavyLand = false;
 
     // Debug
@@ -160,6 +160,7 @@ public class PlayerStateMachine : MonoBehaviour
             subState = currentState.currentSubState.ToString();
         }
         debugState = currentState.ToString();
+
         //Debug.Log(subState);
 
         StoreInputMovement();
@@ -366,8 +367,8 @@ public class PlayerStateMachine : MonoBehaviour
 
     void StoreInputMovement()
     {
-        // Store when player presses left or right
-        if (prevInputDirection != input.GetMovementInput.normalized)
+        // Store when player presses left or right when moving
+        if (prevInputDirection != input.GetMovementInput.normalized && input.isMovementHeld)
         {
             // Reset speed when turning around
             currentSpeed = 2f;
@@ -430,7 +431,6 @@ public class PlayerStateMachine : MonoBehaviour
         else
             UpdateRotation(targetRot2D);
 
-
         if (input.isMovementHeld)
         {
             if (previousRotation != targetRot2D)
@@ -443,16 +443,15 @@ public class PlayerStateMachine : MonoBehaviour
 
             // Saved for deceleration
             previousRotation = targetRot2D;
-            prevInputDirection = direction;
         }
+
+
 
         return targetRot2D;
     }
 
     void UpdateRotation(Quaternion targetRot2D)
     {
-        
-
         float currentYAngle = rb.rotation.eulerAngles.y;
         if (currentYAngle == previousRotation.eulerAngles.y)
         {
