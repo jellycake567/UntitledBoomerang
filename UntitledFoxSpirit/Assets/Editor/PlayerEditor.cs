@@ -24,9 +24,9 @@ public class PlayerEditor : Editor
 
     PlayerStateMachine obj;
     SerializedObject vsoObject;
+    SerializedObject saveObject;
     VariableScriptObject vso;
 
-    SerializedProperty property;
     bool showPosition;
     bool beginBox = false;
     int countHeader;
@@ -36,6 +36,7 @@ public class PlayerEditor : Editor
         obj = (PlayerStateMachine)target;
         EditorUtility.SetDirty(obj);
 
+        // Get scriptable object
         SerializedProperty playerData = serializedObject.FindProperty("vso");
         vsoObject = new SerializedObject(playerData.objectReferenceValue);
         vso = (VariableScriptObject)playerData.objectReferenceValue;
@@ -89,8 +90,6 @@ public class PlayerEditor : Editor
 
             if (showPosition)
                 EditorGUILayout.PropertyField(vsoObject.FindProperty(field.Name));
-
-            
         }
 
 
@@ -116,8 +115,6 @@ public class PlayerEditor : Editor
 
         vsoObject.ApplyModifiedProperties();
         serializedObject.ApplyModifiedProperties();
-
-        
     }
 
     void LoadScriptableObject()

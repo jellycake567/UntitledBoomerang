@@ -26,13 +26,13 @@ MonoBehaviour:
   frictionAmount: 0.5
   ROTATION: 0
   timeToReachTargetRotation: 0.14
-  GRAVITY: 0
+  GRAVITY: 1
   gravity: -9.81
   gravityScale: 1
   fallGravityMultiplier: 1.25
   reduceVelocity: 0.4
   groundCheckOffset: {x: 0, y: 0.98, z: 0}
-  groundCheckSize: {x: 0.45, y: 0.04, z: 0.45}
+  groundCheckSize: {x: 0.45, y: 0.1, z: 0.45}
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
@@ -49,7 +49,7 @@ MonoBehaviour:
   sneakSpeed: 2
   sneakCheckOffset: {x: 0, y: 0, z: 0}
   sneakCheckSize: {x: 0.5, y: 0.5, z: 0.5}
-  DASH: 1
+  DASH: 0
   humanDashTime: 0.5
   humanDashDistance: 4
   dashCooldown: 0.6

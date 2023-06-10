@@ -41,7 +41,7 @@ public class PlayerGroundedState : PlayerBaseState
     }
     public override void CheckSwitchState()
     {
-        if (ctx.input.isInputJumpPressed || !ctx.isGrounded)
+        if (ctx.input.isInputJumpPressed || !ctx.isGrounded && !ctx.isDashing)
         {
             SwitchState(factory.Jump());
         }
