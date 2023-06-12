@@ -49,7 +49,7 @@ public class PlayerWalkState : PlayerBaseState
             SwitchState(factory.Idle());
             ctx.rb.velocity = new Vector3(-vso.reduceSpeed * ctx.prevInputDirection.x, 0f, 0f);
         }
-        else if (ctx.input.isInputAttackPressed && ctx.isGrounded)
+        else if (ctx.input.isInputAttackPressed && ctx.isGrounded && ctx.currentAttackCooldown <= 0f)
         {
             SwitchState(factory.Attack());
         }

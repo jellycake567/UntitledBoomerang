@@ -29,7 +29,7 @@ public class PlayerIdleState : PlayerBaseState
         {
             SwitchState(factory.Walk());
         }
-        else if (ctx.input.isInputAttackPressed && ctx.isGrounded)
+        else if (ctx.input.isInputAttackPressed && ctx.isGrounded && ctx.currentAttackCooldown <= 0f)
         {
             SwitchState(factory.Attack());
         }

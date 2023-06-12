@@ -79,11 +79,14 @@ public class PlayerStateMachine : MonoBehaviour
     {
         get { return animController.GetNextAnimatorStateInfo(0).IsTag("Attack"); }
     }
-
-    public bool animIsAttacking
+    [HideInInspector] public bool animIsAttacking
     {
         get { return animController.GetBool("isAttacking"); }
         set { animController.SetBool("isAttacking", value); }
+    }
+    [HideInInspector] public bool animIsAtkTriggered
+    {
+        get { return animController.GetBool("Attack"); }
     }
 
     #endregion

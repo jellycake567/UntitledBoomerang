@@ -14,6 +14,7 @@ public class PlayerAttackState : PlayerBaseState
         ctx.disableInputRotations = true;
         ctx.currentSpeed = 0f;
         ctx.animIsAttacking = true;
+        ctx.animController.SetTrigger("Attack");
 
         Attack();
     }
@@ -42,11 +43,11 @@ public class PlayerAttackState : PlayerBaseState
         {
             SwitchState(factory.Dash());
         }
-        else if (ctx.input.isMovementHeld && !ctx.animIsAttacking)
+        else if (ctx.input.isMovementHeld && !ctx.animIsAttacking && !ctx.animIsAtkTriggered)
         {
             SwitchState(factory.Walk());
         }
-        else if (!ctx.input.isMovementHeld && !ctx.animIsAttacking)
+        else if (!ctx.input.isMovementHeld && !ctx.animIsAttacking && !ctx.animIsAtkTriggered)
         {
             SwitchState(factory.Idle());
         }
@@ -56,15 +57,14 @@ public class PlayerAttackState : PlayerBaseState
 
     void AttackAnimation()
     {
-
         // Move after attacking
-        if (ctx.animController.IsInTransition(0) && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f)
+        if (ctx.animController.IsInTransition(0) && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f )
         {
             ctx.animIsAttacking = false;
         }
 
         // End animation combo
-        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime"))
+        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime") && ctx.isAnimTagAttack)
         {
             if (!ctx.animController.IsInTransition(0) && ctx.resetAttack) // Check if not in transiton, so it doesn't reset run during transition
             {
@@ -73,8 +73,6 @@ public class PlayerAttackState : PlayerBaseState
                 ctx.resetAttack = false;
                 ctx.disableInputRotations = false;
                 ctx.comboCounter = 0;
-
-                
             }
         }
         else
@@ -115,10 +113,18 @@ public class PlayerAttackState : PlayerBaseState
             ctx.comboCounter = Mathf.Clamp(ctx.comboCounter, 0, 2);
 
 
+            float normTime = ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime;
+            float allowAtkTime = ctx.animController.GetFloat("attackInputTime");
+
+            if (!ctx.animIsAtkTriggered && ctx.animIsAttacking && normTime > allowAtkTime)
+            {
+                ctx.animController.SetTrigger("Attack");
+            }
+
+
             // Detect which combo to trigger
             if (ctx.comboCounter == 1 && !ctx.animController.GetBool("Attack1"))
             {
-                ctx.animController.SetTrigger("Attack");
                 ctx.animController.SetBool("Attack1", true);
             }
             // Transitions to next combo animation
