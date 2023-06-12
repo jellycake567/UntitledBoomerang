@@ -187,7 +187,7 @@ public class WeaponAttack : MonoBehaviour
         // Clear previous hardPoint
         preHardPoints = new List<Vector3>();
 
-        Debug.Log("enable");
+        //Debug.Log("enable");
 
         Animator animController = GetComponent<Animator>();
         rngAtk = animController.GetInteger("RngAttack");

@@ -72,9 +72,19 @@ public class PlayerStateMachine : MonoBehaviour
     [HideInInspector] public bool isClimbing = false, isWallClimbing, canClimbWall, isTouchingWall, isTouchingLedge, canClimbLedge, ledgeDetected;
 
     // Attack
-    [HideInInspector] public bool isAttacking = false, resetAttack  = true;
+    [HideInInspector] public bool resetAttack = true;
     [HideInInspector] public float currentAttackCooldown;
     [HideInInspector] public int comboCounter, lastAttackInt;
+    [HideInInspector] public bool isAnimTagAttack
+    {
+        get { return animController.GetNextAnimatorStateInfo(0).IsTag("Attack"); }
+    }
+
+    public bool animIsAttacking
+    {
+        get { return animController.GetBool("isAttacking"); }
+        set { animController.SetBool("isAttacking", value); }
+    }
 
     #endregion
 
@@ -170,6 +180,9 @@ public class PlayerStateMachine : MonoBehaviour
         CoytoteTime();
         JumpBuffer();
 
+        // Attack
+        AttackCooldown();
+
         // Dash
         DashCooldown();
 
@@ -190,7 +203,7 @@ public class PlayerStateMachine : MonoBehaviour
         }
 
         // Attacking root motion
-        if (isAttacking && !disableDashing && !animController.IsInTransition(0))
+        if (animIsAttacking && !disableDashing && !animController.IsInTransition(0))
         {
             float y = rb.velocity.y;
 
@@ -278,104 +291,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     #endregion
 
-    #region Jump
-
-    void JumpCooldownTimer()
-    {
-        if (jumpCounter > 0f)
-        {
-            jumpCounter -= Time.deltaTime;
-        }
-        else
-        {
-            animController.SetBool("Jump", false);
-        }
-    }
-
-    void CoytoteTime()
-    {
-        // Coyote Time
-        if (isGrounded)
-        {
-            canDoubleJump = true;
-
-            jumpCoyoteCounter = vso.jumpCoyoteTime;
-        }
-        else
-        {
-            jumpCoyoteCounter -= Time.deltaTime;
-        }
-    }
-
-    void JumpBuffer()
-    {
-        if (input.isInputJumpPressed)
-        {
-            jumpBufferCounter = vso.jumpBufferTime;
-        }
-        else
-        {
-            jumpBufferCounter -= Time.deltaTime;
-        }
-    }
-
-    #endregion
-
-    void DashCooldown()
-    {
-        if (currentDashCooldown > 0f)
-        {
-            currentDashCooldown -= Time.deltaTime;
-        }
-    }
-
-    void GroundCheck()
-    {
-        Vector3 centerPos = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
-
-        bool overlap = Physics.CheckBox(centerPos, vso.groundCheckSize / 2, transform.rotation, ~vso.ignorePlayerMask);
-
-        RaycastHit hit;
-        if (Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~vso.ignorePlayerMask))
-        {
-            newGroundY = hit.point.y;
-        }
-
-        if (overlap)
-        {
-            isGrounded = true;
-            animController.SetBool("Grounded", true);
-
-            if (rb.velocity.y <= 1f)
-                animController.SetBool("Fall", false);
-        }
-        else
-        {
-            isGrounded = false;
-            animController.SetBool("Grounded", false);
-        }
-    }
-
-    public void AdjustPlayerOnPath()
-    {
-        Vector3 pathPos = pathCreator.path.GetPointAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
-        //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
-
-        // Distance between path and player
-        float distance = Vector3.Distance(pathPos.IgnoreYAxis(), transform.position.IgnoreYAxis());
-
-        // Direction from path towards player
-        Vector3 dirTowardPlayer = transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
-        Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * vso.maxDistancePath, Color.blue);
-
-        // Keeps player on the path
-        if (distance > vso.maxDistancePath)
-        {
-            Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
-            rb.AddForce(dirTowardPath * vso.adjustVelocity, ForceMode.Impulse);
-        }
-    }
-
+    
     void StoreInputMovement()
     {
         // Store when player presses left or right when moving
@@ -388,32 +304,6 @@ public class PlayerStateMachine : MonoBehaviour
             prevInputDirection = input.GetMovementInput.normalized;
         }
     }
-
-    #region Animation Jog Speed
-
-    void DetectAnimAcceleration(Vector3 targetVelocity, Vector3 direction)
-    {
-        #region Detect animation player input
-        if (direction.magnitude > 0.1f)
-        {
-            if (!disableMovement)
-                animController.SetBool("isMoving", true);
-        }
-        else
-        {
-            //if (animIsDashing || animController.GetBool("isSneaking"))
-            //{
-            //    animController.SetBool("isMoving", false);
-            //}
-            //animController.SetBool("isSprinting", false);
-        }
-        #endregion
-
-    }
-
-    
-
-    #endregion
 
     #region Rotation
 
@@ -487,6 +377,91 @@ public class PlayerStateMachine : MonoBehaviour
 
     #endregion
 
+    #region Jump
+
+    void JumpCooldownTimer()
+    {
+        if (jumpCounter > 0f)
+        {
+            jumpCounter -= Time.deltaTime;
+        }
+        else
+        {
+            animController.SetBool("Jump", false);
+        }
+    }
+
+    void CoytoteTime()
+    {
+        // Coyote Time
+        if (isGrounded)
+        {
+            canDoubleJump = true;
+
+            jumpCoyoteCounter = vso.jumpCoyoteTime;
+        }
+        else
+        {
+            jumpCoyoteCounter -= Time.deltaTime;
+        }
+    }
+
+    void JumpBuffer()
+    {
+        if (input.isInputJumpPressed)
+        {
+            jumpBufferCounter = vso.jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+    }
+
+    #endregion
+
+    void AttackCooldown()
+    {
+        if (currentAttackCooldown > 0f)
+        {
+            currentAttackCooldown -= Time.deltaTime;
+        }
+    }
+
+    void DashCooldown()
+    {
+        if (currentDashCooldown > 0f)
+        {
+            currentDashCooldown -= Time.deltaTime;
+        }
+    }
+
+    void GroundCheck()
+    {
+        Vector3 centerPos = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
+
+        bool overlap = Physics.CheckBox(centerPos, vso.groundCheckSize / 2, transform.rotation, ~vso.ignorePlayerMask);
+
+        RaycastHit hit;
+        if (Physics.Raycast(centerPos, Vector3.down, out hit, 100f, ~vso.ignorePlayerMask))
+        {
+            newGroundY = hit.point.y;
+        }
+
+        if (overlap)
+        {
+            isGrounded = true;
+            animController.SetBool("Grounded", true);
+
+            if (rb.velocity.y <= 1f)
+                animController.SetBool("Fall", false);
+        }
+        else
+        {
+            isGrounded = false;
+            animController.SetBool("Grounded", false);
+        }
+    }
 
     public Quaternion GetPathRotation()
     {

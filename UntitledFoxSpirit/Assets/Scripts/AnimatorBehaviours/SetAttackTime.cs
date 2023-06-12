@@ -15,6 +15,18 @@ public class SetAttackTime : StateMachineBehaviour
     {
         animator.SetFloat("attackInputTime", allowInputTime);
         animator.SetFloat("resetComboTime", resetComboTime);
+
+        int atkNum = Random.Range(1, 5);
+        if (animator.GetInteger("LastAtkInt") == atkNum)
+        {
+            atkNum++;
+
+            if (atkNum > 4)
+                atkNum = 1;
+        }
+
+        animator.SetInteger("LastAtkInt", atkNum);
+        animator.SetInteger("RngAttack", atkNum);
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
@@ -24,10 +36,10 @@ public class SetAttackTime : StateMachineBehaviour
     //}
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
-    //override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        animator.SetBool("isAttacking", false);
+    }
 
     // OnStateMove is called right after Animator.OnAnimatorMove()
     //override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

@@ -27,10 +27,9 @@ public class PlayerWalkState : PlayerBaseState
 
     public override void ExitState()
     {
-        Debug.Log("exit walk");
-
         ctx.animController.speed = 1f;
         ctx.animController.SetBool("isRunning", false);
+        ctx.animController.SetBool("isMoving", false);
     }
 
     public override void CheckSwitchState()
@@ -50,7 +49,7 @@ public class PlayerWalkState : PlayerBaseState
             SwitchState(factory.Idle());
             ctx.rb.velocity = new Vector3(-vso.reduceSpeed * ctx.prevInputDirection.x, 0f, 0f);
         }
-        else if (ctx.input.isInputAttackPressed)
+        else if (ctx.input.isInputAttackPressed && ctx.isGrounded)
         {
             SwitchState(factory.Attack());
         }
@@ -160,7 +159,6 @@ public class PlayerWalkState : PlayerBaseState
 
         #endregion
 
-
         #region Calculate Velocity
 
         // Where we want to player to face/walk towards
@@ -199,6 +197,27 @@ public class PlayerWalkState : PlayerBaseState
 
         #endregion
 
-        ctx.AdjustPlayerOnPath();
+        AdjustPlayerOnPath();
+    }
+
+
+    void AdjustPlayerOnPath()
+    {
+        Vector3 pathPos = ctx.pathCreator.path.GetPointAtDistance(ctx.distanceOnPath, EndOfPathInstruction.Stop);
+        //Debug.DrawLine(pathPos + new Vector3(0f, 1f, 0f), pathPos + Vector3.up * 3f, Color.green);
+
+        // Distance between path and player
+        float distance = Vector3.Distance(pathPos.IgnoreYAxis(), ctx.transform.position.IgnoreYAxis());
+
+        // Direction from path towards player
+        Vector3 dirTowardPlayer = ctx.transform.position.IgnoreYAxis() - pathPos.IgnoreYAxis();
+        Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * vso.maxDistancePath, Color.blue);
+
+        // Keeps player on the path
+        if (distance > vso.maxDistancePath)
+        {
+            Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - ctx.transform.position.IgnoreYAxis()).normalized;
+            ctx.rb.AddForce(dirTowardPath * vso.adjustVelocity, ForceMode.Impulse);
+        }
     }
 }

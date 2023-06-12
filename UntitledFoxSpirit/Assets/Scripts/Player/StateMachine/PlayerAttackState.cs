@@ -9,25 +9,44 @@ public class PlayerAttackState : PlayerBaseState
     public override void EnterState()
     {
         Debug.Log("Attack State");
+
+        ctx.rb.velocity = Vector3.zero;
+        ctx.disableInputRotations = true;
+        ctx.currentSpeed = 0f;
+        ctx.animIsAttacking = true;
+
+        Attack();
     }
     public override void UpdateState()
     {
         CheckSwitchState();
+
+        AttackAnimation();
+        Attack();
     }
 
     public override void FixedUpdateState() { }
-    public override void ExitState() { }
+    public override void ExitState() 
+    {
+        ctx.disableInputRotations = false;
+        ctx.animIsAttacking = false;
+        ctx.comboCounter = 0;
+
+        ctx.animController.SetBool("Attack1", false);
+        ctx.animController.SetBool("Attack2", false);
+        ctx.animController.SetBool("Attack3", false);
+    }
     public override void CheckSwitchState()
     {
         if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f)
         {
             SwitchState(factory.Dash());
         }
-        else if (ctx.input.isMovementHeld)
+        else if (ctx.input.isMovementHeld && !ctx.animIsAttacking)
         {
             SwitchState(factory.Walk());
         }
-        else if (!ctx.input.isMovementHeld)
+        else if (!ctx.input.isMovementHeld && !ctx.animIsAttacking)
         {
             SwitchState(factory.Idle());
         }
@@ -35,134 +54,85 @@ public class PlayerAttackState : PlayerBaseState
     public override void InitializeSubState() { }
 
 
+    void AttackAnimation()
+    {
 
-    //void Attack()
-    //{
-    //    // Is currently playing attack animation
-    //    if (animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
-    //    {
-    //        // Attack animation has started!
-    //        if (!isAttacking)
-    //        {
-    //            rb.velocity = Vector3.zero;
-    //            disableMovement = true;
-    //            disableInputRotations = true;
-    //            isAttacking = true;
-    //            currentSpeed = 0f;
-    //        }
+        // Move after attacking
+        if (ctx.animController.IsInTransition(0) && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f)
+        {
+            ctx.animIsAttacking = false;
+        }
 
-    //        // Move after attacking
-    //        if (animController.IsInTransition(0) && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f)
-    //        {
-    //            disableMovement = false;
-    //        }
+        // End animation combo
+        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime"))
+        {
+            if (!ctx.animController.IsInTransition(0) && ctx.resetAttack) // Check if not in transiton, so it doesn't reset run during transition
+            {
+                ctx.animController.SetBool("Attack1", false);
+                ctx.animIsAttacking = false;
+                ctx.resetAttack = false;
+                ctx.disableInputRotations = false;
+                ctx.comboCounter = 0;
 
-    //    }
-    //    else
-    //    { // Not playing attacking animation
-    //        if (isAttacking)
-    //        {
-    //            disableMovement = false;
-    //            disableInputRotations = false;
-    //            isAttacking = false;
-    //            comboCounter = 0;
+                
+            }
+        }
+        else
+        {
+            ctx.resetAttack = true;
+        }
 
-    //            animController.SetBool("Attack1", false);
-    //            animController.SetBool("Attack2", false);
-    //            animController.SetBool("Attack3", false);
-    //        }
-    //    }
-
-    //    // End animation combo
-    //    if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
-    //    {
-    //        if (!animController.IsInTransition(0) && resetAttack) // Check if not in transiton, so it doesn't reset run during transition
-    //        {
-    //            animController.SetBool("Attack1", false);
-    //            disableMovement = false;
-    //            disableInputRotations = false;
-    //            resetAttack = false;
-    //            comboCounter = 0;
-
-    //            int atkNum = Random.Range(1, 5);
-    //            if (lastAttackInt == atkNum)
-    //            {
-    //                atkNum++;
-
-    //                if (atkNum > 4)
-    //                    atkNum = 1;
-    //            }
-    //            lastAttackInt = atkNum;
-
-    //            animController.SetInteger("RngAttack", atkNum);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        resetAttack = true;
-    //    }
-
-    //    if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2") && !animController.IsInTransition(0))
-    //    {
-    //        animController.SetBool("Attack2", false);
-    //        disableMovement = false;
-    //        comboCounter = 0;
-    //    }
-    //    if (animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("resetComboTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3") && !animController.IsInTransition(0))
-    //    {
-    //        animController.SetBool("Attack3", false);
-    //        disableMovement = false;
-    //        comboCounter = 0;
-    //    }
-
-    //    // Cooldown to click again
-    //    if (currentAttackCooldown <= 0f)
-    //    {
-    //        if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded && !isSneaking && !animController.IsInTransition(0))
-    //        {
-    //            OnClick();
-    //        }
-    //    }
-
-    //    if (currentAttackCooldown > 0f)
-    //        currentAttackCooldown -= Time.deltaTime;
-    //}
-
-    //void OnClick()
-    //{
-    //    if (comboCounter == 0)
-    //    {
-    //        disableInputRotations = true;
-    //        isAttacking = true;
-    //    }
-
-    //    animController.speed = 1f;
-
-    //    // Set time
-    //    currentAttackCooldown = attackCooldown;
-
-    //    // Increase combo count
-    //    comboCounter++;
-    //    // Clamp combo
-    //    comboCounter = Mathf.Clamp(comboCounter, 0, 2);
+        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime") && ctx.animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2") && !ctx.animController.IsInTransition(0))
+        {
+            ctx.animController.SetBool("Attack2", false);
+            ctx.disableMovement = false;
+            ctx.comboCounter = 0;
+        }
+        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime") && ctx.animController.GetCurrentAnimatorStateInfo(0).IsName("Attack3") && !ctx.animController.IsInTransition(0))
+        {
+            ctx.animController.SetBool("Attack3", false);
+            ctx.disableMovement = false;
+            ctx.comboCounter = 0;
+        }
+    }
 
 
-    //    if (comboCounter == 1 && !animController.GetBool("Attack1"))
-    //    {
-    //        animController.SetTrigger("Attack");
-    //        animController.SetBool("Attack1", true);
-    //    }
+    void Attack()
+    {
+        if (ctx.input.isInputAttackPressed && !ctx.animController.IsInTransition(0) && ctx.currentAttackCooldown <= 0f)
+        {
+            if (ctx.comboCounter == 0)
+            {
+                ctx.disableInputRotations = true;
+            }
 
-    //    // Transitions to next combo animation
-    //    if (comboCounter >= 2 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
-    //    {
-    //        animController.SetBool("Attack1", false);
-    //        animController.SetBool("Attack2", true);
-    //    }
-    //    if (comboCounter >= 3 && animController.GetCurrentAnimatorStateInfo(0).normalizedTime > animController.GetFloat("attackInputTime") && animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
-    //    {
-    //        animController.SetBool("Attack2", false);
-    //        animController.SetBool("Attack3", true);
-    //    }
-    //}
+            // Set time
+            ctx.currentAttackCooldown = vso.attackCooldown;
+
+            // Increase combo count
+            ctx.comboCounter++;
+            // Clamp combo
+            ctx.comboCounter = Mathf.Clamp(ctx.comboCounter, 0, 2);
+
+
+            // Detect which combo to trigger
+            if (ctx.comboCounter == 1 && !ctx.animController.GetBool("Attack1"))
+            {
+                ctx.animController.SetTrigger("Attack");
+                ctx.animController.SetBool("Attack1", true);
+            }
+            // Transitions to next combo animation
+            if (ctx.comboCounter >= 2 && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("attackInputTime") && ctx.animController.GetCurrentAnimatorStateInfo(0).IsName("Attack1"))
+            {
+                ctx.animController.SetBool("Attack1", false);
+                ctx.animController.SetBool("Attack2", true);
+            }
+            if (ctx.comboCounter >= 3 && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("attackInputTime") && ctx.animController.GetCurrentAnimatorStateInfo(0).IsName("Attack2"))
+            {
+                ctx.animController.SetBool("Attack2", false);
+                ctx.animController.SetBool("Attack3", true);
+            }
+        }
+
+    }
 }
