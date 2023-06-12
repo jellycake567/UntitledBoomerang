@@ -15,6 +15,7 @@ public class VariableScriptObject : ScriptableObject
     [Header("Player")]
     public float humanSpeed = 5.0f;
     public float humanRunSpeed = 10.0f;
+    public float reduceSpeed = 2f;
     [Header("Animation")]
     public float accelTimeToMaxSpeed = 2.0f;
     public float decelTimeToZeroSpeed = 1.0f;

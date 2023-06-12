@@ -383,7 +383,7 @@ public class PlayerStateMachine : MonoBehaviour
         {
             // Reset speed when turning around in the air
             if (!isGrounded)
-                currentSpeed = 2f; // ============================================== MAKE VARIABLE ==============================================
+                currentSpeed = vso.reduceSpeed;
 
             prevInputDirection = input.GetMovementInput.normalized;
         }

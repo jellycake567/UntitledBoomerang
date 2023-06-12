@@ -45,11 +45,10 @@ public class PlayerWalkState : PlayerBaseState
         {
             SwitchState(factory.Dash());
         }
-        else if (!ctx.input.isMovementHeld && ctx.animIsRunning && ctx.currentSpeed < 4f)
+        else if (!ctx.input.isMovementHeld && ctx.animIsRunning && ctx.currentSpeed < 4f) // is running and switching to idle
         {
             SwitchState(factory.Idle());
-            // ============================================== MAKE VARIABLE ==============================================
-            ctx.rb.velocity = new Vector3(-2f * ctx.prevInputDirection.x, 0f, 0f);
+            ctx.rb.velocity = new Vector3(-vso.reduceSpeed * ctx.prevInputDirection.x, 0f, 0f);
         }
     }
 
