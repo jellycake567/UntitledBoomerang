@@ -22,7 +22,7 @@ public class PlayerStateFactory
     }
     public PlayerBaseState Dash()
     {
-        return new PlayerRunState(context, this, vso);
+        return new PlayerDashState(context, this, vso);
     }
     public PlayerBaseState Jump()
     {

@@ -1,10 +1,9 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerRunState : PlayerBaseState
+public class PlayerDashState : PlayerBaseState
 {
-    public PlayerRunState(PlayerStateMachine context, PlayerStateFactory playerStateFactory, VariableScriptObject vso) : base(context, playerStateFactory, vso) { }
+    public PlayerDashState(PlayerStateMachine context, PlayerStateFactory playerStateFactory, VariableScriptObject vso) : base(context, playerStateFactory, vso) { }
 
     public override void EnterState() 
     {
@@ -22,7 +21,7 @@ public class PlayerRunState : PlayerBaseState
     {
         ctx.disableInputRotations = false;
         ctx.isDashing = false;
-        ctx.animController.SetBool("isSprinting", true);
+        ctx.animController.SetBool("isRunning", true);
     }
     public override void CheckSwitchState() 
     {
@@ -123,6 +122,6 @@ public class PlayerRunState : PlayerBaseState
             yield return new WaitForEndOfFrame();
         }
 
-        ctx.animController.SetBool("isSprinting", true);
+        ctx.animController.SetBool("isRunning", true);
     }
 }
