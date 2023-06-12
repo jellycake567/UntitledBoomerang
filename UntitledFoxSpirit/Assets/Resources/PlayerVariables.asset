@@ -26,7 +26,7 @@ MonoBehaviour:
   frictionAmount: 0.5
   ROTATION: 0
   timeToReachTargetRotation: 0.14
-  GRAVITY: 1
+  GRAVITY: 0
   gravity: -9.81
   gravityScale: 1
   fallGravityMultiplier: 1.25
@@ -36,11 +36,11 @@ MonoBehaviour:
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
-  JUMP: 0
+  JUMP: 1
   humanJumpHeight: 8
   jumpCooldown: 0.2
   jumpBufferTime: 0.1
-  jumpCoyoteTime: 0.2
+  jumpCoyoteTime: 0.1
   jumpMultiplier: 1
   doubleJumpHeightPercent: 0.5
   jumpRollVelocity: -15
@@ -83,4 +83,4 @@ MonoBehaviour:
   distanceSpawn: 17
   spawnYOffset: 0
   adjustVelocity: 5
-  OTHER: 1
+  OTHER: 0

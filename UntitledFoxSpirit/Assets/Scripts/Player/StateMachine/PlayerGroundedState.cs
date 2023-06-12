@@ -39,9 +39,10 @@ public class PlayerGroundedState : PlayerBaseState
             SetSubState(factory.Walk());
         }
     }
+
     public override void CheckSwitchState()
     {
-        if (ctx.input.isInputJumpPressed || !ctx.isGrounded && !ctx.isDashing)
+        if (ctx.jumpBufferCounter > 0f || !ctx.isGrounded && !ctx.isDashing)
         {
             SwitchState(factory.Jump());
         }

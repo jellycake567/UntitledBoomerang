@@ -14,14 +14,12 @@ public class PlayerJumpState : PlayerBaseState
     public override void EnterState()
     {
         Debug.Log("Jump State");
-        JumpBuffer();
         FirstJump();
     }
     public override void UpdateState()
     {
         CheckSwitchState();
 
-        JumpBuffer();
         FirstJump();
         DoubleJump();
     }
@@ -38,8 +36,8 @@ public class PlayerJumpState : PlayerBaseState
         {
             SwitchState(factory.Grounded());
         }
-       
     }
+
     public override void InitializeSubState() 
     {
         if (ctx.input.isMovementHeld)
@@ -49,19 +47,6 @@ public class PlayerJumpState : PlayerBaseState
         else
         {
             SetSubState(factory.Idle());
-        }
-    }
-
-
-    void JumpBuffer()
-    {
-        if (ctx.input.isInputJumpPressed)
-        {
-            ctx.jumpBufferCounter = vso.jumpBufferTime;
-        }
-        else
-        {
-            ctx.jumpBufferCounter -= Time.deltaTime;
         }
     }
 
@@ -77,7 +62,6 @@ public class PlayerJumpState : PlayerBaseState
 
             //Jump
             ctx.rb.AddForce(new Vector3(0, velocity, 0), ForceMode.Impulse);
-
             ctx.animController.SetBool("Jump", true);
 
             //Set jump cooldown
@@ -95,7 +79,7 @@ public class PlayerJumpState : PlayerBaseState
         }
 
          //Double jump
-        if (ctx.input.isInputJumpPressed && ctx.canDoubleJump)
+        if (ctx.input.isInputJumpPressed && ctx.canDoubleJump && ctx.jumpCoyoteCounter <= 0f)
         {
             ctx.isHeavyLand = false;
             ctx.canDoubleJump = false;

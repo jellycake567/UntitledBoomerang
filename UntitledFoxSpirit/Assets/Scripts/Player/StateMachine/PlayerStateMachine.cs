@@ -168,6 +168,7 @@ public class PlayerStateMachine : MonoBehaviour
         // Jump
         JumpCooldownTimer();
         CoytoteTime();
+        JumpBuffer();
 
         // Dash
         DashCooldown();
@@ -303,6 +304,18 @@ public class PlayerStateMachine : MonoBehaviour
         else
         {
             jumpCoyoteCounter -= Time.deltaTime;
+        }
+    }
+
+    void JumpBuffer()
+    {
+        if (input.isInputJumpPressed)
+        {
+            jumpBufferCounter = vso.jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
         }
     }
 
