@@ -64,7 +64,7 @@ public class PlayerStateMachine : MonoBehaviour
     [HideInInspector] public bool disableDashing = false, isDashing = false;
     [HideInInspector] public bool animIsRunning
     {
-        get { return animController.GetBool("isSprinting"); }
+        get { return animController.GetBool("isRunning"); }
     }
 
     // Ledge Climb

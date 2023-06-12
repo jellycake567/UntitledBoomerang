@@ -24,6 +24,10 @@ public class PlayerStateFactory
     {
         return new PlayerDashState(context, this, vso);
     }
+    public PlayerBaseState Attack()
+    {
+        return new PlayerAttackState(context, this, vso);
+    }
     public PlayerBaseState Jump()
     {
         return new PlayerJumpState(context, this, vso);

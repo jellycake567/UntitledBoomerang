@@ -29,6 +29,10 @@ public class PlayerIdleState : PlayerBaseState
         {
             SwitchState(factory.Walk());
         }
+        else if (ctx.input.isInputAttackPressed)
+        {
+            SwitchState(factory.Attack());
+        }
 
     }
     public override void InitializeSubState() { }

@@ -30,7 +30,7 @@ public class PlayerWalkState : PlayerBaseState
         Debug.Log("exit walk");
 
         ctx.animController.speed = 1f;
-        ctx.animController.SetBool("isSprinting", false);
+        ctx.animController.SetBool("isRunning", false);
     }
 
     public override void CheckSwitchState()
@@ -49,6 +49,10 @@ public class PlayerWalkState : PlayerBaseState
         {
             SwitchState(factory.Idle());
             ctx.rb.velocity = new Vector3(-vso.reduceSpeed * ctx.prevInputDirection.x, 0f, 0f);
+        }
+        else if (ctx.input.isInputAttackPressed)
+        {
+            SwitchState(factory.Attack());
         }
     }
 

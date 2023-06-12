@@ -30,10 +30,6 @@ public class PlayerGroundedState : PlayerBaseState
         {
             SetSubState(factory.Idle());
         }
-        else if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f)
-        {
-            SetSubState(factory.Dash());
-        }
         else
         {
             SetSubState(factory.Walk());
