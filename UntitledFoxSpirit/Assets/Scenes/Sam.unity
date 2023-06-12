@@ -2974,7 +2974,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 988442858}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.65, y: 0, z: 5.21}
+  m_LocalPosition: {x: 13.65, y: 0, z: 10.99}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -15094,8 +15094,8 @@ MonoBehaviour:
   isTouchingLedge: 0
   canClimbLedge: 0
   ledgeDetected: 0
-  isAttacking: 0
   resetAttack: 1
+  attackAgain: 0
   currentAttackCooldown: 0
   comboCounter: 0
   lastAttackInt: 0

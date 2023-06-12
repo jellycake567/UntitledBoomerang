@@ -29,9 +29,14 @@ public class PlayerAttackState : PlayerBaseState
     public override void FixedUpdateState() { }
     public override void ExitState() 
     {
+        if (!ctx.attackAgain)
+            ctx.animController.ResetTrigger("Attack");
+
+        ctx.attackAgain = false;
         ctx.disableInputRotations = false;
         ctx.animIsAttacking = false;
         ctx.comboCounter = 0;
+
 
         ctx.animController.SetBool("Attack1", false);
         ctx.animController.SetBool("Attack2", false);
@@ -64,7 +69,7 @@ public class PlayerAttackState : PlayerBaseState
         }
 
         // End animation combo
-        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime") && ctx.isAnimTagAttack)
+        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime") && ctx.animIsTagAttack)
         {
             if (!ctx.animController.IsInTransition(0) && ctx.resetAttack) // Check if not in transiton, so it doesn't reset run during transition
             {
@@ -119,6 +124,7 @@ public class PlayerAttackState : PlayerBaseState
             if (!ctx.animIsAtkTriggered && ctx.animIsAttacking && normTime > allowAtkTime)
             {
                 ctx.animController.SetTrigger("Attack");
+                ctx.attackAgain = true;
             }
 
 

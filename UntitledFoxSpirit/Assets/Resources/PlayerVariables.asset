@@ -15,6 +15,7 @@ MonoBehaviour:
   MOVEMENT: 0
   humanSpeed: 4
   humanRunSpeed: 5.5
+  reduceSpeed: 2
   accelTimeToMaxSpeed: 0.6
   decelTimeToZeroSpeed: 0.4
   animJogSpeed: 1
@@ -36,7 +37,7 @@ MonoBehaviour:
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
-  JUMP: 1
+  JUMP: 0
   humanJumpHeight: 8
   jumpCooldown: 0.2
   jumpBufferTime: 0.1
@@ -78,9 +79,9 @@ MonoBehaviour:
   verticalKnockback: 10
   CAMERA: 0
   camRotationSpeed2D: 0.1
-  PATH: 0
+  PATH: 1
   maxDistancePath: 0.1
-  distanceSpawn: 17
+  distanceSpawn: 15.81
   spawnYOffset: 0
   adjustVelocity: 5
   OTHER: 0

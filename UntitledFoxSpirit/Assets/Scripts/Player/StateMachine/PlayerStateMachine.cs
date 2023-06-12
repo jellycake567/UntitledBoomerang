@@ -72,10 +72,10 @@ public class PlayerStateMachine : MonoBehaviour
     [HideInInspector] public bool isClimbing = false, isWallClimbing, canClimbWall, isTouchingWall, isTouchingLedge, canClimbLedge, ledgeDetected;
 
     // Attack
-    [HideInInspector] public bool resetAttack = true;
+    [HideInInspector] public bool resetAttack = true, attackAgain = false;
     [HideInInspector] public float currentAttackCooldown;
     [HideInInspector] public int comboCounter, lastAttackInt;
-    [HideInInspector] public bool isAnimTagAttack
+    [HideInInspector] public bool animIsTagAttack
     {
         get { return animController.GetNextAnimatorStateInfo(0).IsTag("Attack"); }
     }
@@ -298,13 +298,14 @@ public class PlayerStateMachine : MonoBehaviour
     void StoreInputMovement()
     {
         // Store when player presses left or right when moving
-        if (prevInputDirection != input.GetMovementInput.normalized && input.isMovementHeld)
+        Vector3 direction = input.GetMovementInput.normalized;
+        if (prevInputDirection != direction && input.isMovementHeld)
         {
             // Reset speed when turning around in the air
             if (!isGrounded)
                 currentSpeed = vso.reduceSpeed;
 
-            prevInputDirection = input.GetMovementInput.normalized;
+            prevInputDirection = direction;
         }
     }
 
@@ -324,11 +325,11 @@ public class PlayerStateMachine : MonoBehaviour
         if (disableUpdateRotations)
             return targetRot2D;
 
+
         // Flipping direction
         if (prevInputDirection.x < 0f)
         {
-            Vector3 rot = targetRot2D.eulerAngles;
-            targetRot2D = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
+            targetRot2D = Flip(targetRot2D);
         }
 
         // Don't allow new inputs, but allow last input to update rotation
@@ -336,6 +337,8 @@ public class PlayerStateMachine : MonoBehaviour
             UpdateRotation(previousRotation);
         else
             UpdateRotation(targetRot2D);
+
+        Debug.DrawRay(transform.position, previousRotation * Vector3.forward);
 
         if (input.isMovementHeld)
         {
@@ -351,9 +354,13 @@ public class PlayerStateMachine : MonoBehaviour
             previousRotation = targetRot2D;
         }
 
-
-
         return targetRot2D;
+    }
+
+    public Quaternion Flip(Quaternion targetRot)
+    {
+        Vector3 rot = targetRot.eulerAngles;
+        return Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
     }
 
     void UpdateRotation(Quaternion targetRot2D)

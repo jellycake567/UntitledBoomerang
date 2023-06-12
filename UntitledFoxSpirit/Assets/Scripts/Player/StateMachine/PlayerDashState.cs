@@ -44,17 +44,21 @@ public class PlayerDashState : PlayerBaseState
 
         ctx.currentDashCooldown = vso.dashCooldown;
 
+        Quaternion targetRot = ctx.GetPathRotation();
+
         if (ctx.prevInputDirection.x < 0.1f)
         {
-            ctx.StartCoroutine(Dash(false));
+            ctx.previousRotation = ctx.Flip(targetRot);
+            ctx.StartCoroutine(Dash(false, ctx.previousRotation)); // Left
         }
         else
         {
-            ctx.StartCoroutine(Dash(true));
+            ctx.previousRotation = targetRot;
+            ctx.StartCoroutine(Dash(true, ctx.previousRotation)); // Right
         }
     }
 
-    IEnumerator Dash(bool usePathRotation)
+    IEnumerator Dash(bool usePathRotation, Quaternion targetRot)
     {
         ctx.currentSpeed = vso.humanRunSpeed;
         ctx.animController.SetFloat("ForwardSpeed", ctx.currentSpeed);
@@ -83,17 +87,14 @@ public class PlayerDashState : PlayerBaseState
 
             #region Rotation
 
-            Quaternion targetRot = ctx.GetPathRotation();
+            
             if (usePathRotation)
             {
-                ctx.distanceOnPath += speed * Time.deltaTime;
+                ctx.distanceOnPath += speed * Time.deltaTime; // Right
             }
             else
             {
-                Vector3 rot = targetRot.eulerAngles;
-                targetRot = Quaternion.Euler(rot.x, rot.y + 180f, rot.z);
-
-                ctx.distanceOnPath -= speed * Time.deltaTime;
+                ctx.distanceOnPath -= speed * Time.deltaTime; // Left
             }
 
             #endregion
