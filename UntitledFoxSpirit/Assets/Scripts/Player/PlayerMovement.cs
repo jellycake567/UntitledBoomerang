@@ -123,7 +123,7 @@ public class PlayerMovement : MonoBehaviour
     private float turnSmoothVelocity;
     public float maxVelocityChange = 10f;
     public float frictionAmount = 0.2f;
-    public bool mode3D = false;
+    public bool in3Dmode = false;
     private float currentSpeed;
     private float maxSpeed;
 
@@ -185,6 +185,8 @@ public class PlayerMovement : MonoBehaviour
     public float maxDistancePath = 0.5f;
     public float distanceSpawn = 0f;
     public float spawnYOffset = 0f;
+    public float switchDistance = 1f;
+    public float distanceFromClosestPointonPath;
     [Tooltip("Velocity to push player towards the path")] public float adjustVelocity = 1.0f;
 
     [Header("References")]
@@ -602,7 +604,7 @@ public class PlayerMovement : MonoBehaviour
         Debug.DrawLine(pathPos, pathPos + dirTowardPlayer * maxDistancePath, Color.blue);
 
         // Keeps player on the path
-        if (distance > maxDistancePath)
+        if (distance > maxDistancePath && !(distanceOnPath <= 0))
         {
             Vector3 dirTowardPath = (pathPos.IgnoreYAxis() - transform.position.IgnoreYAxis()).normalized;
             rb.AddForce(dirTowardPath * adjustVelocity, ForceMode.Impulse);
@@ -615,19 +617,35 @@ public class PlayerMovement : MonoBehaviour
 
     void Movement()
     {
-        if (!mode3D)
+        
+        if (in3Dmode)
+        {
+            //checking distance from closest point on path 
+            distanceFromClosestPointonPath = Vector3.Magnitude(transform.position.IgnoreYAxis() - pathCreator.path.GetClosestPointOnPath(transform.position).IgnoreYAxis());
+            if (distanceFromClosestPointonPath < switchDistance)
+            {
+                in3Dmode = false;
+            }
+
+        }
+
+
+        //if in 2D
+        if (!in3Dmode)
         {
             // Rotate camera 2d
             Vector3 camEulerAngle = mainCamera.rotation.eulerAngles;
             virtualCam2D.transform.rotation = Quaternion.Slerp(mainCamera.rotation, Quaternion.Euler(camEulerAngle.x, GetPathRotation().eulerAngles.y - 90f, camEulerAngle.z), camRotationSpeed2D);
+
         }
 
         Vector3 targetVelocity3D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
         Vector3 targetVelocity2D = new Vector3(Input.GetAxisRaw("Horizontal"), 0, 0);
 
-        Vector3 targetVelocity = mode3D ? targetVelocity3D : targetVelocity2D;
+        Vector3 targetVelocity = in3Dmode ? targetVelocity3D : targetVelocity2D;
         Vector3 direction = targetVelocity.normalized;
 
+       
 
         maxSpeed = isFox ? foxSpeed : humanSpeed;
         
@@ -645,7 +663,7 @@ public class PlayerMovement : MonoBehaviour
         distanceOnPath = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
         Quaternion targetRot2D = GetPathRotation();
 
-        if (mode3D)
+        if (in3Dmode)
             Rotation3D(targetAngle3D, direction);
         else
             targetRot2D = Rotation2D(targetRot2D, direction);
@@ -663,9 +681,10 @@ public class PlayerMovement : MonoBehaviour
             #region Reached end of path
             if (direction.x < 0f)
             {
-                if (distanceOnPath <= 0)
+                if (distanceOnPath <= 0) //&& !in3Dmode)
                 {
-                    maxSpeed = 0f;
+                    //maxSpeed = 0f;
+                    in3Dmode = true;
                 }
             }
             else if (direction.x > 0f)
@@ -716,7 +735,7 @@ public class PlayerMovement : MonoBehaviour
         #region Calculate Velocity
 
         // Where we want to player to face/walk towards
-        Vector3 desiredDir = (mode3D ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
+        Vector3 desiredDir = (in3Dmode ? Quaternion.Euler(0f, targetAngle3D, 0f) : targetRot2D) * Vector3.forward;
 
         // Rotation Debug Line for path
         //Debug.DrawLine(transform.position, transform.position + targetRot2D * Vector3.forward * 3f, Color.red);
@@ -754,9 +773,10 @@ public class PlayerMovement : MonoBehaviour
         //if (isGrounded)
         //  StepClimb(desiredDir); // After movement
 
-        if (!mode3D)
+        if (!in3Dmode)
         {
-            AdjustPlayerOnPath();
+            //AdjustPlayerOnPath();
+
         }
 
     }
@@ -1603,7 +1623,7 @@ public class PlayerMovement : MonoBehaviour
 
     void VirtualCamUpdate()
     {
-        if (mode3D)
+        if (in3Dmode)
         {
             virtualCam3D.Priority = 10;
             virtualCam2D.Priority = 0;
@@ -1627,6 +1647,15 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #endregion
+
+    void Switchto2D()
+    {
+        float distance = Vector3.Magnitude(transform.position - pathCreator.path.GetClosestPointOnPath(transform.position));
+        if(distance < switchDistance)
+        {
+            in3Dmode = false;
+        }
+    }
 
     
 }
