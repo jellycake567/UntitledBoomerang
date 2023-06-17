@@ -27,6 +27,8 @@ public class PlayerAttackState : PlayerBaseState
     }
 
     public override void FixedUpdateState() { }
+
+    public override void OnAnimatorMoveState() { }
     public override void ExitState() 
     {
         if (!ctx.attackAgain)
@@ -46,6 +48,7 @@ public class PlayerAttackState : PlayerBaseState
     {
         if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f)
         {
+            ctx.animController.ResetTrigger("Attack");
             SwitchState(factory.Dash());
         }
         else if (ctx.input.isMovementHeld && !ctx.animIsAttacking && !ctx.animIsAtkTriggered)

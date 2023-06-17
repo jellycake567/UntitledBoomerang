@@ -18,6 +18,7 @@ public class PlayerIdleState : PlayerBaseState
     }
 
     public override void FixedUpdateState() { }
+    public override void OnAnimatorMoveState() { }
     public override void ExitState() { }
     public override void CheckSwitchState() 
     {

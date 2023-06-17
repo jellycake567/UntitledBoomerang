@@ -21,6 +21,7 @@ public abstract class PlayerBaseState
     public abstract void EnterState();
     public abstract void UpdateState();
     public abstract void FixedUpdateState();
+    public abstract void OnAnimatorMoveState();
     public abstract void ExitState();
     public abstract void CheckSwitchState();
     public abstract void InitializeSubState();
@@ -40,6 +41,15 @@ public abstract class PlayerBaseState
         if (currentSubState != null)
         {
             currentSubState.FixedUpdateState();
+        }
+    }
+
+    public void OnAnimatorMoveStates()
+    {
+        OnAnimatorMoveState();
+        if (currentSubState != null)
+        {
+            currentSubState.OnAnimatorMoveState();
         }
     }
 

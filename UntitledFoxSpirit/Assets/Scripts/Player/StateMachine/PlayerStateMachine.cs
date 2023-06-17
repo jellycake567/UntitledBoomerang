@@ -3,6 +3,7 @@ using NUnit.Framework.Internal;
 using PathCreation;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -59,6 +60,7 @@ public class PlayerStateMachine : MonoBehaviour
     // Jump
     [HideInInspector] public bool isLanding = false, isLandRolling = false, disableJumping = false, canDoubleJump;
     [HideInInspector] public float newGroundY = 1000000f, jumpCounter, jumpBufferCounter, jumpCoyoteCounter;
+
     // Dash
     [HideInInspector] public float currentDashCooldown = 1f;
     [HideInInspector] public bool disableDashing = false, isDashing = false;
@@ -215,37 +217,7 @@ public class PlayerStateMachine : MonoBehaviour
             rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
         }
 
-        // Jump Roll root motion
-        if (isLandRolling && animController.GetBool("Grounded") && !isLanding)
-        {
-            isLanding = true;
-            disableMovement = true;
-            disableInputRotations = true;
-            tallCollider.material = null;
-        }
-        if (isLanding)
-        {
-            AnimatorStateInfo jumpRollState = animController.GetCurrentAnimatorStateInfo(0);
-
-            if (jumpRollState.IsName("JumpRoll") && jumpRollState.normalizedTime < 0.3f || animController.GetBool("Grounded") && animController.IsInTransition(0))
-            {
-                float y = rb.velocity.y;
-
-                rb.velocity = animController.deltaPosition * vso.rootMotionJumpRollSpeed / Time.deltaTime;
-
-                rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
-
-            }
-            else if (isGrounded)
-            {
-                isLanding = false;
-                disableMovement = false;
-                disableJumping = false;
-                disableInputRotations = false;
-                tallCollider.material = friction;
-                isLandRolling = false;
-            }
-        }
+        currentState.OnAnimatorMoveStates();
     }
 
     private void OnDrawGizmos()
@@ -476,6 +448,11 @@ public class PlayerStateMachine : MonoBehaviour
     public Quaternion GetPathRotation()
     {
         return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
+    }
+
+    public void HeavyLandFinish()
+    {
+        isHeavyLand = false;
     }
 
 }

@@ -17,6 +17,8 @@ public class PlayerDashState : PlayerBaseState
     }
 
     public override void FixedUpdateState() { }
+    public override void OnAnimatorMoveState() { }
+
     public override void ExitState() 
     {
         ctx.disableInputRotations = false;

@@ -36,4 +36,8 @@ public class PlayerStateFactory
     {
         return new PlayerGroundedState(context, this, vso);
     }
+    public PlayerBaseState Land()
+    {
+        return new PlayerLandState(context, this, vso);
+    }
 }

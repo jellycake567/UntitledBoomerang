@@ -25,6 +25,8 @@ public class PlayerWalkState : PlayerBaseState
         Movement();
     }
 
+    public override void OnAnimatorMoveState() { }
+
     public override void ExitState()
     {
         ctx.animController.speed = 1f;

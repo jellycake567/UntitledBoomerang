@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerJumpState : PlayerBaseState
 {
+
     public PlayerJumpState(PlayerStateMachine context, PlayerStateFactory playerStateFactory, VariableScriptObject vso) : base(context, playerStateFactory, vso) 
     {
         isRootState = true;
@@ -14,12 +15,15 @@ public class PlayerJumpState : PlayerBaseState
     public override void EnterState()
     {
         Debug.Log("Jump State");
+        ctx.animController.ResetTrigger("Attack");
+        ctx.isHeavyLand = false;
         FirstJump();
     }
     public override void UpdateState()
     {
         CheckSwitchState();
 
+        RecordVelocity();
         FirstJump();
         DoubleJump();
     }
@@ -28,6 +32,8 @@ public class PlayerJumpState : PlayerBaseState
     {
         ApplyGravity();
     }
+
+    public override void OnAnimatorMoveState() { }
 
     public override void ExitState() { }
     public override void CheckSwitchState()
@@ -53,7 +59,7 @@ public class PlayerJumpState : PlayerBaseState
     void FirstJump()
     {
         //Player jump input
-        if (ctx.jumpBufferCounter > 0f && ctx.jumpCoyoteCounter > 0f && ctx.jumpCounter <= 0f)
+        if (ctx.jumpBufferCounter > 0f && ctx.jumpCoyoteCounter > 0f && ctx.jumpCounter <= 0f && !ctx.isHeavyLand)
         {
             ctx.reduceVelocityOnce = true;
 
@@ -82,6 +88,7 @@ public class PlayerJumpState : PlayerBaseState
         if (ctx.input.isInputJumpPressed && ctx.canDoubleJump && ctx.jumpCoyoteCounter <= 0f)
         {
             ctx.isHeavyLand = false;
+            ctx.animController.ResetTrigger("HeavyLand");
             ctx.canDoubleJump = false;
 
             float velocity = CalculateVelocity(vso.humanJumpHeight * vso.doubleJumpHeightPercent);
@@ -127,6 +134,23 @@ public class PlayerJumpState : PlayerBaseState
 
             if (ctx.rb.velocity.y < 0f)
                 ctx.reduceVelocityOnce = false;
+        }
+    }
+
+    void RecordVelocity()
+    {
+        // For landing state
+        if (ctx.rb.velocity.y <= vso.jumpRollVelocity && !ctx.isHeavyLand)
+        {
+            ctx.isHeavyLand = true;
+
+            Debug.Log("trigger");
+            ctx.animController.SetTrigger("HeavyLand");
+
+            if (ctx.input.isMovementHeld)
+            {
+                ctx.isLandRolling = true;
+            }
         }
     }
 }

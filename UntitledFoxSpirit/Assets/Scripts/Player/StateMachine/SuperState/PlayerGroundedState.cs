@@ -19,14 +19,18 @@ public class PlayerGroundedState : PlayerBaseState
         CheckSwitchState();
     }
 
-    public override void FixedUpdateState()
-    {
-        
-    }
+    public override void FixedUpdateState() { }
+
+    public override void OnAnimatorMoveState() { }
+
     public override void ExitState() { }
     public override void InitializeSubState() 
     {
-        if (!ctx.input.isMovementHeld)
+        if (ctx.isHeavyLand)
+        {
+            SetSubState(factory.Land());
+        }
+        else if (!ctx.input.isMovementHeld)
         {
             SetSubState(factory.Idle());
         }
@@ -40,6 +44,11 @@ public class PlayerGroundedState : PlayerBaseState
     {
         if (ctx.jumpBufferCounter > 0f || !ctx.isGrounded && !ctx.isDashing)
         {
+            if (ctx.isHeavyLand)
+            {
+                return;
+            }
+
             SwitchState(factory.Jump());
         }
     }
