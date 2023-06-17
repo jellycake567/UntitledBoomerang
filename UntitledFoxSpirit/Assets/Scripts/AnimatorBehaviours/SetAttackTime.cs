@@ -16,12 +16,12 @@ public class SetAttackTime : StateMachineBehaviour
         animator.SetFloat("attackInputTime", allowInputTime);
         animator.SetFloat("resetComboTime", resetComboTime);
 
-        int atkNum = Random.Range(1, 5);
+        int atkNum = Random.Range(1, 6);
         if (animator.GetInteger("LastAtkInt") == atkNum)
         {
             atkNum++;
 
-            if (atkNum > 4)
+            if (atkNum > 5)
                 atkNum = 1;
         }
 
