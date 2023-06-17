@@ -12,11 +12,14 @@ public class jump : MonoBehaviour
     float gravity = -6;
     float gravityScale = 1;
     float fallGravityMultiplier = 2;
+    float lowFallGravityMultiplier = 1.5f;
 
     Rigidbody rb;
 
     bool jumpForceIncrease;
     bool isGrounded;
+    bool isHoldingJump = false;
+    bool isKeyDown = false;
 
     // Start is called before the first frame update
     void Start()
@@ -36,9 +39,9 @@ public class jump : MonoBehaviour
     void Update()
     {
         
-        if (Input.GetKey(KeyCode.Space)) //if space is pressed
+        if (Input.GetKey(KeyCode.Space)) //if space is held
         {
-
+            isHoldingJump = true;
             //jumpKeyDownTimer += Time.deltaTime; // increase timer
             //jumpForceValue += 0.5f;
 
@@ -61,6 +64,20 @@ public class jump : MonoBehaviour
             //}
 
         }
+        else
+        {
+            isHoldingJump = false;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            isKeyDown = true;
+        }
+        else
+        {
+            isKeyDown = false;
+        }
+    
         //else if(Input.GetKeyDown(KeyCode.Space))
         //{
         //    RB.AddForce(new Vector3(0, jumpForceValue, 0), ForceMode.Impulse);
@@ -78,7 +95,7 @@ public class jump : MonoBehaviour
         //    jumpKeyDownTimer = 0;
         //}
 
-      
+
 
     }
 
@@ -88,7 +105,7 @@ public class jump : MonoBehaviour
         if (isGrounded)
             maxJumpHeight = transform.position.y + 2;
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (isKeyDown && isGrounded)
         {
             rb.AddForce(new Vector3(0, jumpForceValue * Time.deltaTime, 0), ForceMode.Impulse);
             
@@ -128,14 +145,15 @@ public class jump : MonoBehaviour
 
     void ApplyGravity()
     {
-       
+        rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+
         if (rb.velocity.y < 0f)//if falling, multiply gravity
         {
             rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * fallGravityMultiplier);
         }
-        else//if jumping
+        else if (rb.velocity.y > 0 && isHoldingJump)//if jumping and not holding the jump button
         {
-            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale);
+            rb.AddForce(new Vector3(0, gravity, 0) * rb.mass * gravityScale * lowFallGravityMultiplier);
         }
         
     }

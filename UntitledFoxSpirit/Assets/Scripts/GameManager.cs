@@ -6,9 +6,12 @@ public class GameManager : MonoBehaviour
 {
 
     [SerializeField] GameObject player;
-    //[SerializeField] GameObject spear;
+    [SerializeField] GameObject pauseMenu;
+   
 
     public Vector3 playerPos;
+
+    bool isPaused = false;
 
     void Start()
     {
@@ -16,9 +19,34 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 60;
     }
 
-    // Update is called once per frame
+   
     void Update()
     {
         playerPos = player.transform.position;
+        
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            isPaused = !isPaused;
+            
+            PauseGame();
+        }
+
+
+
     }
+
+    void PauseGame()
+    {
+        if (isPaused)
+        {
+            pauseMenu.SetActive(true);
+            Time.timeScale = 0;
+        }
+        else if (isPaused == false)
+        {
+            pauseMenu.SetActive(false);
+            Time.timeScale = 1;
+        }
+    }
+    
 }
