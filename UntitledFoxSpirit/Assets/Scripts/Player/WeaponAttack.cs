@@ -43,7 +43,7 @@ public class WeaponAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //AttackDetection();
+        AttackDetection();
 
         //StartCoroutine(Attack());
     }

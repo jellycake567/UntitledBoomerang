@@ -21,6 +21,11 @@ public class EnemyStats : MonoBehaviour
 
             StartCoroutine(DamageEffect());
         }
+
+        //transform.parent.gameObject.GetComponent<EnemyHuman>().isStaggered = true;
+        this.GetComponent<EnemyHuman>().isStaggered = true;
+        this.GetComponent<EnemyHuman>().staggerTimer = this.GetComponent<EnemyHuman>().staggerTimerMax;
+        
     }
 
     IEnumerator DamageEffect()

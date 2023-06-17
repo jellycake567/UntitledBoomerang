@@ -11,38 +11,50 @@ public class EnemyHuman : MonoBehaviour
     float decisionTimer = 0;
     public float decisionTimerMin = 0;
     public float decisionTimerMax = 0;
-    public float speed;
-    float initialAccel;
-    public float runAccel = 3;
+    //public float speed;
+    public float maxSpeed = 2;
+    public float walkAccel = 1.5f;
+    public bool isStaggered = false;
+    public float staggerTimer;
+    public float staggerTimerMax;
+   
     public float meleeAttackRange = 2;
-    float initialStopDist;
-    float smallerStopDist = 1.40f;
+    
     bool hasAttacked = false;
-    bool in3Dmode = false;
+    public bool in3Dmode = true;
 
+    Vector2 velocityXZ;
 
     float distFromPlayer = 0;
     int optionCount = 0;
     int choice = 0;
-    public float runSpeed = 8f;
+    Vector3 totalForce;
 
     Rigidbody rb;
     Animator animControl;
 
-
+    
+    //nav agent variable
     NavMeshAgent navAgent;
     Vector3 targetPoint;
+    float initialStopDist;
+    public float smallerStopDist = 3f;
+    float initialAccel;
+    public float runAccel = 3;
+    public float runSpeed = 8f;
 
     //Wandering 3D variables
-    float wanderRadius = 3;
-    float wanderDistance = 2;
-    float wanderJitter = 4;
+    public float wanderRadius = 3;
+    public float circleDistance = 5;
+    public float wanderJitter = 3;
     Vector3 wanderPreviousTarget;
-    Vector3 newTarget;
+    Vector3 target;
     bool isGroundAhead= true;
     public LayerMask groundMask;
     public LayerMask obstacleMask;
     private Vector3 lastGroundPos;
+    public float walkSpeed;
+    bool isObstacleNear = false;
 
     //debug
     bool temp;
@@ -51,7 +63,10 @@ public class EnemyHuman : MonoBehaviour
     float x;
     float z;
     float angle;
+    Vector3 initalPos;
+    Vector3 currentPos;
 
+    RaycastHit hitInfo;
     public enum State
     {
         Standing,
@@ -74,9 +89,14 @@ public class EnemyHuman : MonoBehaviour
         wanderPreviousTarget.x = transform.position.x + Random.Range(-wanderRadius, wanderRadius);
         wanderPreviousTarget.y = transform.position.y;
         wanderPreviousTarget.z = transform.position.z + Random.Range(-wanderRadius, wanderRadius);
-        wanderPreviousTarget = wanderPreviousTarget + transform.forward * wanderDistance;
+        wanderPreviousTarget = wanderPreviousTarget + transform.position * wanderRadius + transform.forward * circleDistance;
         debug_wanderDistancePoint = new Vector3();
-        newTarget = new Vector3();
+        target = new Vector3();
+
+        totalForce = new Vector3();
+        bool temp = Physics.Raycast(transform.position, -transform.up, out hitInfo, 5, groundMask);
+
+        initalPos = transform.position;
     }
 
 
@@ -99,20 +119,32 @@ public class EnemyHuman : MonoBehaviour
                 return;
             }
 
+            velocityXZ.x = rb.velocity.x;
+            velocityXZ.y = rb.velocity.z;
+
             //2D
             if (!in3Dmode)
             {
-                if(rb.velocity.z == 0 && rb.velocity.x == 0)
+                if (CheckForObstacle(hitInfo))
+                {
+                    
+                }
+
+                if (velocityXZ.magnitude < maxSpeed)
                 {
                     //targetPoint = transform.forward * Random.Range(2,6);
                     //navAgent.destination = transform.position + targetPoint;
 
-                    rb.AddForce(transform.forward * 3, ForceMode.Impulse);
+                    rb.AddForce(transform.forward * 3, ForceMode.Acceleration);
+                    
 
                 }
+
+
                 FindPlayer();
                 return;
             }
+
 
             WanderIn3D();
             FindPlayer();
@@ -121,7 +153,17 @@ public class EnemyHuman : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {      
+        if (isStaggered) 
+        {
+            animControl.SetTrigger("isStaggeredTrig");
+            staggerTimer -= Time.deltaTime;
+            if(staggerTimer <= 0)
+            {
+                isStaggered = false;
+            }
+            return;
+        }
         if (AIState == State.Standing)
         {
             decisionTimer -= Time.deltaTime;
@@ -152,7 +194,8 @@ public class EnemyHuman : MonoBehaviour
         debug_wanderDistancePoint.y = transform.position.y;
         debug_wanderDistancePoint.z = transform.position.z;
 
-        debug_wanderDistancePoint = debug_wanderDistancePoint + transform.forward * wanderDistance;
+        debug_wanderDistancePoint = debug_wanderDistancePoint + transform.forward * circleDistance;
+        
 
     }
 
@@ -233,23 +276,16 @@ public class EnemyHuman : MonoBehaviour
         transform.rotation = Quaternion.Euler(rotation);
     }
 
-    void Move(Vector3 direction)
-    {
-        Vector3 targetVelocity = direction * speed;
-
-        // Move AI
-        rb.AddForce(targetVelocity, ForceMode.VelocityChange);
-    }
-
-
     void OnDrawGizmos()
     {
-        //Gizmos.color = Color.blue;
-        //Gizmos.DrawLine(transform.position, debug_wanderDistancePoint);        
-        //Gizmos.DrawWireSphere(debug_wanderDistancePoint, wanderRadius);
-        //Gizmos.color = Color.yellow;
-        //Gizmos.DrawLine(transform.position, newTarget);
-  
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(transform.position, debug_wanderDistancePoint);        
+        Gizmos.DrawWireSphere(debug_wanderDistancePoint, wanderRadius);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(transform.position, target);
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(initalPos, currentPos);
+        
     }
 
     IEnumerator AttackCycle()
@@ -310,35 +346,79 @@ public class EnemyHuman : MonoBehaviour
             return;
         }
 
+        //Vector3 randomDir = new Vector3();
+        //randomDir.x = Random.Range(-1.0f, 1.0f);
+        //randomDir.y = transform.position.y;
+        //randomDir.z = 1 - randomDir.x;
+        
+
         //newTarget = new Vector3();
-        newTarget.x = wanderPreviousTarget.x + Random.Range(-wanderJitter, wanderJitter);
-        newTarget.y = wanderPreviousTarget.y;
-        newTarget.z = wanderPreviousTarget.z + Random.Range(-wanderJitter, wanderJitter);
+        //apply jitter
+        target.x = wanderPreviousTarget.x + Random.Range(-wanderJitter, wanderJitter);
+        target.y = wanderPreviousTarget.y;
+        target.z = wanderPreviousTarget.z + Random.Range(-wanderJitter, wanderJitter);
 
-        Vector3 dirFromObjtoNewTarget = new Vector3();
-        dirFromObjtoNewTarget = newTarget - transform.position;
-        dirFromObjtoNewTarget.Normalize();
+        
 
-        //move new target onto circle
-       
-        newTarget = transform.position  + dirFromObjtoNewTarget * wanderRadius + transform.forward * wanderDistance;
 
-        if(CheckForObstacle())
+        Vector3 dirToNewTarget = new Vector3();
+        dirToNewTarget = target - (transform.position + transform.forward * circleDistance);
+
+        dirToNewTarget.Normalize();
+
+        //constrict new target onto circle
+        target = transform.position + dirToNewTarget * wanderRadius + transform.forward * circleDistance;
+
+        Vector3 seekDir = (target - transform.position).normalized;
+
+
+        float dotResult = 0;
+        float distance = 0;
+ 
+        if (CheckForObstacle(hitInfo))
         {
+            //totalForce += ApplyAvoidSteering(hitInfo);
+            //Debug.Log("x " + totalForce.x + " z " + totalForce.z);
 
+            //dotResult = Vector3.Dot(, transform.right);
+            //angle = Vector3.Angle(transform.forward, totalForce);
+
+            Vector3 hitDirection = Vector3.zero;
+            hitDirection = (hitInfo.point - transform.position).normalized;
+            
+            dotResult = Vector3.Dot(hitDirection, transform.right);
+            angle = Vector3.Angle(transform.forward, hitDirection);
+        
+            distance = (hitInfo.point - transform.position).magnitude;
+            
+        }
+        else
+        {
+            dotResult = Vector3.Dot(seekDir, transform.right);
+            angle = Vector3.Angle(transform.forward, seekDir);
+            
         }
 
-        rb.velocity = transform.forward * 3;
-
-        float dotResult = Vector3.Dot(dirFromObjtoNewTarget, transform.right);
-        angle = Vector3.Angle(transform.forward, dirFromObjtoNewTarget);
-        if(dotResult < 0)
+        if (dotResult < 0)
         {
             angle = -angle;
         }
-        transform.Rotate(new Vector3(0, angle, 0) * Time.deltaTime, Space.Self);
 
-        wanderPreviousTarget = newTarget;
+        transform.localEulerAngles += new Vector3(0, angle, 0) * Time.deltaTime;
+        
+        
+        totalForce = transform.forward * 5;
+
+        rb.AddForce(totalForce);
+        rb.velocity = rb.velocity.normalized * walkSpeed; 
+        //rb.velocity = transform.forward * walkSpeed; 
+
+        
+
+        //transform.rotation = Quaternion.LookRotation(dirToNewTarget);
+        currentPos = transform.position;
+        wanderPreviousTarget = target;
+        totalForce = Vector3.zero;
     }
 
     bool CheckGround()
@@ -346,9 +426,9 @@ public class EnemyHuman : MonoBehaviour
         
         Vector3 direction = new Vector3();
         direction = transform.forward;
-        direction.y = -0.020f;
+        direction.y = -0.020f;//magic number
 
-        Debug.DrawLine(transform.position, transform.position + direction * 5, Color.green);
+        //Debug.DrawLine(transform.position, transform.position + direction * 5, Color.green);
         RaycastHit hit;
         if(Physics.Raycast(transform.position, direction, out hit, 5, groundMask))
         {
@@ -358,7 +438,7 @@ public class EnemyHuman : MonoBehaviour
         return false;
     }
 
-    bool CheckForObstacle()
+    bool CheckForObstacle(RaycastHit hitInfo)
     {
 
         Vector3 direction = new Vector3();
@@ -368,27 +448,28 @@ public class EnemyHuman : MonoBehaviour
         float raycastLength = 4;
 
         //right forward diagonal raycast
-        Debug.DrawLine(transform.position, transform.position + direction * raycastLength, Color.white);
-        if (Physics.Raycast(transform.position, direction, raycastLength, obstacleMask))
+        Debug.DrawLine(transform.position, transform.position + direction * raycastLength, Color.white);       
+        if (Physics.Raycast(transform.position, direction, out hitInfo,  raycastLength, obstacleMask))
         {
             return true;
         }
 
         //left forward diagonal raycast
-        direction.x = -direction.x;
-        Debug.DrawLine(transform.position, transform.position + direction * raycastLength, Color.white);
-        if (Physics.Raycast(transform.position, direction, raycastLength, obstacleMask))
+        direction = transform.forward - transform.right;
+        direction.Normalize();
+        Debug.DrawLine(transform.position, transform.position + direction * raycastLength, Color.white);      
+        if (Physics.Raycast(transform.position, direction, out hitInfo, raycastLength, obstacleMask))
         {
             return true;
         }
 
         //forward raycast
         Debug.DrawRay(transform.position, transform.forward * raycastLength, Color.white);
-        if (Physics.Raycast(transform.position, transform.forward, raycastLength, obstacleMask))
+        if (Physics.Raycast(transform.position, transform.forward, out hitInfo, raycastLength, obstacleMask))
         {
             return true;
         }
-        return true;
+        return false;
     }
 
     void StandOrMove()
@@ -410,8 +491,8 @@ public class EnemyHuman : MonoBehaviour
             }
             
             //no, dont move  
-            rb.velocity = Vector3.zero;
-            AIState = State.Standing;
+            //rb.velocity = Vector3.zero;
+            //AIState = State.Standing;
 
             //does AI turn around?
             if (!in3Dmode)
@@ -432,6 +513,16 @@ public class EnemyHuman : MonoBehaviour
     {
         
     }
+
+    Vector3 ApplyAvoidSteering(RaycastHit hitInfo)
+    {
+        Vector3 dirFromTarget =  transform.position - hitInfo.point;
+        dirFromTarget.Normalize();
+
+        return dirFromTarget * -4;
+    }
+
+
 }
 
 
