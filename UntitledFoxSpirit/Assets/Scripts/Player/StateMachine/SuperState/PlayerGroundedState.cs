@@ -29,6 +29,7 @@ public class PlayerGroundedState : PlayerBaseState
         if (ctx.isHeavyLand)
         {
             SetSubState(factory.Land());
+            currentSubState.EnterState();
         }
         else if (!ctx.input.isMovementHeld)
         {
