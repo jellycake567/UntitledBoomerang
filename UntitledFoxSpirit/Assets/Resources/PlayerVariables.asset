@@ -37,14 +37,14 @@ MonoBehaviour:
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
-  JUMP: 0
+  JUMP: 1
   humanJumpHeight: 8
   jumpCooldown: 0.2
   jumpBufferTime: 0.1
   jumpCoyoteTime: 0.1
   jumpMultiplier: 1
   doubleJumpHeightPercent: 0.5
-  jumpRollVelocity: -15
+  jumpRollVelocity: -10
   rootMotionJumpRollSpeed: 2.5
   SNEAKING: 0
   sneakSpeed: 2
@@ -79,7 +79,7 @@ MonoBehaviour:
   verticalKnockback: 10
   CAMERA: 0
   camRotationSpeed2D: 0.1
-  PATH: 1
+  PATH: 0
   maxDistancePath: 0.2
   distanceSpawn: 15.81
   spawnYOffset: 0

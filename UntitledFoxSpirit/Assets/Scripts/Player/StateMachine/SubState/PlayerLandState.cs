@@ -10,11 +10,23 @@ public class PlayerLandState : PlayerBaseState
     {
         Debug.Log("Land State");
 
-        if (ctx.isLandRolling)
+        if (ctx.isLandRolling) // is set in jumpstate RecordVelocity()
         {
             // Rolling
             ctx.tallCollider.material = null;
             ctx.isLanding = true;
+
+
+            // Set player rotation to roll direction
+            Quaternion rotation = ctx.GetPathRotation();
+
+            // Flipping direction
+            if (ctx.prevInputDirection.x < 0f)
+            {
+                rotation = ctx.Flip(rotation);
+            }
+
+            ctx.rb.rotation = rotation;
         }
         else
         {
