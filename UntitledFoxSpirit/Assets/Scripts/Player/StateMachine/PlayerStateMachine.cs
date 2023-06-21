@@ -206,14 +206,14 @@ public class PlayerStateMachine : MonoBehaviour
         {
             rb.velocity = animController.deltaPosition * vso.rootMotionAtkSpeed / Time.deltaTime;
         }
-
+        
         // Attacking root motion
         if (animIsAttacking && !disableDashing && !animController.IsInTransition(0))
         {
             float y = rb.velocity.y;
-
+        
             rb.velocity = animController.deltaPosition * vso.rootMotionAtkSpeed / Time.deltaTime;
-
+        
             rb.velocity = new Vector3(rb.velocity.x, y, rb.velocity.z);
         }
 

@@ -14,7 +14,7 @@ public class PlayerWalkState : PlayerBaseState
         Debug.Log("Walk State");
         ctx.animController.SetBool("isMoving", true);
     }
-    public override void UpdateState()
+    public override void UpdateState()                                                                                                                                                                                                                                                         
     {
         CheckSwitchState();
 

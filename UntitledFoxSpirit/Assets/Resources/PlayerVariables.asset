@@ -80,7 +80,7 @@ MonoBehaviour:
   CAMERA: 0
   camRotationSpeed2D: 0.1
   PATH: 1
-  maxDistancePath: 0.1
+  maxDistancePath: 0.2
   distanceSpawn: 15.81
   spawnYOffset: 0
   adjustVelocity: 5
