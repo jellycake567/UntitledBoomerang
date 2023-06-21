@@ -34,6 +34,7 @@ public class PlayerGroundedState : PlayerBaseState
         else if (!ctx.input.isMovementHeld)
         {
             SetSubState(factory.Idle());
+            ctx.rb.velocity = Vector3.zero;
         }
         else
         {

@@ -44,7 +44,7 @@ MonoBehaviour:
   jumpCoyoteTime: 0.1
   jumpMultiplier: 1
   doubleJumpHeightPercent: 0.5
-  jumpRollVelocity: -10
+  jumpRollVelocity: -12
   rootMotionJumpRollSpeed: 2.5
   SNEAKING: 0
   sneakSpeed: 2
