@@ -61,9 +61,14 @@ public abstract class PlayerBaseState
 
         if (isRootState)
         {
-            if (currentSubState.ToString() != newState.currentSubState.ToString())
+            // new root state, substate is null
+            if (currentSubState != null && newState.currentSubState != null)
             {
-                currentSubState.ExitState();
+                // Exit roots substates
+                if (currentSubState.ToString() != newState.currentSubState.ToString())
+                {
+                    currentSubState.ExitState();
+                }
             }
 
             ctx.currentState = newState;

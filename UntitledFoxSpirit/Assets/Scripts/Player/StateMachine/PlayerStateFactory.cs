@@ -40,4 +40,9 @@ public class PlayerStateFactory
     {
         return new PlayerLandState(context, this, vso);
     }
+    public PlayerBaseState LedgeHang()
+    {
+        return new PlayerLedgeHangState(context, this, vso);
+        
+    }
 }

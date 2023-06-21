@@ -34,7 +34,6 @@ public class PlayerIdleState : PlayerBaseState
         {
             SwitchState(factory.Attack());
         }
-
     }
     public override void InitializeSubState() { }
 }

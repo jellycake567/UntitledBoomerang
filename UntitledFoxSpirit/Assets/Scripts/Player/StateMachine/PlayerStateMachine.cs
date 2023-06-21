@@ -191,6 +191,9 @@ public class PlayerStateMachine : MonoBehaviour
         // Dash
         DashCooldown();
 
+        // Ledge Hang
+        LedgeClimbCooldown();
+
         // Ground
         GroundCheck();
     }
@@ -202,10 +205,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     void OnAnimatorMove()
     {
-        if (isClimbing && !animController.IsInTransition(0))
-        {
-            rb.velocity = animController.deltaPosition * vso.rootMotionAtkSpeed / Time.deltaTime;
-        }
+        
         
         // Attacking root motion
         if (animIsAttacking && !disableDashing && !animController.IsInTransition(0))
@@ -418,6 +418,14 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    void LedgeClimbCooldown()
+    {
+        if (currentLedgeHangCooldown > 0f)
+        {
+            currentLedgeHangCooldown -= Time.deltaTime;
+        }
+    }
+
     void GroundCheck()
     {
         Vector3 centerPos = new Vector3(transform.position.x + vso.groundCheckOffset.x, transform.position.y + vso.groundCheckOffset.y, transform.position.z + vso.groundCheckOffset.z) + Vector3.down;
@@ -445,6 +453,8 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    
+
     public Quaternion GetPathRotation()
     {
         return pathCreator.path.GetRotationAtDistance(distanceOnPath, EndOfPathInstruction.Stop);
@@ -453,6 +463,16 @@ public class PlayerStateMachine : MonoBehaviour
     public void HeavyLandFinish()
     {
         isHeavyLand = false;
+    }
+
+    void FinishLedgeClimb()
+    {
+        Transform rootJointTransform = ledgeRootJntTransform;
+        rootJointTransform.position = new Vector3(rootJointTransform.position.x, rootJointTransform.position.y - 0.65f, rootJointTransform.position.z);
+        transform.position = rootJointTransform.position;
+        ledgeRootJntTransform.localPosition = ledgeRootJntTransform.localPosition;
+
+        canClimbLedge = false;
     }
 
 }

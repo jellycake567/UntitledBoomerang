@@ -30,11 +30,14 @@ public class PlayerGroundedState : PlayerBaseState
         {
             SetSubState(factory.Land());
             currentSubState.EnterState();
+            
         }
         else if (!ctx.input.isMovementHeld)
         {
             SetSubState(factory.Idle());
-            ctx.rb.velocity = Vector3.zero;
+
+            if (ctx.rb.velocity.y < 0f)
+                ctx.rb.velocity = Vector3.zero;
         }
         else
         {

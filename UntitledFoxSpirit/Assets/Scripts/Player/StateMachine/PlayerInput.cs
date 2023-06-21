@@ -15,6 +15,8 @@ public class PlayerInput : MonoBehaviour
     private bool _isInputDashPressed;
     private bool _isInputAttackPressed;
     private bool _isInputCrouchPressed;
+    private bool _isInputClimbPressed;
+    private bool _isInputDropPressed;
 
     public bool isMovementHeld 
     { 
@@ -33,6 +35,10 @@ public class PlayerInput : MonoBehaviour
     public bool isInputDashPressed { get { return _isInputDashPressed; } }
     public bool isInputAttackPressed { get { return _isInputAttackPressed; } }
     public bool isInputCrouchPressed { get { return _isInputCrouchPressed; } }
+    public bool isInputClimbPressed { get { return _isInputClimbPressed; } }
+    public bool isInputDropPressed { get { return _isInputDropPressed; } }
+
+    
 
 
     // Start is called before the first frame update
@@ -53,6 +59,8 @@ public class PlayerInput : MonoBehaviour
         _isInputDashPressed = Input.GetKeyDown(KeyCode.LeftShift) ? true : false;
         _isInputAttackPressed = Input.GetKeyDown(KeyCode.Mouse0) ? true : false;
         _isInputCrouchPressed = Input.GetKeyDown(KeyCode.C) ? true : false;
+        _isInputClimbPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) ? true : false;
+        _isInputDropPressed = Input.GetKeyDown(KeyCode.S) ? true : false;
 
 
         InputReleased();

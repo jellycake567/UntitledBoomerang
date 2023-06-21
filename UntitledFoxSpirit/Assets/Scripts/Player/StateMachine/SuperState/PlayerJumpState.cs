@@ -26,6 +26,8 @@ public class PlayerJumpState : PlayerBaseState
         RecordVelocity();
         FirstJump();
         DoubleJump();
+
+        CheckLedgeHang();
     }
 
     public override void FixedUpdateState()
@@ -41,6 +43,10 @@ public class PlayerJumpState : PlayerBaseState
         if (ctx.isGrounded)
         {
             SwitchState(factory.Grounded());
+        }
+        else if (ctx.canClimbLedge)
+        {
+            SwitchState(factory.LedgeHang());
         }
     }
 
@@ -150,6 +156,49 @@ public class PlayerJumpState : PlayerBaseState
             if (ctx.input.isMovementHeld)
             {
                 ctx.isLandRolling = true;
+            }
+        }
+    }
+
+    void CheckLedgeHang()
+    {
+        if (ctx.rb.velocity.y >= 0f || ctx.canClimbLedge || ctx.currentLedgeHangCooldown > 0f)
+            return;
+
+        float wallCheckDistance = vso.wallCheckDistance;
+        LayerMask groundLayer = vso.groundLayer;
+
+
+        // Raycasts
+        ctx.isTouchingLedge = Physics.Raycast(ctx.ledgeCheck.position, -ctx.prevInputDirection, wallCheckDistance, groundLayer);
+        ctx.isTouchingWall = Physics.Raycast(ctx.wallCheck.position, ctx.transform.forward, wallCheckDistance, groundLayer);
+        Vector3 ledgeCheckEndPoint = ctx.ledgeCheck.position + -ctx.prevInputDirection * wallCheckDistance;
+
+        Debug.DrawRay(ledgeCheckEndPoint, Vector3.down * wallCheckDistance);
+
+        RaycastHit verticalHit;
+        // Check if there is floor
+        if (Physics.Raycast(ledgeCheckEndPoint, Vector3.down, out verticalHit, wallCheckDistance, groundLayer))
+        {
+            Vector3 wallCheckPos = ctx.ledgeCheck.position;
+            wallCheckPos.y = verticalHit.point.y - 0.01f;
+
+            Debug.DrawRay(wallCheckPos, -ctx.prevInputDirection * wallCheckDistance);
+
+            RaycastHit horizontalHit;
+            if (Physics.Raycast(wallCheckPos, -ctx.prevInputDirection, out horizontalHit, wallCheckDistance, groundLayer))
+            {
+                // If close to the ground
+                if (Physics.Raycast(ctx.transform.position, Vector3.down, vso.distanceFromGround, groundLayer))
+                    return;
+
+                ctx.canClimbLedge = true;
+
+                Vector3 hangPos;
+                hangPos = horizontalHit.point + -ctx.prevInputDirection * vso.ledgeHangDistanceOffset;
+                hangPos.y = verticalHit.point.y - vso.ledgeHangYOffset;
+
+                ctx.transform.position = hangPos;
             }
         }
     }
