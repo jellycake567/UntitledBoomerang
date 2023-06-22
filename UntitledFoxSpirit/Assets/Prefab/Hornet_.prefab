@@ -5732,7 +5732,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7320524790995008400}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.38, y: 6.65114, z: -0.7895354}
+  m_LocalPosition: {x: 10.309397, y: 6.65114, z: -0.65033543}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 3556376280592695791}
@@ -5850,8 +5850,20 @@ MonoBehaviour:
   GM: {fileID: 0}
   decisionTimerMin: 2
   decisionTimerMax: 5
-  speed: 4
-  velocity: 0
+  maxSpeed: 2
+  walkAccel: 1.5
+  meleeAttackRange: 2
+  in3Dmode: 1
+  smallerStopDist: 3
+  runAccel: 3
+  runSpeed: 8
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  walkSpeed: 0
   AIState: 0
 --- !u!1 &7335422004200599315
 GameObject:
