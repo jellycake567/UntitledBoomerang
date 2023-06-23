@@ -17,9 +17,9 @@ public class EnemyHuman : MonoBehaviour
     public bool isStaggered = false;
     public float staggerTimer;
     public float staggerTimerMax;
-   
+    public float attackSpeed;
     public float meleeAttackRange = 2;
-    
+    bool stopMoving = false;
     bool hasAttacked = false;
     public bool in3Dmode = true;
 
@@ -213,9 +213,13 @@ public class EnemyHuman : MonoBehaviour
             TurnAround();
         }
 
-        navAgent.acceleration = runAccel;
-        navAgent.speed = runSpeed;
-        navAgent.destination = playerPos;
+        if(!stopMoving)
+        {
+            navAgent.acceleration = runAccel;
+            navAgent.speed = runSpeed;
+            navAgent.destination = playerPos;
+
+        }
 
 
         //Debug.Log("Distance from Player" + distFromPlayer);
@@ -293,8 +297,9 @@ public class EnemyHuman : MonoBehaviour
         hasAttacked = true;
 
         animControl.SetTrigger("attack");
-        yield return new WaitForSeconds(5f); 
-
+        stopMoving = true;
+        yield return new WaitForSeconds(attackSpeed);
+        stopMoving = false;
         hasAttacked = false;
     }
 

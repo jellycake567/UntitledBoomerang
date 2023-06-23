@@ -14084,6 +14084,7 @@ MonoBehaviour:
   isStaggered: 0
   staggerTimer: 0
   staggerTimerMax: 0
+  attackSpeed: 0
   meleeAttackRange: 2
   in3Dmode: 1
   smallerStopDist: 3
@@ -34458,6 +34459,11 @@ PrefabInstance:
       propertyPath: hornetHead
       value: 
       objectReference: {fileID: 975505305}
+    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
+        type: 3}
+      propertyPath: attackSpeed
+      value: 1.02
+      objectReference: {fileID: 0}
     - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: wanderJitter
