@@ -10883,7 +10883,6 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
-  climbAnim: {fileID: 0}
   ledgeRootJntTransform: {fileID: 95613826}
   foxSpeed: 10
   foxJumpHeight: 5
@@ -10909,6 +10908,7 @@ MonoBehaviour:
   gravity: -9.81
   gravityScale: 1
   fallGravityMultiplier: 2
+  reduceVelocityPeak: 5
   reduceVelocity: 2
   groundCheckOffset: {x: 0, y: 1, z: 0}
   groundCheckSize: {x: 0.45, y: 0.1, z: 0.45}
@@ -23698,7 +23698,6 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
-  climbAnim: {fileID: 0}
   ledgeRootJntTransform: {fileID: 1510389011}
   foxSpeed: 10
   foxJumpHeight: 5
@@ -23724,6 +23723,7 @@ MonoBehaviour:
   gravity: -9.81
   gravityScale: 5
   fallGravityMultiplier: 1.5
+  reduceVelocityPeak: 5
   reduceVelocity: 5
   groundCheckOffset: {x: 0, y: 1, z: 0}
   groundCheckSize: {x: 0.6, y: 0.1, z: 0.6}
@@ -34423,6 +34423,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7590486577353001529, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
+        type: 3}
+      propertyPath: m_Avatar
+      value: 
+      objectReference: {fileID: 9000000, guid: 7c07cbd5477ea4599970e5d5ca06e1be, type: 3}
     - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: GM

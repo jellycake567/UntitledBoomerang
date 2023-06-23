@@ -1,0 +1,312 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!319 &31900000
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: FrontLegs
+  m_Mask: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  m_Elements:
+  - m_Path: 
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Abdomen_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Arms_GEO_GRP
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Arms_GEO_GRP/WOTW_HornetRig:Armjoints1_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Arms_GEO_GRP/WOTW_HornetRig:Armjoints2_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Arms_GEO_GRP/WOTW_HornetRig:Arms1_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Arms_GEO_GRP/WOTW_HornetRig:Arms2_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Arms_GEO_GRP/WOTW_HornetRig:PincerLower_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Arms_GEO_GRP/WOTW_HornetRig:PincerUpper_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:BackLegs_GEO_GRP
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:BackLegs_GEO_GRP/WOTW_HornetRig:BackLegJoints1_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:BackLegs_GEO_GRP/WOTW_HornetRig:BackLegJoints2_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:BackLegs_GEO_GRP/WOTW_HornetRig:BackLegs1_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:BackLegs_GEO_GRP/WOTW_HornetRig:BackLegs2_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:BackLegs_GEO_GRP/WOTW_HornetRig:BackLegsEnd_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:FrontLegs_GEO_GRP
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:FrontLegs_GEO_GRP/WOTW_HornetRig:FrontLegJoints1_GEO
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:FrontLegs_GEO_GRP/WOTW_HornetRig:FrontLegJoints2_GEO
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:FrontLegs_GEO_GRP/WOTW_HornetRig:FrontLegs1_GEO
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:FrontLegs_GEO_GRP/WOTW_HornetRig:FrontLegs2_GEO
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:FrontLegs_GEO_GRP/WOTW_HornetRig:FrontLegsEnd_GEO
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Head_GEO_GRP
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Head_GEO_GRP/WOTW_HornetRig:Head_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Head_GEO_GRP/WOTW_HornetRig:Jaw_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Head_GEO_GRP/WOTW_HornetRig:L_Teeth_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Head_GEO_GRP/WOTW_HornetRig:R_Teeth_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Head_GEO_GRP/WOTW_HornetRig:UpperTeeth_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:MiddleLegs_GEO_GRP
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:MiddleLegs_GEO_GRP/WOTW_HornetRig:MiddleLegJoints1_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:MiddleLegs_GEO_GRP/WOTW_HornetRig:MiddleLegJoints2_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:MiddleLegs_GEO_GRP/WOTW_HornetRig:MiddleLegs1_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:MiddleLegs_GEO_GRP/WOTW_HornetRig:MiddleLegs2_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:MiddleLegs_GEO_GRP/WOTW_HornetRig:MiddleLegsEnd_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:TailSpine_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:Hornet_GEO_GRP/WOTW_HornetRig:Thorax_GEO
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:L_BackLeg_IKH_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:L_BackLeg_IKH_OFFSET/WOTW_HornetRig:L_BackLeg_IKH
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:L_FrontLeg_IKH_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:L_FrontLeg_IKH_OFFSET/WOTW_HornetRig:L_FrontLeg_IKH
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:L_MiddleLeg_IKH_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:L_MiddleLeg_IKH_OFFSET/WOTW_HornetRig:L_MiddleLeg_IKH
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:R_BackLeg_IKH_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:R_BackLeg_IKH_OFFSET/WOTW_HornetRig:R_BackLeg_IKH
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:R_FrontLeg_IKH_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:R_FrontLeg_IKH_OFFSET/WOTW_HornetRig:R_FrontLeg_IKH
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:R_MiddleLeg_IKH_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKH_OFFSET/WOTW_HornetRig:R_MiddleLeg_IKH_OFFSET/WOTW_HornetRig:R_MiddleLeg_IKH
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_Aim_BackLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_Aim_BackLeg_OFFSET/WOTW_HornetRig:L_Aim_BackLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_Aim_MiddleLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_Aim_MiddleLeg_OFFSET/WOTW_HornetRig:L_Aim_MiddleLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_BackLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_BackLeg_OFFSET/WOTW_HornetRig:R_IK_BackLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_FrontLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_FrontLeg_OFFSET/WOTW_HornetRig:L_IK_FrontLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_FrontLeg_OFFSET/WOTW_HornetRig:L_IK_FrontLeg_CTRL/WOTW_HornetRig:L_Aim_FrontLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_FrontLeg_OFFSET/WOTW_HornetRig:L_IK_FrontLeg_CTRL/WOTW_HornetRig:L_Aim_FrontLeg_OFFSET/WOTW_HornetRig:L_Aim_FrontLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_MiddleLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:L_IK_MiddleLeg_OFFSET/WOTW_HornetRig:L_IK_MiddleLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_Aim_BackLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_Aim_BackLeg_OFFSET/WOTW_HornetRig:R_Aim_BackLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_Aim_MiddleLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_Aim_MiddleLeg_OFFSET/WOTW_HornetRig:R_Aim_MiddleLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_BackLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_BackLeg_OFFSET/WOTW_HornetRig:R_IK_BackLeg_CTRL
+      1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_FrontLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_FrontLeg_OFFSET/WOTW_HornetRig:R_IK_FrontLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_FrontLeg_OFFSET/WOTW_HornetRig:R_IK_FrontLeg_CTRL/WOTW_HornetRig:R_Aim_FrontLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_FrontLeg_OFFSET/WOTW_HornetRig:R_IK_FrontLeg_CTRL/WOTW_HornetRig:R_Aim_FrontLeg_OFFSET/WOTW_HornetRig:R_Aim_FrontLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_MiddleLeg_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_MiddleLeg_OFFSET/WOTW_HornetRig:R_IK_MiddleLeg_CTRL
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:L_IK_FrontLegsBase_JN
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:L_IK_FrontLegsBase_JN/WOTW_HornetRig:L_IK_FrontLegs1_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:L_IK_FrontLegsBase_JN/WOTW_HornetRig:L_IK_FrontLegs1_JNT/WOTW_HornetRig:L_IK_FrontLegs2_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:R_IK_FrontLegsBase_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:R_IK_FrontLegsBase_JNT/WOTW_HornetRig:R_IK_FrontLegs1_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:R_IK_FrontLegsBase_JNT/WOTW_HornetRig:R_IK_FrontLegs1_JNT/WOTW_HornetRig:R_IK_FrontLegs2_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT/WOTW_HornetRig:Arms3
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT/WOTW_HornetRig:Arms3/WOTW_HornetRig:Arms4
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT/WOTW_HornetRig:Arms3/WOTW_HornetRig:Arms4/WOTW_HornetRig:Pincer1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT/WOTW_HornetRig:Arms3/WOTW_HornetRig:Arms4/WOTW_HornetRig:Pincer1/WOTW_HornetRig:LowerPincer1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT/WOTW_HornetRig:Arms3/WOTW_HornetRig:Arms4/WOTW_HornetRig:Pincer1/WOTW_HornetRig:LowerPincer1/WOTW_HornetRig:LowerPincerEnd1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT/WOTW_HornetRig:Arms3/WOTW_HornetRig:Arms4/WOTW_HornetRig:Pincer1/WOTW_HornetRig:UpperPincer1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_BackLegsBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_BackLegsBase_JNT/WOTW_HornetRig:BackLegs1_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_BackLegsBase_JNT/WOTW_HornetRig:BackLegs1_JNT1/WOTW_HornetRig:BackLegs2_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_BackLegsBase_JNT/WOTW_HornetRig:BackLegs1_JNT1/WOTW_HornetRig:BackLegs2_JNT1/WOTW_HornetRig:BackLegsEnd_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FK_FrontLegsBase_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FK_FrontLegsBase_JNT/WOTW_HornetRig:L_FK_FrontLegs1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FK_FrontLegsBase_JNT/WOTW_HornetRig:L_FK_FrontLegs1_JNT/WOTW_HornetRig:L_FK_FrontLegs2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FK_FrontLegsBase_JNT/WOTW_HornetRig:L_FK_FrontLegs1_JNT/WOTW_HornetRig:L_FK_FrontLegs2_JNT/WOTW_HornetRig:L_FK_FrontLegsEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FrontLegsBase_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FrontLegsBase_JNT/WOTW_HornetRig:FrontLegs1_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FrontLegsBase_JNT/WOTW_HornetRig:FrontLegs1_JNT1/WOTW_HornetRig:FrontLegs2_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_FrontLegsBase_JNT/WOTW_HornetRig:FrontLegs1_JNT1/WOTW_HornetRig:FrontLegs2_JNT1/WOTW_HornetRig:FrontLegsEnd_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_MiddleLegsBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_MiddleLegsBase_JNT/WOTW_HornetRig:MiddleLegs1_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_MiddleLegsBase_JNT/WOTW_HornetRig:MiddleLegs1_JNT1/WOTW_HornetRig:MiddleLegs2_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_MiddleLegsBase_JNT/WOTW_HornetRig:MiddleLegs1_JNT1/WOTW_HornetRig:MiddleLegs2_JNT1/WOTW_HornetRig:MiddleLegsEnd_JNT1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Head_JNT2
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Jawbase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Jawbase_JNT/WOTW_HornetRig:L_Jaw1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Jawbase_JNT/WOTW_HornetRig:L_Jaw1_JNT/WOTW_HornetRig:L_Jaw2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Jawbase_JNT/WOTW_HornetRig:L_Jaw1_JNT/WOTW_HornetRig:L_Jaw2_JNT/WOTW_HornetRig:L_JawEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Jawbase_JNT/WOTW_HornetRig:R_Jaw1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Jawbase_JNT/WOTW_HornetRig:R_Jaw1_JNT/WOTW_HornetRig:R_Jaw2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:NeckBase_JNT/WOTW_HornetRig:Neck_JNT/WOTW_HornetRig:Head_JNT/WOTW_HornetRig:Jawbase_JNT/WOTW_HornetRig:R_Jaw1_JNT/WOTW_HornetRig:R_Jaw2_JNT/WOTW_HornetRig:R_JawEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_ArmsBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_ArmsBase_JNT/WOTW_HornetRig:Arms1
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_ArmsBase_JNT/WOTW_HornetRig:Arms1/WOTW_HornetRig:Arms2
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_ArmsBase_JNT/WOTW_HornetRig:Arms1/WOTW_HornetRig:Arms2/WOTW_HornetRig:Pincer
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_ArmsBase_JNT/WOTW_HornetRig:Arms1/WOTW_HornetRig:Arms2/WOTW_HornetRig:Pincer/WOTW_HornetRig:LowerPincer
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_ArmsBase_JNT/WOTW_HornetRig:Arms1/WOTW_HornetRig:Arms2/WOTW_HornetRig:Pincer/WOTW_HornetRig:LowerPincer/WOTW_HornetRig:LowerPincerEnd
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_ArmsBase_JNT/WOTW_HornetRig:Arms1/WOTW_HornetRig:Arms2/WOTW_HornetRig:Pincer/WOTW_HornetRig:UpperPincer
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_BackLegsBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_BackLegsBase_JNT/WOTW_HornetRig:BackLegs1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_BackLegsBase_JNT/WOTW_HornetRig:BackLegs1_JNT/WOTW_HornetRig:BackLegs2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_BackLegsBase_JNT/WOTW_HornetRig:BackLegs1_JNT/WOTW_HornetRig:BackLegs2_JNT/WOTW_HornetRig:BackLegsEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FK_FrontLegsBase_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FK_FrontLegsBase_JNT/WOTW_HornetRig:R_FK_FrontLegs1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FK_FrontLegsBase_JNT/WOTW_HornetRig:R_FK_FrontLegs1_JNT/WOTW_HornetRig:R_FK_FrontLegs2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FK_FrontLegsBase_JNT/WOTW_HornetRig:R_FK_FrontLegs1_JNT/WOTW_HornetRig:R_FK_FrontLegs2_JNT/WOTW_HornetRig:R_FK_FrontLegsEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FrontLegsBase_JNT
+    m_Weight: 1
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FrontLegsBase_JNT/WOTW_HornetRig:FrontLegs1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FrontLegsBase_JNT/WOTW_HornetRig:FrontLegs1_JNT/WOTW_HornetRig:FrontLegs2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_FrontLegsBase_JNT/WOTW_HornetRig:FrontLegs1_JNT/WOTW_HornetRig:FrontLegs2_JNT/WOTW_HornetRig:FrontLegsEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_MiddleLegsBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_MiddleLegsBase_JNT/WOTW_HornetRig:MiddleLegs1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_MiddleLegsBase_JNT/WOTW_HornetRig:MiddleLegs1_JNT/WOTW_HornetRig:MiddleLegs2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:R_MiddleLegsBase_JNT/WOTW_HornetRig:MiddleLegs1_JNT/WOTW_HornetRig:MiddleLegs2_JNT/WOTW_HornetRig:MiddleLegsEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT/WOTW_HornetRig:Tail1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT/WOTW_HornetRig:Tail1_JNT/WOTW_HornetRig:Tail2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT/WOTW_HornetRig:Tail1_JNT/WOTW_HornetRig:Tail2_JNT/WOTW_HornetRig:Tail3_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT/WOTW_HornetRig:Tail1_JNT/WOTW_HornetRig:Tail2_JNT/WOTW_HornetRig:Tail3_JNT/WOTW_HornetRig:TailSpineBase_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT/WOTW_HornetRig:Tail1_JNT/WOTW_HornetRig:Tail2_JNT/WOTW_HornetRig:Tail3_JNT/WOTW_HornetRig:TailSpineBase_JNT/WOTW_HornetRig:TailSpine1_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT/WOTW_HornetRig:Tail1_JNT/WOTW_HornetRig:Tail2_JNT/WOTW_HornetRig:Tail3_JNT/WOTW_HornetRig:TailSpineBase_JNT/WOTW_HornetRig:TailSpine1_JNT/WOTW_HornetRig:TailSpine2_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:TailBase_JNT/WOTW_HornetRig:Tail1_JNT/WOTW_HornetRig:Tail2_JNT/WOTW_HornetRig:Tail3_JNT/WOTW_HornetRig:TailSpineBase_JNT/WOTW_HornetRig:TailSpine1_JNT/WOTW_HornetRig:TailSpine2_JNT/WOTW_HornetRig:TailSpineEnd_JNT
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:ThoraxCtrl_OFFSET
+    m_Weight: 0
+  - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:ThoraxCtrl_OFFSET/WOTW_HornetRig:Thorax_CTRL
+    m_Weight: 0
