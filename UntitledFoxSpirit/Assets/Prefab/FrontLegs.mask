@@ -163,17 +163,17 @@ AvatarMask:
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:IKLegs_GRP/WOTW_HornetRig:R_IK_MiddleLeg_OFFSET/WOTW_HornetRig:R_IK_MiddleLeg_CTRL
     m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:L_IK_FrontLegsBase_JN
-    m_Weight: 1
+    m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:L_IK_FrontLegsBase_JN/WOTW_HornetRig:L_IK_FrontLegs1_JNT
-    m_Weight: 1
+    m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:L_IK_FrontLegsBase_JN/WOTW_HornetRig:L_IK_FrontLegs1_JNT/WOTW_HornetRig:L_IK_FrontLegs2_JNT
-    m_Weight: 1
+    m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:R_IK_FrontLegsBase_JNT
-    m_Weight: 1
+    m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:R_IK_FrontLegsBase_JNT/WOTW_HornetRig:R_IK_FrontLegs1_JNT
-    m_Weight: 1
+    m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:R_IK_FrontLegsBase_JNT/WOTW_HornetRig:R_IK_FrontLegs1_JNT/WOTW_HornetRig:R_IK_FrontLegs2_JNT
-    m_Weight: 1
+    m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT
     m_Weight: 0
   - m_Path: WOTW_HornetRig:HornetBase_OFFSET/WOTW_HornetRig:HornetBase_Control/WOTW_HornetRig:Root_JNT/WOTW_HornetRig:L_ArmsBase_JNT
