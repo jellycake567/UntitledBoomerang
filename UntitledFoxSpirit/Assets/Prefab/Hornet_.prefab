@@ -5717,6 +5717,7 @@ GameObject:
   - component: {fileID: 7590486577353001528}
   - component: {fileID: 7590486577353001531}
   - component: {fileID: 7590486577353001530}
+  - component: {fileID: 1370517525098368188}
   m_Layer: 0
   m_Name: Hornet_
   m_TagString: Untagged
@@ -5765,7 +5766,7 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7320524790995008400}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
+  m_Avatar: {fileID: 9000000, guid: 7c07cbd5477ea4599970e5d5ca06e1be, type: 3}
   m_Controller: {fileID: 9100000, guid: febe95645bc93b04e9a8a935006ad682, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
@@ -5785,11 +5786,11 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Speed: 4
+  m_Acceleration: 1
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 2.36
+  m_StoppingDistance: 5.09
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -5852,19 +5853,39 @@ MonoBehaviour:
   decisionTimerMax: 5
   maxSpeed: 2
   walkAccel: 1.5
+  isStaggered: 0
+  staggerTimer: 0
+  staggerTimerMax: 0
+  attackSpeed: 1.02
   meleeAttackRange: 2
   in3Dmode: 1
   smallerStopDist: 3
-  runAccel: 3
-  runSpeed: 8
+  runAccel: 7.98
+  runSpeed: 5.34
+  wanderRadius: 4.07
+  circleDistance: 5
+  wanderJitter: 1.58
   groundMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 0
-  walkSpeed: 0
+    m_Bits: 1024
+  walkSpeed: 1.73
   AIState: 0
+--- !u!135 &1370517525098368188
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7320524790995008400}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0.45, z: 0.03}
 --- !u!1 &7335422004200599315
 GameObject:
   m_ObjectHideFlags: 0
