@@ -282,13 +282,13 @@ public class EnemyHuman : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, debug_wanderDistancePoint);        
-        Gizmos.DrawWireSphere(debug_wanderDistancePoint, wanderRadius);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, target);
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(initalPos, currentPos);
+        //Gizmos.color = Color.blue;
+        //Gizmos.DrawLine(transform.position, debug_wanderDistancePoint);        
+        //Gizmos.DrawWireSphere(debug_wanderDistancePoint, wanderRadius);
+        //Gizmos.color = Color.yellow;
+        //Gizmos.DrawLine(transform.position, target);
+        //Gizmos.color = Color.green;
+        //Gizmos.DrawLine(initalPos, currentPos);
         
     }
 
@@ -401,13 +401,14 @@ public class EnemyHuman : MonoBehaviour
         {
             dotResult = Vector3.Dot(seekDir, transform.right);
             angle = Vector3.Angle(transform.forward, seekDir);
-            
+
+            if (dotResult < 0)
+            {
+                angle = -angle;
+            }
+
         }
 
-        if (dotResult < 0)
-        {
-            angle = -angle;
-        }
 
         transform.localEulerAngles += new Vector3(0, angle, 0) * Time.deltaTime;
         

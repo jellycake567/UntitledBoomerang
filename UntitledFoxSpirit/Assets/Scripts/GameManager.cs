@@ -7,7 +7,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] GameObject player;
     [SerializeField] GameObject pauseMenu;
-   
+    [SerializeField] Collider collider1;
+    [SerializeField] Collider collider2;
+
 
     public Vector3 playerPos;
 
@@ -17,6 +19,7 @@ public class GameManager : MonoBehaviour
     {
         playerPos = Vector3.zero;
         Application.targetFrameRate = 60;
+        Physics.IgnoreCollision(collider1, collider2, true);
     }
 
    

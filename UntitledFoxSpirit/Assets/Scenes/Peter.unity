@@ -5292,7 +5292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83f4d778934ee5447af4b5042c2dee55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerStatScript: {fileID: 0}
+  playerStatScript: {fileID: 651733125}
 --- !u!65 &253741331
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8332,7 +8332,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 450984331}
   m_LocalRotation: {x: -0, y: -0.7071068, z: 0, w: -0.7071068}
-  m_LocalPosition: {x: -2.27, y: 7.37, z: 1.83}
+  m_LocalPosition: {x: -2.27, y: 7.37, z: 11.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -33359,11 +33359,6 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001529, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: m_Avatar
-      value: 
-      objectReference: {fileID: 9000000, guid: 7c07cbd5477ea4599970e5d5ca06e1be, type: 3}
     - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: GM
@@ -33371,73 +33366,13 @@ PrefabInstance:
       objectReference: {fileID: 1522315447}
     - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
-      propertyPath: in3Dmode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: runAccel
-      value: 7.98
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: runSpeed
-      value: 5.34
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: walkSpeed
-      value: 1.73
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
       propertyPath: hornetHead
       value: 
       objectReference: {fileID: 975505305}
     - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
-      propertyPath: attackSpeed
-      value: 1.02
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: wanderJitter
-      value: 1.58
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: wanderRadius
-      value: 4.07
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
       propertyPath: wanderDistance
       value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: groundMask.m_Bits
-      value: 512
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001530, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: obstacleMask.m_Bits
-      value: 1024
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: m_Speed
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: m_Acceleration
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7590486577353001534, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
-        type: 3}
-      propertyPath: m_StoppingDistance
-      value: 5.09
       objectReference: {fileID: 0}
     - target: {fileID: 7693388198451163654, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
@@ -33477,7 +33412,7 @@ PrefabInstance:
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.51
+      value: -2.19
       objectReference: {fileID: 0}
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
@@ -33487,7 +33422,7 @@ PrefabInstance:
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 14.69
+      value: 3.58
       objectReference: {fileID: 0}
     - target: {fileID: 7988376586493813034, guid: 8795b9c4d0ef4154a8ca5ac027894c60,
         type: 3}

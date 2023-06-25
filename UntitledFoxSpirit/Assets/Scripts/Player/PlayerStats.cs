@@ -65,7 +65,7 @@ public class PlayerStats : MonoBehaviour
 
         yield return new WaitForSeconds(invulnerableDelay);
         
-        isInvulnerable = false; //does not hit??????????
+        isInvulnerable = false; 
         //playerMesh.material = defaultStateMat;
     }
 

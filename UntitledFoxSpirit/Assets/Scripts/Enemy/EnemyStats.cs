@@ -5,19 +5,26 @@ using UnityEngine;
 public class EnemyStats : MonoBehaviour
 {
     [Header("Stats")]
-    public float health = 100f;
+    public float maxHealth = 100f;
+    public float currentHealth;
     public float invulnerableDelay = 1.0f;
     bool isInvulnerable = false;
 
     [Header("References")]
     public Material defaultStateMat;
     public Material hurtStateMat;
+    void Start()
+    {
+        currentHealth = maxHealth;
+        //healthBar.value = currentHealth / health;
 
+       
+    }
     public void TakeDamage(float damage)
     {
         if (!isInvulnerable)
         {
-            health -= damage;
+            currentHealth -= damage;
 
             StartCoroutine(DamageEffect());
         }
@@ -32,12 +39,12 @@ public class EnemyStats : MonoBehaviour
     {
         isInvulnerable = true;
 
-        MeshRenderer enemyMesh = GetComponent<MeshRenderer>();
-        enemyMesh.material = hurtStateMat;
+        //MeshRenderer enemyMesh = GetComponent<MeshRenderer>();
+        //enemyMesh.material = hurtStateMat;
 
         yield return new WaitForSeconds(invulnerableDelay);
 
         isInvulnerable = false;
-        enemyMesh.material = defaultStateMat;
+        //enemyMesh.material = defaultStateMat;
     }
 }
