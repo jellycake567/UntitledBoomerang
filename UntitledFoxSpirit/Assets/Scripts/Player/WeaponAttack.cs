@@ -34,6 +34,7 @@ public class WeaponAttack : MonoBehaviour
 
     #endregion
 
+
     // Start is called before the first frame update
     void Start()
     {
@@ -43,6 +44,7 @@ public class WeaponAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         AttackDetection();
 
         //StartCoroutine(Attack());
@@ -102,10 +104,12 @@ public class WeaponAttack : MonoBehaviour
 
             for (int i = 0; i < weaponhardPoints.childCount; i++)
             {
-                hardPoints.Add(transform.GetChild(i).position);
+                hardPoints.Add(weaponhardPoints.GetChild(i).position);
             }
 
             #endregion
+
+           
 
             // Debug
             List<(Vector3, bool)> storeHardPoints = new List<(Vector3, bool)>();
@@ -173,7 +177,7 @@ public class WeaponAttack : MonoBehaviour
     
 
     #region Animation Events
-
+    
     void EnableAttackDetection()
     {
         attackDetected = true;
@@ -222,6 +226,6 @@ public class WeaponAttack : MonoBehaviour
         }
 
     }
-
+    
     #endregion
 }

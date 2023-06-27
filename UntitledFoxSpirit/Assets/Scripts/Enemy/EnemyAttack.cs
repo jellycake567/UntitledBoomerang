@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -110,7 +110,7 @@ public class EnemyAttack : MonoBehaviour
                     RaycastHit hit;
                     if (Physics.Raycast(preHardPoints[i], direction, out hit, distance))
                     {
-                        // If it is an player
+                        // If it is a player
                         if (hit.collider.tag == "Player")
                         {
                             #region Hit Player
