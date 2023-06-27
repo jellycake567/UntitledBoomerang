@@ -228,6 +228,7 @@ public class EnemyHuman : MonoBehaviour
         {
             
             StartCoroutine(AttackCycle());
+            //this.GetComponent<EnemyAttack>().attackDetected = true;
         }
         else if (distFromPlayer > navAgent.stoppingDistance)//outside of close proximity
         {
