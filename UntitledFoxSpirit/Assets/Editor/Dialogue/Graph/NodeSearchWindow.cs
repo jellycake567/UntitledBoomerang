@@ -13,10 +13,8 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
 
     private Texture2D _indentationIcon;
 
-    public const string BASIC_ROOM = "Basic Room";
-    public const string CHALLENGE_ROOM = "Challenge Room";
-    public const string BOSS_ROOM = "Boss Room";
-    public const string TELEPORTER_ROOM = "Teleporter Room";
+    public const string PLAYER = "Player";
+    public const string NPC = "NPC";
 
     public void Configure(EditorWindow window, DialogueGraphView graphView)
     {
@@ -33,27 +31,17 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
     {
         List<SearchTreeEntry> tree = new List<SearchTreeEntry>
         {
-            new SearchTreeGroupEntry(new GUIContent("Rooms"), 0),
-            new SearchTreeEntry(new GUIContent(BASIC_ROOM, _indentationIcon))
+            new SearchTreeGroupEntry(new GUIContent("Speakers"), 0),
+            new SearchTreeEntry(new GUIContent(PLAYER, _indentationIcon))
             {
                 level = 1,
-                userData = BASIC_ROOM
+                userData = PLAYER
             },
-            new SearchTreeEntry(new GUIContent(CHALLENGE_ROOM, _indentationIcon))
+            new SearchTreeEntry(new GUIContent(NPC, _indentationIcon))
             {
                 level = 1,
-                userData = CHALLENGE_ROOM
+                userData = NPC
             },
-            new SearchTreeEntry(new GUIContent(BOSS_ROOM, _indentationIcon))
-            {
-                level = 1,
-                userData = BOSS_ROOM
-            },
-            new SearchTreeEntry(new GUIContent(TELEPORTER_ROOM, _indentationIcon))
-            {
-                level = 1,
-                userData = TELEPORTER_ROOM
-            }
         };
 
         return tree;
@@ -66,17 +54,11 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
         var graphMousePosition = _graphView.contentViewContainer.WorldToLocal(mousePosition);
         switch (SearchTreeEntry.userData)
         {
-            case BASIC_ROOM:
-                _graphView.CreateNode(BASIC_ROOM, graphMousePosition);
+            case PLAYER:
+                _graphView.CreateNode(PLAYER, graphMousePosition);
                 return true;
-            case CHALLENGE_ROOM:
-                _graphView.CreateNode(CHALLENGE_ROOM, graphMousePosition);
-                return true;
-            case BOSS_ROOM:
-                _graphView.CreateNode(BOSS_ROOM, graphMousePosition);
-                return true;
-            case TELEPORTER_ROOM:
-                _graphView.CreateNode(TELEPORTER_ROOM, graphMousePosition);
+            case NPC:
+                _graphView.CreateNode(NPC, graphMousePosition);
                 return true;
         }
         return false;

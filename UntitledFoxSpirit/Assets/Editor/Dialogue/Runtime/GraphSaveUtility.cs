@@ -148,7 +148,7 @@ public class GraphSaveUtility : MonoBehaviour
         {
             DialogueNode tempNode;
 
-            tempNode = _targetGraphView.CreateRoomNode(nodeData.RoomText, Vector2.zero);
+            tempNode = _targetGraphView.CreateDialogueNode(nodeData.RoomText, Vector2.zero);
             
 
             tempNode.GUID = nodeData.Guid;

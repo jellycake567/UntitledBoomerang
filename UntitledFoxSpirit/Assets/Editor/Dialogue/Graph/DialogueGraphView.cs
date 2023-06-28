@@ -11,12 +11,10 @@ using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class DialogueGraphView : GraphView
 {
-    public const string BASIC_ROOM = "Basic Room";
-    public const string CHALLENGE_ROOM = "Challenge Room";
-    public const string BOSS_ROOM = "Boss Room";
-    public const string TELEPORTER_ROOM = "Teleporter Room";
+    public const string PLAYER = "Player";
+    public const string NPC = "NPC";
 
-    public readonly Vector2 DefaultNodeSize = new Vector2(200f, 250f);
+    public readonly Vector2 DefaultNodeSize = new Vector2(250f, 200f);
 
     private NodeSearchWindow _searchWindow;
 
@@ -110,72 +108,41 @@ public class DialogueGraphView : GraphView
 
     #region Nodes
 
-    public DialogueNode GenerateEntryPointNode()
-    {
-        DialogueNode node = new DialogueNode(Guid.NewGuid().ToString(), "START", true);
-
-        node.capabilities &= ~Capabilities.Movable;
-        node.capabilities &= ~Capabilities.Deletable;
-
-        VisualElement text = new TextElement();
-        node.inputContainer.Add(text);
-
-        // Create output port
-        Port outputPort = GeneratePort(node, Direction.Output, Port.Capacity.Multi);
-        outputPort.portName = "";
-        node.outputContainer.Add(outputPort);
-
-        node.name = "root";
-        node.styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
-
-        // Refresh node
-        node.RefreshExpandedState();
-        node.RefreshPorts();
-
-        node.SetPosition(new Rect(425f, 0, 100f, 150f));
-
-        return node;
-    }
-
     public void CreateNode(string nodeName, Vector2 position)
     {
-        AddElement(CreateRoomNode(nodeName, position));
+        AddElement(CreateDialogueNode(nodeName, position));
     }
 
-    public DialogueNode CreateRoomNode(string nodeName, Vector2 position)
+    public DialogueNode CreateDialogueNode(string nodeName, Vector2 position)
     {
-        DialogueNode roomNode = new DialogueNode(Guid.NewGuid().ToString(), nodeName);
+        DialogueNode dialogueNode = new DialogueNode(Guid.NewGuid().ToString(), nodeName);
 
         // Add ports
-        AddPorts(roomNode);
+        AddPorts(dialogueNode);
 
         // Room type
-        roomNode.name = RoomType(nodeName);
-        roomNode.styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
+        dialogueNode.name = SpeakerType(nodeName);
+        //dialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
 
         // Refresh node
-        roomNode.RefreshExpandedState();
-        roomNode.RefreshPorts();
+        dialogueNode.RefreshExpandedState();
+        dialogueNode.RefreshPorts();
 
-        roomNode.SetPosition(new Rect(position, DefaultNodeSize));
-        return roomNode;
+        dialogueNode.SetPosition(new Rect(position, DefaultNodeSize));
+        return dialogueNode;
     }
 
-    private string RoomType(string nodeName)
+    private string SpeakerType(string nodeName)
     {
         switch (nodeName)
         {
-            case BASIC_ROOM:
-                return "basic";
-            case CHALLENGE_ROOM:
-                return "challenge";
-            case BOSS_ROOM:
-                return "boss";
-            case TELEPORTER_ROOM:
-                return "teleporter";
+            case PLAYER:
+                return "player";
+            case NPC:
+                return "npc";
         }
 
-        return "basic";
+        return "player";
     }
 
     private void AddPorts(DialogueNode roomNode)
@@ -187,14 +154,14 @@ public class DialogueGraphView : GraphView
     private void CreateInputPorts(DialogueNode roomNode, Port.Capacity capacity)
     {
         Port inputPort = GeneratePort(roomNode, Direction.Input, capacity);
-        inputPort.portName = "";
+        inputPort.portName = "Input";
         roomNode.inputContainer.Add(inputPort);
     }
 
     private void CreateOutputPorts(DialogueNode roomNode, Port.Capacity capacity)
     {
         Port outputPort = GeneratePort(roomNode, Direction.Output, capacity);
-        outputPort.portName = "";
+        outputPort.portName = "Output";
         roomNode.outputContainer.Add(outputPort);
     }
 
