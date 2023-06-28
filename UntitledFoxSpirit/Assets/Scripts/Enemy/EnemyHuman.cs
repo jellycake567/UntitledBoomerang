@@ -94,6 +94,8 @@ public class EnemyHuman : MonoBehaviour
         target = new Vector3();
 
         totalForce = new Vector3();
+
+        //initialise hitinfo
         bool temp = Physics.Raycast(transform.position, -transform.up, out hitInfo, 5, groundMask);
 
         initalPos = transform.position;
@@ -125,7 +127,7 @@ public class EnemyHuman : MonoBehaviour
             //2D
             if (!in3Dmode)
             {
-                if (CheckForObstacle(hitInfo))
+                if (CheckForObstacle())
                 {
                     
                 }
@@ -381,7 +383,7 @@ public class EnemyHuman : MonoBehaviour
         float dotResult = 0;
         float distance = 0;
  
-        if (CheckForObstacle(hitInfo))
+        if (CheckForObstacle())
         {
             //totalForce += ApplyAvoidSteering(hitInfo);
             //Debug.Log("x " + totalForce.x + " z " + totalForce.z);
@@ -396,19 +398,22 @@ public class EnemyHuman : MonoBehaviour
             angle = Vector3.Angle(transform.forward, hitDirection);
         
             distance = (hitInfo.point - transform.position).magnitude;
-            
+            if (dotResult > 0)
+            {
+                angle = -angle;
+            }
         }
         else
         {
             dotResult = Vector3.Dot(seekDir, transform.right);
             angle = Vector3.Angle(transform.forward, seekDir);
-
             if (dotResult < 0)
             {
                 angle = -angle;
             }
 
         }
+       
 
 
         transform.localEulerAngles += new Vector3(0, angle, 0) * Time.deltaTime;
@@ -445,7 +450,7 @@ public class EnemyHuman : MonoBehaviour
         return false;
     }
 
-    bool CheckForObstacle(RaycastHit hitInfo)
+    bool CheckForObstacle()
     {
 
         Vector3 direction = new Vector3();
