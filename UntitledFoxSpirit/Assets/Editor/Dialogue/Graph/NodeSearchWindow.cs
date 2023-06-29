@@ -31,7 +31,7 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
     {
         List<SearchTreeEntry> tree = new List<SearchTreeEntry>
         {
-            new SearchTreeGroupEntry(new GUIContent("Speakers"), 0),
+            new SearchTreeGroupEntry(new GUIContent("Nodes"), 0),
             new SearchTreeEntry(new GUIContent(DIALOGUE, _indentationIcon))
             {
                 level = 1,

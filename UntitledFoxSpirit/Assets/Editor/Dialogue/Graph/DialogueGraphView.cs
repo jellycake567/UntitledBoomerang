@@ -24,6 +24,8 @@ public class DialogueGraphView : GraphView
         // Background lines color
         styleSheets.Add(Resources.Load<StyleSheet>("DialogueGraph"));
         AddToClassList("node");
+        
+        styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
 
         // Allows zoom in and out
         SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);

@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using static UnityEditor.Experimental.GraphView.Port;
+using UnityEditor.UIElements;
 
 public class DialogueNode : Node
 {
@@ -31,6 +32,9 @@ public class DialogueNode : Node
         this.GUID = GUID;
         this.npcName = npcName;
         this.isChoice = isChoice;
+
+        extensionContainer.AddToClassList("ds-node__extension-container");
+
 
         if (isChoice)
             choices.Add(new Choice("New Choice"));
@@ -59,6 +63,10 @@ public class DialogueNode : Node
         TextField dialogueNameTextField = new TextField();
         dialogueNameTextField.value = npcName;
 
+        dialogueNameTextField.AddToClassList("ds-node__textfield");
+        dialogueNameTextField.AddToClassList("ds-node__filename-textfield");
+        dialogueNameTextField.AddToClassList("ds-node__textfield__hidden");
+
         titleContainer.Insert(0, dialogueNameTextField);
     }
 
@@ -81,12 +89,16 @@ public class DialogueNode : Node
     {
         VisualElement customDataContainer = new VisualElement();
 
+        customDataContainer.AddToClassList("ds-node__custom-data-container");
 
         Foldout textFolout = new Foldout();
         textFolout.text = "Dialogue Text";
 
         TextField textField = new TextField();
         textField.value = dialogueText;
+
+        textField.AddToClassList("ds-node__textfield");
+        textField.AddToClassList("ds-node__quote-textfield");
 
 
         textFolout.Add(textField);
@@ -109,8 +121,13 @@ public class DialogueNode : Node
             Button deleteButton = new Button();
             deleteButton.text = "X";
 
+
             TextField choiceTextField = new TextField();
             choiceTextField.value = choice.text;
+
+            choiceTextField.AddToClassList("ds-node__textfield");
+            choiceTextField.AddToClassList("ds-node__choice-textfield");
+            choiceTextField.AddToClassList("ds-node__textfield__hidden");
 
             port.Add(choiceTextField);
             port.Add(deleteButton);

@@ -1,121 +1,99 @@
-#node-border {
-    background-color: rgb(56, 56, 56);
-    border-left-color: rgb(37, 37, 37);
-    border-right-color: rgb(37, 37, 37);
-    border-top-color: rgb(37, 37, 37);
-    border-bottom-color: rgb(37, 37, 37);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+/* CONTAINERS */
+
+.ds-node__extension-container
+{
+	padding: var(--ds-metrics-window-pixels-8);
+}
+	
+.ds-node__custom-data-container
+{
+	
+	border-radius: var(--ds-metrics-window-pixels-4);
+	padding: var(--ds-metrics-window-pixels-8);
 }
 
-#input {
-    max-width: 130px;
-    left: 6px;
-    align-items: center;
-    min-height: 20px;
+/* INPUTS */
+
+.ds-node__text-field > .unity-text-field__input
+{
+	
+	border-color: var(--ds-colors-window-dark-grey-6);
+	border-radius: var(--ds-metrics-window-pixels-4);
+	max-width: var(--ds-metrics-window-pixels-240);
+	min-width: var(--ds-metrics-window-pixels-160);
+	padding: var(--ds-metrics-window-pixels-8);
+	white-space: normal;
 }
 
-#output {
-    right: 7px;
-    align-items: center;
-    min-height: 20px;
+.ds-node__text-field__hidden > .unity-text-field__input
+{
+	border-color: transparent;
 }
 
-#selection-border {
-    border-left-color: rgb(0, 165, 255);
-    border-right-color: rgb(0, 165, 255);
-    border-top-color: rgb(0, 165, 255);
-    border-bottom-color: rgb(0, 165, 255);
-    border-left-width: 0;
-    border-right-width: 0;
-    border-top-width: 0;
-    border-bottom-width: 0;
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+.ds-node__text-field__hidden > .unity-text-field__input:focus
+{
+	
+	border-color: var(--ds-colors-window-dark-grey-6);
 }
 
-:hover > #selection-border {
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
+.ds-node__filename-text-field > .unity-text-field__input
+{
+	max-width: var(--ds-metrics-window-pixels-1000);
+	margin: var(--ds-metrics-window-pixels-4);
+	padding: var(--ds-metrics-window-pixels-4);
 }
 
-:selected > #selection-border {
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
+.ds-node__choice-text-field > .unity-text-field__input
+{
+	font-size: var(--ds-metrics-window-pixels-11);
+	height: var(--ds-metrics-window-pixels-35);
+	max-width: var(--ds-metrics-window-pixels-1000);
+	min-width: var(--ds-metrics-window-pixels-0);
 }
 
-:hover:selected > #selection-border {
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
+.ds-node__choice-text-field > .unity-text-field__input:focus
+{
+	height: var(--ds-metrics-window-pixels-25);
+	margin: var(--ds-metrics-window-pixels-4);
+	padding: var(--ds-metrics-window-pixels-4);
 }
 
-.node {
-    min-width: 150px;
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 0;
-    margin-bottom: 0;
+.ds-node__quote-text-field > .unity-text-field__input
+{
+	border-color: transparent;
+	border-left-color: var(--ds-colors-window-dark-grey-6);
+	border-left-width: var(--ds-metrics-window-pixels-4);
+	padding: var(--ds-metrics-window-pixels-16);
+	max-width: var(--ds-metrics-window-pixels-600);
 }
 
-#title {
-    -unity-font-style: bold;
-    -unity-text-align: upper-center;
-    font-size: 15px;
-    min-height: 30px;
+.ds-node__quote-text-field > .unity-text-field__input:focus
+{
+	border-color: var(--ds-colors-window-dark-grey-6);
 }
 
-#divider {
-    min-height: 1px;
-    background-color: rgb(72, 72, 72);
+/* ELEMENTS */
+
+TextField
+{
+	margin-left: var(--ds-metrics-window-pixels-0);
 }
 
-#basic #input {
-    background-color: rgb(152, 206, 0);
+.ds-node__custom-data-container > Foldout
+{
+	margin-left: var(--ds-metrics-window-pixels-n4);
+	margin-top: var(--ds-metrics-window-pixels-4);
 }
 
-#challenge #input {
-    background-color: rgb(246, 174, 45);
+.ds-node__custom-data-container > Foldout > TextField
+{
+	margin-left: var(--ds-metrics-window-pixels-n12);
+	margin-top: var(--ds-metrics-window-pixels-8);
 }
 
-#boss #input {
-    background-color: rgb(137, 166, 251);
-}
+/* BUILT IN */
 
-#teleporter #input {
-    background-color: #7209b7;
-}
-
-#root #input {
-    background-color: rgb(255, 81, 84);
-}
-
-#node-state {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+.unity-toggle__text
+{
+	margin-left: var(--ds-metrics-window-pixels-2);
 }
