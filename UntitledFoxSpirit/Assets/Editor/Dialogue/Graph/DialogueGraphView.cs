@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditor.Experimental.GraphView;
 using static UnityEditor.Experimental.GraphView.GraphView;
+
 
 public class DialogueGraphView : GraphView
 {
@@ -85,13 +86,6 @@ public class DialogueGraphView : GraphView
 
     #endregion
 
-    #region Ports
-
-    private Port GeneratePort(DialogueNode node, Direction portDirection, Port.Capacity capacity = Port.Capacity.Single)
-    {
-        return node.InstantiatePort(Orientation.Horizontal, portDirection, capacity, typeof(float));
-    }
-
     public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
     {
         List<Port> compatiablePorts = new List<Port>();
@@ -104,68 +98,15 @@ public class DialogueGraphView : GraphView
         return compatiablePorts;
     }
 
-    #endregion
-
     #region Nodes
 
-    public void CreateNode(string nodeName, Vector2 position)
+    public void CreateNode(string nodeName, Vector2 position, bool choice)
     {
-        AddElement(CreateDialogueNode(nodeName, position));
+        DialogueNode dialogueNode = new DialogueNode(Guid.NewGuid().ToString(), nodeName, choice);
+        dialogueNode.Draw(position, DefaultNodeSize);
+
+        AddElement(dialogueNode);
     }
-
-    public DialogueNode CreateDialogueNode(string nodeName, Vector2 position)
-    {
-        DialogueNode dialogueNode = new DialogueNode(Guid.NewGuid().ToString(), nodeName);
-
-        // Add ports
-        AddPorts(dialogueNode);
-
-        // Room type
-        dialogueNode.name = SpeakerType(nodeName);
-        //dialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
-
-        // Refresh node
-        dialogueNode.RefreshExpandedState();
-        dialogueNode.RefreshPorts();
-
-        dialogueNode.SetPosition(new Rect(position, DefaultNodeSize));
-        return dialogueNode;
-    }
-
-    private string SpeakerType(string nodeName)
-    {
-        switch (nodeName)
-        {
-            case PLAYER:
-                return "player";
-            case NPC:
-                return "npc";
-        }
-
-        return "player";
-    }
-
-    private void AddPorts(DialogueNode roomNode)
-    {
-        CreateInputPorts(roomNode, Port.Capacity.Multi);
-        CreateOutputPorts(roomNode, Port.Capacity.Multi);
-    }
-
-    private void CreateInputPorts(DialogueNode roomNode, Port.Capacity capacity)
-    {
-        Port inputPort = GeneratePort(roomNode, Direction.Input, capacity);
-        inputPort.portName = "Input";
-        roomNode.inputContainer.Add(inputPort);
-    }
-
-    private void CreateOutputPorts(DialogueNode roomNode, Port.Capacity capacity)
-    {
-        Port outputPort = GeneratePort(roomNode, Direction.Output, capacity);
-        outputPort.portName = "Output";
-        roomNode.outputContainer.Add(outputPort);
-    }
-
-    
 
     #endregion
 }

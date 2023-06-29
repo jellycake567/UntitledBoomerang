@@ -9,4 +9,5 @@ public class DialogueNodeData
     public string RoomText;
     public Vector2 Position;
     public List<NodeLinkData> Connections;
+    public bool isChoice;
 }

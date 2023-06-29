@@ -5,9 +5,9 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using System;
 
-
-public class GraphSaveUtility : MonoBehaviour
+public class GraphSaveUtility
 {
     private DialogueGraphView _targetGraphView;
     private DialogueContainer _containerCache;
@@ -47,10 +47,10 @@ public class GraphSaveUtility : MonoBehaviour
         for (int i = 0; i < connectedPorts.Count(); i++)
         {
             // Check if entry node is connected
-            if (connectedPorts[i].output.node == Nodes.Find(x => x.EntryPoint))
-            {
-                startNodeConnected = true;
-            }
+            //if (connectedPorts[i].output.node == Nodes.Find(x => x.EntryPoint))
+            //{
+            //    startNodeConnected = true;
+            //}
 
             // Get both nodes the edge is connected to
             DialogueNode outputNode = (connectedPorts[i].output.node as DialogueNode);
@@ -146,13 +146,10 @@ public class GraphSaveUtility : MonoBehaviour
     {
         foreach (DialogueNodeData nodeData in _containerCache.RoomNodeData)
         {
-            DialogueNode tempNode;
-
-            tempNode = _targetGraphView.CreateDialogueNode(nodeData.RoomText, Vector2.zero);
-            
-
+            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.RoomText, nodeData.isChoice);
+            tempNode.Draw(nodeData.Position, _targetGraphView.DefaultNodeSize);
             tempNode.GUID = nodeData.Guid;
-            tempNode.SetPosition(new Rect(nodeData.Position, _targetGraphView.DefaultNodeSize));
+
             _targetGraphView.AddElement(tempNode);
         }
     }

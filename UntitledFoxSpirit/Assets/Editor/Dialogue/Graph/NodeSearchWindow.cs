@@ -13,8 +13,8 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
 
     private Texture2D _indentationIcon;
 
-    public const string PLAYER = "Player";
-    public const string NPC = "NPC";
+    public const string DIALOGUE = "Dialogue";
+    public const string DIALOGUE_CHOICE = "Dialogue Choice";
 
     public void Configure(EditorWindow window, DialogueGraphView graphView)
     {
@@ -32,15 +32,15 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
         List<SearchTreeEntry> tree = new List<SearchTreeEntry>
         {
             new SearchTreeGroupEntry(new GUIContent("Speakers"), 0),
-            new SearchTreeEntry(new GUIContent(PLAYER, _indentationIcon))
+            new SearchTreeEntry(new GUIContent(DIALOGUE, _indentationIcon))
             {
                 level = 1,
-                userData = PLAYER
+                userData = DIALOGUE
             },
-            new SearchTreeEntry(new GUIContent(NPC, _indentationIcon))
+            new SearchTreeEntry(new GUIContent(DIALOGUE_CHOICE, _indentationIcon))
             {
                 level = 1,
-                userData = NPC
+                userData = DIALOGUE_CHOICE
             },
         };
 
@@ -54,11 +54,11 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
         var graphMousePosition = _graphView.contentViewContainer.WorldToLocal(mousePosition);
         switch (SearchTreeEntry.userData)
         {
-            case PLAYER:
-                _graphView.CreateNode(PLAYER, graphMousePosition);
+            case DIALOGUE:
+                _graphView.CreateNode("Name", graphMousePosition, false);
                 return true;
-            case NPC:
-                _graphView.CreateNode(NPC, graphMousePosition);
+            case DIALOGUE_CHOICE:
+                _graphView.CreateNode("Name", graphMousePosition, true);
                 return true;
         }
         return false;
