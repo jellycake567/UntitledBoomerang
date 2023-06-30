@@ -29,10 +29,11 @@ public class EnemyStats : MonoBehaviour
             StartCoroutine(DamageEffect());
         }
 
-        //transform.parent.gameObject.GetComponent<EnemyHuman>().isStaggered = true;
+      
         this.GetComponent<EnemyHuman>().isStaggered = true;
-        this.GetComponent<EnemyHuman>().staggerTimer = this.GetComponent<EnemyHuman>().staggerTimerMax;
-        
+        CheckHP();
+
+
     }
 
     IEnumerator DamageEffect()
@@ -46,5 +47,13 @@ public class EnemyStats : MonoBehaviour
 
         isInvulnerable = false;
         //enemyMesh.material = defaultStateMat;
+    }
+
+    void CheckHP()
+    {
+        if(currentHealth <= 0)
+        {
+            this.GetComponent<EnemyHuman>().isDead = true;
+        }
     }
 }

@@ -16,7 +16,7 @@ public class EnemyHuman : MonoBehaviour
     public float walkAccel = 1.5f;
     public bool isStaggered = false;
     public float staggerTimer;
-    public float staggerTimerMax;
+    public float turnTimer;
     public float attackSpeed;
     public float meleeAttackRange = 2;
     bool stopMoving = false;
@@ -32,7 +32,7 @@ public class EnemyHuman : MonoBehaviour
 
     Rigidbody rb;
     Animator animControl;
-
+    public bool isTurning = false;
     
     //nav agent variable
     NavMeshAgent navAgent;
@@ -66,7 +66,15 @@ public class EnemyHuman : MonoBehaviour
     Vector3 initalPos;
     Vector3 currentPos;
 
+    [SerializeField] AnimationClip staggerAnim;
+    [SerializeField] AnimationClip turnAnim;
+    [SerializeField] AnimationClip deathAnim;
+
     RaycastHit hitInfo;
+    AnimatorStateInfo animStateInfo;
+    public bool isDead = false;
+    public float deathTimer;
+
     public enum State
     {
         Standing,
@@ -99,6 +107,9 @@ public class EnemyHuman : MonoBehaviour
         bool temp = Physics.Raycast(transform.position, -transform.up, out hitInfo, 5, groundMask);
 
         initalPos = transform.position;
+        staggerTimer = staggerAnim.length;
+        turnTimer = turnAnim.length;
+        deathTimer = deathAnim.length;
     }
 
 
@@ -156,6 +167,18 @@ public class EnemyHuman : MonoBehaviour
     // Update is called once per frame
     void Update()
     {      
+        if(isDead)
+        {
+            //dead
+            animControl.SetTrigger("isDead");
+            deathTimer -= Time.deltaTime;
+            if (deathTimer <= 0)
+            {
+                this.gameObject.SetActive(false);
+            }
+            return;
+        }
+
         if (isStaggered) 
         {
             animControl.SetTrigger("isStaggeredTrig");
@@ -163,9 +186,25 @@ public class EnemyHuman : MonoBehaviour
             if(staggerTimer <= 0)
             {
                 isStaggered = false;
+                staggerTimer = staggerAnim.length;
             }
             return;
         }
+
+        if(isTurning)
+        {
+            animControl.applyRootMotion = true;
+            animControl.SetTrigger("turnAround");
+            turnTimer -= Time.deltaTime;
+            if (turnTimer <= 0)
+            {
+                isTurning = false;
+                turnTimer = turnAnim.length;
+                animControl.applyRootMotion = false;
+            }
+            return;
+        }
+       
         if (AIState == State.Standing)
         {
             decisionTimer -= Time.deltaTime;
@@ -190,6 +229,8 @@ public class EnemyHuman : MonoBehaviour
             StandOrMove();
         }
 
+        
+
         //Debug.Log("nav agent " + navAgent.velocity);
         //debuging stuff
         debug_wanderDistancePoint.x = transform.position.x;
@@ -212,7 +253,8 @@ public class EnemyHuman : MonoBehaviour
 
         if (angle > 100f)
         {
-            TurnAround();
+            isTurning = true;
+            return;
         }
 
         if(!stopMoving)
@@ -279,6 +321,7 @@ public class EnemyHuman : MonoBehaviour
 
     void TurnAround()
     {
+        
         Vector3 rotation = transform.eulerAngles + Quaternion.Euler(new Vector3(0, 180f, 0)).eulerAngles;
         transform.rotation = Quaternion.Euler(rotation);
     }
@@ -521,19 +564,8 @@ public class EnemyHuman : MonoBehaviour
         }
     }
 
-    void SlowDownNearCliff()
-    {
-        
-    }
 
-    Vector3 ApplyAvoidSteering(RaycastHit hitInfo)
-    {
-        Vector3 dirFromTarget =  transform.position - hitInfo.point;
-        dirFromTarget.Normalize();
-
-        return dirFromTarget * -4;
-    }
-
+ 
 
 }
 
