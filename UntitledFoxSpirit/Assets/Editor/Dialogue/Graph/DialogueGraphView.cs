@@ -23,9 +23,7 @@ public class DialogueGraphView : GraphView
     {
         // Background lines color
         styleSheets.Add(Resources.Load<StyleSheet>("DialogueGraph"));
-        AddToClassList("node");
-        
-        styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
+        //AddToClassList("node");
 
         // Allows zoom in and out
         SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
@@ -106,6 +104,8 @@ public class DialogueGraphView : GraphView
     {
         DialogueNode dialogueNode = new DialogueNode(Guid.NewGuid().ToString(), nodeName, choice);
         dialogueNode.Draw(position, DefaultNodeSize);
+
+        dialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
 
         AddElement(dialogueNode);
     }
