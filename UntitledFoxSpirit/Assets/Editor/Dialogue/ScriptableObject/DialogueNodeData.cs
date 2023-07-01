@@ -10,7 +10,7 @@ public class DialogueNodeData
     public string DialogueText;
     public Vector2 Position;
     public List<NodeLinkData> Connections;
-    public List<DialogueChoices> choices = new List<DialogueChoices>();
+    public List<DialogueChoices> Choices = new List<DialogueChoices>();
     public bool isChoice;
     public bool isStartNode;
 }

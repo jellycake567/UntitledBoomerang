@@ -31,7 +31,7 @@ public class DialogueNode : Node
 
 
         if (isChoice)
-            choices.Add(new DialogueChoices("New Choice"));
+            choices.Add(new DialogueChoices("New Choice", Guid.NewGuid().ToString()));
     }
 
     public void Draw(Vector2 position, Vector2 size)
@@ -106,9 +106,11 @@ public class DialogueNode : Node
     {
         Button addButton = CreateButton("Add Choice", () =>
         {
-            DialogueChoices choice = new DialogueChoices("New Choice");
+            string newGUID = Guid.NewGuid().ToString();
 
-            Port port = CreateChoicePort(choice);
+            DialogueChoices choice = new DialogueChoices("New Choice", newGUID);
+
+            Port port = CreateChoicePort(choice, newGUID);
 
             choices.Add(choice);
 
@@ -121,7 +123,7 @@ public class DialogueNode : Node
 
         foreach (DialogueChoices choice in choices)
         {
-            Port port = CreateChoicePort(choice);
+            Port port = CreateChoicePort(choice, choice.guid);
 
             outputContainer.Add(port);
         }
@@ -136,10 +138,11 @@ public class DialogueNode : Node
         return button;
     }
 
-    Port CreateChoicePort(DialogueChoices choice)
+    Port CreateChoicePort(DialogueChoices choice, string guid)
     {
         Port port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
         port.portName = "";
+        port.name = guid;
         port.name = "Output";
 
         Button deleteButton = CreateButton("X", () =>

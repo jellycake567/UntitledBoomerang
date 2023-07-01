@@ -5,10 +5,11 @@ using UnityEngine;
 public class DialogueChoices
 {
     public string text;
-    public bool isConnected;
+    public string guid;
 
-    public DialogueChoices(string text)
+    public DialogueChoices(string text, string guid)
     {
         this.text = text;
+        this.guid = guid;
     }
 }

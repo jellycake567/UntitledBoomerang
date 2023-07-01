@@ -67,25 +67,22 @@ public class GraphSaveUtility
 
         List<NodeLinkData> nodeLinks = new List<NodeLinkData>();
 
-        
-
         // Get edges that are connected to an input port
         Edge[] connectedPorts = Edges.Where(x => x.input.node != null).ToArray();
         for (int i = 0; i < connectedPorts.Count(); i++)
         {
-            
-
             // Get both nodes the edge is connected to
             DialogueNode outputNode = (connectedPorts[i].output.node as DialogueNode);
             DialogueNode inputNode = (connectedPorts[i].input.node as DialogueNode);
-
+                
             // Create connection data
             nodeLinks.Add(new NodeLinkData
             {
                 BaseNodeGuid = outputNode.GUID,
                 PortName = connectedPorts[i].output.portName,
-                TargetNodeGuid = inputNode.GUID
-            });
+                TargetNodeGuid = inputNode.GUID,
+                ChoiceGUID = connectedPorts[i].output.name,
+            });;
         }
 
 
@@ -101,7 +98,8 @@ public class GraphSaveUtility
                 Guid = dialogueNode.GUID,
                 DialogueText = dialogueNode.dialogueText,
                 Position = dialogueNode.GetPosition().position,
-                Connections = nodeLinks.Where(x => x.BaseNodeGuid == dialogueNode.GUID).ToList()
+                Connections = nodeLinks.Where(x => x.BaseNodeGuid == dialogueNode.GUID).ToList(),
+                Choices = dialogueNode.choices,
             };
 
             // Starting node
