@@ -11,27 +11,39 @@ using static DialogueNode;
 
 public class DialogueNode : Node
 {
+    public struct Choices
+    {
+        public string text;
+
+        public Choices(string text)
+        {
+            this.text = text;
+        }
+    }
+    
 
     public string GUID;
     public string dialogueText;
     public string npcName;
-    public List<String> choices = new List<String>();
-
+    public List<Choices> choices = new List<Choices>();
 
     public bool isChoice;
 
-    public DialogueNode(string GUID, string npcName, bool isChoice)
+    DialogueGraphView graphView;
+
+    public DialogueNode(string GUID, string npcName, bool isChoice, DialogueGraphView graphView)
     {
         this.GUID = GUID;
         this.npcName = npcName;
         this.isChoice = isChoice;
+        this.graphView = graphView;
 
         mainContainer.AddToClassList("ds-node__main-container");
         extensionContainer.AddToClassList("ds-node__extension-container");
 
 
         if (isChoice)
-            choices.Add("New Choice");
+            choices.Add(new Choices("New Choice"));
     }
 
     public void Draw(Vector2 position, Vector2 size)
@@ -104,16 +116,20 @@ public class DialogueNode : Node
     {
         Button addButton = CreateButton("Add Choice", () =>
         {
-            Port port = CreateChoicePort("New Choice");
+            Choices choice = new Choices("New Choice");
 
-            choices.Add("New Choice");
+            Port port = CreateChoicePort(choice);
+
+            choices.Add(choice);
 
             outputContainer.Add(port);
         });
-        
+
+        addButton.AddToClassList("ds-node__button");
+
         mainContainer.Insert(1, addButton);
 
-        foreach (string choice in choices)
+        foreach (Choices choice in choices)
         {
             Port port = CreateChoicePort(choice);
 
@@ -130,16 +146,29 @@ public class DialogueNode : Node
         return button;
     }
 
-    Port CreateChoicePort(string choiceText)
+    Port CreateChoicePort(Choices choice)
     {
         Port port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
         port.portName = "";
 
-        Button deleteButton = new Button();
-        deleteButton.text = "X";
+        Button deleteButton = CreateButton("X", () =>
+        {
+            if (choices.Count == 1)
+                return;
+
+            if (port.connected)
+                graphView.DeleteElements(port.connections);
+
+            choices.Remove(choice);
+
+
+            graphView.RemoveElement(port);
+        });
+
+        deleteButton.AddToClassList("ds-node__button");
 
         TextField choiceTextField = new TextField();
-        choiceTextField.value = choiceText;
+        choiceTextField.value = choice.text;
 
         choiceTextField.AddToClassList("ds-node__textfield");
         choiceTextField.AddToClassList("ds-node__choice-textfield");

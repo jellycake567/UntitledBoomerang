@@ -146,7 +146,7 @@ public class GraphSaveUtility
     {
         foreach (DialogueNodeData nodeData in _containerCache.RoomNodeData)
         {
-            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.RoomText, nodeData.isChoice);
+            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.RoomText, nodeData.isChoice, _targetGraphView);
             tempNode.Draw(nodeData.Position, _targetGraphView.DefaultNodeSize);
             tempNode.GUID = nodeData.Guid;
 

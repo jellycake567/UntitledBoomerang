@@ -25,6 +25,8 @@ public class DialogueGraphView : GraphView
         styleSheets.Add(Resources.Load<StyleSheet>("DialogueGraph"));
         //AddToClassList("node");
 
+        styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
+
         // Allows zoom in and out
         SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
 
@@ -102,10 +104,8 @@ public class DialogueGraphView : GraphView
 
     public void CreateNode(string nodeName, Vector2 position, bool choice)
     {
-        DialogueNode dialogueNode = new DialogueNode(Guid.NewGuid().ToString(), nodeName, choice);
+        DialogueNode dialogueNode = new DialogueNode(Guid.NewGuid().ToString(), nodeName, choice, this);
         dialogueNode.Draw(position, DefaultNodeSize);
-
-        dialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("NodeViewStyle"));
 
         AddElement(dialogueNode);
     }
