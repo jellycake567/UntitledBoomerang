@@ -91,7 +91,7 @@ public class DialogueGraphView : GraphView
         List<Port> compatiablePorts = new List<Port>();
         ports.ForEach((port) =>
         {
-            if (startPort != port && startPort.node != port.node)
+            if (startPort != port && startPort.node != port.node && startPort.direction != port.direction)
                 compatiablePorts.Add(port);
         });
 

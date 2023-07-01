@@ -6,23 +6,16 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using static UnityEditor.Experimental.GraphView.Port;
 using UnityEditor.UIElements;
+using System;
+using static DialogueNode;
 
 public class DialogueNode : Node
 {
-    public struct Choice
-    {
-        public string text;
-
-        public Choice(string text)
-        {
-            this.text = text;
-        }
-    }
 
     public string GUID;
     public string dialogueText;
     public string npcName;
-    public List<Choice> choices = new List<Choice>();
+    public List<String> choices = new List<String>();
 
 
     public bool isChoice;
@@ -33,11 +26,12 @@ public class DialogueNode : Node
         this.npcName = npcName;
         this.isChoice = isChoice;
 
+        mainContainer.AddToClassList("ds-node__main-container");
         extensionContainer.AddToClassList("ds-node__extension-container");
 
 
         if (isChoice)
-            choices.Add(new Choice("New Choice"));
+            choices.Add("New Choice");
     }
 
     public void Draw(Vector2 position, Vector2 size)
@@ -108,32 +102,51 @@ public class DialogueNode : Node
 
     private void CreateChoices()
     {
-        Button addButton = new Button();
-        addButton.text = "Add Choice";
+        Button addButton = CreateButton("Add Choice", () =>
+        {
+            Port port = CreateChoicePort("New Choice");
 
+            choices.Add("New Choice");
+
+            outputContainer.Add(port);
+        });
+        
         mainContainer.Insert(1, addButton);
 
-        foreach (Choice choice in choices)
+        foreach (string choice in choices)
         {
-            Port port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
-            port.portName = "";
-
-            Button deleteButton = new Button();
-            deleteButton.text = "X";
-
-
-            TextField choiceTextField = new TextField();
-            choiceTextField.value = choice.text;
-
-            choiceTextField.AddToClassList("ds-node__textfield");
-            choiceTextField.AddToClassList("ds-node__choice-textfield");
-            choiceTextField.AddToClassList("ds-node__textfield__hidden");
-
-            port.Add(choiceTextField);
-            port.Add(deleteButton);
-
+            Port port = CreateChoicePort(choice);
 
             outputContainer.Add(port);
         }
+    }
+
+
+    Button CreateButton(string text, Action onClick = null)
+    {
+        Button button = new Button(onClick);
+        button.text = text;
+
+        return button;
+    }
+
+    Port CreateChoicePort(string choiceText)
+    {
+        Port port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
+        port.portName = "";
+
+        Button deleteButton = new Button();
+        deleteButton.text = "X";
+
+        TextField choiceTextField = new TextField();
+        choiceTextField.value = choiceText;
+
+        choiceTextField.AddToClassList("ds-node__textfield");
+        choiceTextField.AddToClassList("ds-node__choice-textfield");
+        choiceTextField.AddToClassList("ds-node__textfield__hidden");
+
+        port.Add(choiceTextField);
+        port.Add(deleteButton);
+        return port;
     }
 }
