@@ -143,7 +143,6 @@ public class DialogueNode : Node
         Port port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
         port.portName = "";
         port.name = guid;
-        port.name = "Output";
 
         Button deleteButton = CreateButton("X", () =>
         {

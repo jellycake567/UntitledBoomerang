@@ -13,18 +13,36 @@ MonoBehaviour:
   m_Name: New Dialogue
   m_EditorClassIdentifier: 
   DialogueNodeData:
-  - Guid: 4b3cc7b9-e231-4251-bb46-3899b062b948
+  - Guid: 231fadba-24af-49a8-b739-f66cf2095ea0
     DialogueText: 
-    Position: {x: 687, y: 262}
-    Connections: []
-    isChoice: 0
-    isStartNode: 0
-  - Guid: 31879959-54b9-491a-bbcd-9c21e904f45c
-    DialogueText: 
-    Position: {x: 306, y: 242}
+    Position: {x: 280, y: 126}
     Connections:
-    - BaseNodeGuid: 31879959-54b9-491a-bbcd-9c21e904f45c
-      PortName: Output
-      TargetNodeGuid: 4b3cc7b9-e231-4251-bb46-3899b062b948
+    - BaseNodeGuid: 231fadba-24af-49a8-b739-f66cf2095ea0
+      PortName: 
+      TargetNodeGuid: f2b47680-3b92-4f3f-9ee7-245d1efa5eac
+      ChoiceGUID: 97ce83be-fc6e-44df-8737-17086fe8d00f
+    - BaseNodeGuid: 231fadba-24af-49a8-b739-f66cf2095ea0
+      PortName: 
+      TargetNodeGuid: dda22af1-0439-4240-b20d-f4d92aeb06c7
+      ChoiceGUID: d0be8f09-3260-4145-959c-e0eba7d7d616
+    Choices:
+    - text: New Choice
+      guid: 97ce83be-fc6e-44df-8737-17086fe8d00f
+    - text: New Choice
+      guid: d0be8f09-3260-4145-959c-e0eba7d7d616
     isChoice: 0
     isStartNode: 1
+  - Guid: f2b47680-3b92-4f3f-9ee7-245d1efa5eac
+    DialogueText: 
+    Position: {x: 680, y: 11}
+    Connections: []
+    Choices: []
+    isChoice: 0
+    isStartNode: 0
+  - Guid: dda22af1-0439-4240-b20d-f4d92aeb06c7
+    DialogueText: 
+    Position: {x: 694, y: 346}
+    Connections: []
+    Choices: []
+    isChoice: 0
+    isStartNode: 0
