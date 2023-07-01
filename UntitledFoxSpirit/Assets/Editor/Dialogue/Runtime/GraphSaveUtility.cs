@@ -15,6 +15,8 @@ public class GraphSaveUtility
     private List<Edge> Edges => _targetGraphView.edges.ToList();
     private List<DialogueNode> Nodes => _targetGraphView.nodes.ToList().Cast<DialogueNode>().ToList();
 
+    private DialogueNodeData startNode;
+
     List<Port> Ports => _targetGraphView.ports.ToList();
 
     public static GraphSaveUtility GetInstance(DialogueGraphView targetGraphView)
@@ -36,25 +38,42 @@ public class GraphSaveUtility
             return;
         }
 
-        DialogueContainer dialogueContainer = ScriptableObject.CreateInstance<DialogueContainer>();
+        #region Check for starting node
 
-        List<Port> test = Ports.Where(x => x.name == "input").ToList();
-        List<Port> newTest = test.Where(x => x.connected == false).ToList();
+        List<Port> inputPorts = Ports.Where(x => x.name == "input").ToList();
+        List<Port> portsNotConnected = inputPorts.Where(x => x.connected == false).ToList();
 
-        if (newTest.Count > 1)
+        
+
+        if (portsNotConnected.Count > 1)
         {
             EditorUtility.DisplayDialog("Save Failed", "Only one node should have no input connection", "OK");
             return;
         }
 
+        DialogueNode node = portsNotConnected[0].node as DialogueNode;
+
+        startNode = new DialogueNodeData
+        {
+            Guid = node.GUID,
+        };
+
+        #endregion
+
+
+        DialogueContainer dialogueContainer = ScriptableObject.CreateInstance<DialogueContainer>();
+
         #region Get Connections
 
         List<NodeLinkData> nodeLinks = new List<NodeLinkData>();
+
+        
 
         // Get edges that are connected to an input port
         Edge[] connectedPorts = Edges.Where(x => x.input.node != null).ToArray();
         for (int i = 0; i < connectedPorts.Count(); i++)
         {
+            
 
             // Get both nodes the edge is connected to
             DialogueNode outputNode = (connectedPorts[i].output.node as DialogueNode);
@@ -77,14 +96,23 @@ public class GraphSaveUtility
         // Save all nodes
         foreach (DialogueNode dialogueNode in Nodes)
         {
-            dialogueContainer.DialogueNodeData.Add(new DialogueNodeData
+            DialogueNodeData newNode = new DialogueNodeData
             {
                 Guid = dialogueNode.GUID,
                 DialogueText = dialogueNode.dialogueText,
                 Position = dialogueNode.GetPosition().position,
                 Connections = nodeLinks.Where(x => x.BaseNodeGuid == dialogueNode.GUID).ToList()
-            });
+            };
+
+            // Starting node
+            if (dialogueNode.GUID == startNode.Guid)
+            {
+                newNode.isStartNode = true;
+            }
+
+            dialogueContainer.DialogueNodeData.Add(newNode);
         }
+
         #endregion
 
         // If there is no resources folder create one
