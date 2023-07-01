@@ -97,6 +97,7 @@ public class GraphSaveUtility
             {
                 Guid = dialogueNode.GUID,
                 DialogueText = dialogueNode.dialogueText,
+                Npc = dialogueNode.npcName,
                 Position = dialogueNode.GetPosition().position,
                 Connections = nodeLinks.Where(x => x.BaseNodeGuid == dialogueNode.GUID).ToList(),
                 Choices = dialogueNode.choices,
