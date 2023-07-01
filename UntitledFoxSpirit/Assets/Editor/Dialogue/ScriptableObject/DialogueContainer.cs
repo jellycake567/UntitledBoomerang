@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class DialogueContainer : ScriptableObject
 {
-    public List<DialogueNodeData> RoomNodeData = new List<DialogueNodeData>();
+    public List<DialogueNodeData> DialogueNodeData = new List<DialogueNodeData>();
 }
 

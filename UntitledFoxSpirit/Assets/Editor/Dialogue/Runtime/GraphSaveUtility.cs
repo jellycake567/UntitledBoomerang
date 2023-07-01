@@ -15,6 +15,8 @@ public class GraphSaveUtility
     private List<Edge> Edges => _targetGraphView.edges.ToList();
     private List<DialogueNode> Nodes => _targetGraphView.nodes.ToList().Cast<DialogueNode>().ToList();
 
+    List<Port> Ports => _targetGraphView.ports.ToList();
+
     public static GraphSaveUtility GetInstance(DialogueGraphView targetGraphView)
     {
         return new GraphSaveUtility
@@ -22,7 +24,7 @@ public class GraphSaveUtility
             _targetGraphView = targetGraphView
         };
     }
-
+    
     #region SaveGraph
 
     public void SaveGraph(string fileName)
@@ -34,23 +36,25 @@ public class GraphSaveUtility
             return;
         }
 
-        DialogueContainer roomContainer = ScriptableObject.CreateInstance<DialogueContainer>();
+        DialogueContainer dialogueContainer = ScriptableObject.CreateInstance<DialogueContainer>();
+
+        List<Port> test = Ports.Where(x => x.name == "input").ToList();
+        List<Port> newTest = test.Where(x => x.connected == false).ToList();
+
+        if (newTest.Count > 1)
+        {
+            EditorUtility.DisplayDialog("Save Failed", "Only one node should have no input connection", "OK");
+            return;
+        }
 
         #region Get Connections
 
         List<NodeLinkData> nodeLinks = new List<NodeLinkData>();
 
-        bool startNodeConnected = false;
-
         // Get edges that are connected to an input port
         Edge[] connectedPorts = Edges.Where(x => x.input.node != null).ToArray();
         for (int i = 0; i < connectedPorts.Count(); i++)
         {
-            // Check if entry node is connected
-            //if (connectedPorts[i].output.node == Nodes.Find(x => x.EntryPoint))
-            //{
-            //    startNodeConnected = true;
-            //}
 
             // Get both nodes the edge is connected to
             DialogueNode outputNode = (connectedPorts[i].output.node as DialogueNode);
@@ -65,28 +69,22 @@ public class GraphSaveUtility
             });
         }
 
-        if (!startNodeConnected)
-        {
-            EditorUtility.DisplayDialog("Save Failed", "Start node is not connected!", "OK");
-            return;
-        }
 
         #endregion
 
         #region Save Nodes
 
         // Save all nodes
-        foreach (DialogueNode roomNode in Nodes)
+        foreach (DialogueNode dialogueNode in Nodes)
         {
-            roomContainer.RoomNodeData.Add(new DialogueNodeData
+            dialogueContainer.DialogueNodeData.Add(new DialogueNodeData
             {
-                Guid = roomNode.GUID,
-                RoomText = roomNode.dialogueText,
-                Position = roomNode.GetPosition().position,
-                Connections = nodeLinks.Where(x => x.BaseNodeGuid == roomNode.GUID).ToList()
+                Guid = dialogueNode.GUID,
+                DialogueText = dialogueNode.dialogueText,
+                Position = dialogueNode.GetPosition().position,
+                Connections = nodeLinks.Where(x => x.BaseNodeGuid == dialogueNode.GUID).ToList()
             });
         }
-
         #endregion
 
         // If there is no resources folder create one
@@ -96,7 +94,7 @@ public class GraphSaveUtility
         }
 
         AssetDatabase.DeleteAsset($"Assets/Resources/{fileName}.asset");
-        AssetDatabase.CreateAsset(roomContainer, $"Assets/Resources/{fileName}.asset");
+        AssetDatabase.CreateAsset(dialogueContainer, $"Assets/Resources/{fileName}.asset");
         AssetDatabase.SaveAssets();
     }
 
@@ -144,9 +142,9 @@ public class GraphSaveUtility
 
     private void CreateNodes()
     {
-        foreach (DialogueNodeData nodeData in _containerCache.RoomNodeData)
+        foreach (DialogueNodeData nodeData in _containerCache.DialogueNodeData)
         {
-            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.RoomText, nodeData.isChoice, _targetGraphView);
+            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.DialogueText, nodeData.isChoice, _targetGraphView);
             tempNode.Draw(nodeData.Position, _targetGraphView.DefaultNodeSize);
             tempNode.GUID = nodeData.Guid;
 
@@ -160,7 +158,7 @@ public class GraphSaveUtility
         for (int i = 0; i < Nodes.Count; i++)
         {
             // Get all output connections connected to this node
-            List<NodeLinkData> connections = _containerCache.RoomNodeData.First(x => x.Guid == Nodes[i].GUID).Connections;
+            List<NodeLinkData> connections = _containerCache.DialogueNodeData.First(x => x.Guid == Nodes[i].GUID).Connections;
             for (int j = 0; j < connections.Count; j++)
             {
                 string targetNodeGuid = connections[j].TargetNodeGuid;

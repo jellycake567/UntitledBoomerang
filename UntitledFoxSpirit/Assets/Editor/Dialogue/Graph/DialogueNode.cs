@@ -10,22 +10,10 @@ using System;
 using static DialogueNode;
 
 public class DialogueNode : Node
-{
-    public struct Choices
-    {
-        public string text;
-
-        public Choices(string text)
-        {
-            this.text = text;
-        }
-    }
-    
-
-    public string GUID;
+{public string GUID;
     public string dialogueText;
     public string npcName;
-    public List<Choices> choices = new List<Choices>();
+    public List<DialogueChoices> choices = new List<DialogueChoices>();
 
     public bool isChoice;
 
@@ -43,7 +31,7 @@ public class DialogueNode : Node
 
 
         if (isChoice)
-            choices.Add(new Choices("New Choice"));
+            choices.Add(new DialogueChoices("New Choice"));
     }
 
     public void Draw(Vector2 position, Vector2 size)
@@ -81,6 +69,7 @@ public class DialogueNode : Node
         // Add ports
         Port inputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(float));
         inputPort.portName = "Input";
+        inputPort.name = "input";
         inputContainer.Add(inputPort);
 
         if (isChoice)
@@ -88,6 +77,7 @@ public class DialogueNode : Node
 
         Port outputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, typeof(float));
         outputPort.portName = "Output";
+        outputPort.name = "output";
         outputContainer.Add(outputPort);
     }
 
@@ -116,7 +106,7 @@ public class DialogueNode : Node
     {
         Button addButton = CreateButton("Add Choice", () =>
         {
-            Choices choice = new Choices("New Choice");
+            DialogueChoices choice = new DialogueChoices("New Choice");
 
             Port port = CreateChoicePort(choice);
 
@@ -129,7 +119,7 @@ public class DialogueNode : Node
 
         mainContainer.Insert(1, addButton);
 
-        foreach (Choices choice in choices)
+        foreach (DialogueChoices choice in choices)
         {
             Port port = CreateChoicePort(choice);
 
@@ -146,10 +136,11 @@ public class DialogueNode : Node
         return button;
     }
 
-    Port CreateChoicePort(Choices choice)
+    Port CreateChoicePort(DialogueChoices choice)
     {
         Port port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
         port.portName = "";
+        port.name = "Output";
 
         Button deleteButton = CreateButton("X", () =>
         {
