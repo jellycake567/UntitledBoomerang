@@ -131,7 +131,7 @@ public class GraphSaveUtility
 
     public void LoadGraph()
     {
-        string filePath = EditorUtility.OpenFilePanel("Room Graph", "Assets/Resources", "asset");
+        string filePath = EditorUtility.OpenFilePanel("Dialogue Graph", "Assets/Resources", "asset");
 
         if (!string.IsNullOrEmpty(filePath))
         {
@@ -141,7 +141,7 @@ public class GraphSaveUtility
             _containerCache = Resources.Load<DialogueContainer>(fileName);
             if (_containerCache == null)
             {
-                EditorUtility.DisplayDialog("File not found", "Target room graph file does not exists!", "OK");
+                EditorUtility.DisplayDialog("File not found", "Target dialogue graph file does not exists!", "OK");
                 return;
             }
 
@@ -171,7 +171,7 @@ public class GraphSaveUtility
     {
         foreach (DialogueNodeData nodeData in _containerCache.DialogueNodeData)
         {
-            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.DialogueText, nodeData.isChoice, _targetGraphView);
+            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.DialogueText, _targetGraphView);
             tempNode.Draw(nodeData.Position, _targetGraphView.DefaultNodeSize);
             tempNode.GUID = nodeData.Guid;
 

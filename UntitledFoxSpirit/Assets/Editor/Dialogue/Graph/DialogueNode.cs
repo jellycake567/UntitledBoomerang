@@ -8,30 +8,37 @@ using static UnityEditor.Experimental.GraphView.Port;
 using UnityEditor.UIElements;
 using System;
 using static DialogueNode;
+using System.Reflection.Emit;
 
 public class DialogueNode : Node
-{public string GUID;
+{
+    public string GUID;
     public string dialogueText;
     public string npcName;
     public List<DialogueChoices> choices = new List<DialogueChoices>();
 
-    public bool isChoice;
-
     DialogueGraphView graphView;
 
-    public DialogueNode(string GUID, string npcName, bool isChoice, DialogueGraphView graphView)
+    public DialogueNode(string GUID, string npcName, DialogueGraphView graphView)
     {
         this.GUID = GUID;
         this.npcName = npcName;
-        this.isChoice = isChoice;
+        this.graphView = graphView;
+
+        mainContainer.AddToClassList("ds-node__main-container");
+        extensionContainer.AddToClassList("ds-node__extension-container");
+    }
+
+    public DialogueNode(string GUID, string npcName, DialogueGraphView graphView, bool isChoice)
+    {
+        this.GUID = GUID;
+        this.npcName = npcName;
         this.graphView = graphView;
 
         mainContainer.AddToClassList("ds-node__main-container");
         extensionContainer.AddToClassList("ds-node__extension-container");
 
-
-        if (isChoice)
-            choices.Add(new DialogueChoices("New Choice", Guid.NewGuid().ToString()));
+        choices.Add(new DialogueChoices("New Choice", Guid.NewGuid().ToString()));
     }
 
     public void Draw(Vector2 position, Vector2 size)
@@ -42,7 +49,7 @@ public class DialogueNode : Node
 
         CreateDialogueTextField();
 
-        if (isChoice)
+        if (choices.Count > 0)
             CreateChoices();
 
         // Refresh node
@@ -54,9 +61,11 @@ public class DialogueNode : Node
 
     private void CreateNPCTextField()
     {
-        TextField dialogueNameTextField = new TextField();
-        dialogueNameTextField.value = npcName;
-
+        TextField dialogueNameTextField = CreateTextField(npcName, callback =>
+        {
+            npcName = callback.newValue;
+        });
+        
         dialogueNameTextField.AddToClassList("ds-node__textfield");
         dialogueNameTextField.AddToClassList("ds-node__filename-textfield");
         dialogueNameTextField.AddToClassList("ds-node__textfield__hidden");
@@ -72,7 +81,7 @@ public class DialogueNode : Node
         inputPort.name = "input";
         inputContainer.Add(inputPort);
 
-        if (isChoice)
+        if (choices.Count > 0)
             return;
 
         Port outputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, typeof(float));
@@ -90,8 +99,10 @@ public class DialogueNode : Node
         Foldout textFolout = new Foldout();
         textFolout.text = "Dialogue Text";
 
-        TextField textField = new TextField();
-        textField.value = dialogueText;
+        TextField textField = CreateTextField(dialogueText, callback =>
+        {
+            dialogueText = callback.newValue;
+        });
 
         textField.AddToClassList("ds-node__textfield");
         textField.AddToClassList("ds-node__quote-textfield");
@@ -160,8 +171,10 @@ public class DialogueNode : Node
 
         deleteButton.AddToClassList("ds-node__button");
 
-        TextField choiceTextField = new TextField();
-        choiceTextField.value = choice.text;
+        TextField choiceTextField = CreateTextField(choice.text, callback =>
+        {
+            choice.text = callback.newValue;
+        });
 
         choiceTextField.AddToClassList("ds-node__textfield");
         choiceTextField.AddToClassList("ds-node__choice-textfield");
@@ -170,5 +183,18 @@ public class DialogueNode : Node
         port.Add(choiceTextField);
         port.Add(deleteButton);
         return port;
+    }
+
+    TextField CreateTextField(string text, EventCallback<ChangeEvent<string>> onValueChanged = null)
+    {
+        TextField textField = new TextField();
+        textField.value = text;
+
+        if (onValueChanged != null)
+        {
+            textField.RegisterValueChangedCallback(onValueChanged);
+        }
+
+        return textField;
     }
 }
