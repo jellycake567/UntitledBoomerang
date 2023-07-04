@@ -187,20 +187,23 @@ public class EnemyHuman : MonoBehaviour
             {
                 isStaggered = false;
                 staggerTimer = staggerAnim.length;
+                this.GetComponent<EnemyStats>().currentStaggerValue = this.GetComponent<EnemyStats>().maxStaggerValue;
             }
             return;
         }
 
         if(isTurning)
         {
-            animControl.applyRootMotion = true;
+            //animControl.applyRootMotion = true;
+            //Debug.Log("root motion on");
             animControl.SetTrigger("turnAround");
             turnTimer -= Time.deltaTime;
             if (turnTimer <= 0)
             {
                 isTurning = false;
                 turnTimer = turnAnim.length;
-                animControl.applyRootMotion = false;
+                //animControl.applyRootMotion = false;
+                Debug.Log("root motion off");
             }
             return;
         }
