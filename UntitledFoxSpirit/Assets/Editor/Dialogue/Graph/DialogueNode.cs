@@ -134,7 +134,7 @@ public class DialogueNode : Node
 
         foreach (DialogueChoices choice in choices)
         {
-            Port port = CreateChoicePort(choice, choice.guid);
+            Port port = CreateChoicePort(choice, choice.portGUID);
 
             outputContainer.Add(port);
         }

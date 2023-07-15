@@ -7,11 +7,12 @@ using UnityEngine;
 public class DialogueChoices
 {
     public string text;
-    public string guid;
+    public string portGUID;
+    public string targetGUID;
 
     public DialogueChoices(string text, string guid)
     {
         this.text = text;
-        this.guid = guid;
+        portGUID = guid;
     }
 }

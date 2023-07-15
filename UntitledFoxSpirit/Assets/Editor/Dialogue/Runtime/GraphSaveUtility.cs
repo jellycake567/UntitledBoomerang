@@ -44,7 +44,6 @@ public class GraphSaveUtility
         List<Port> portsNotConnected = inputPorts.Where(x => x.connected == false).ToList();
 
         
-
         if (portsNotConnected.Count > 1)
         {
             EditorUtility.DisplayDialog("Save Failed", "Only one node should have no input connection", "OK");
@@ -99,7 +98,8 @@ public class GraphSaveUtility
 
             foreach (DialogueChoices choice in dialogueNode.choices)
             {
-                DialogueChoices choiceData = new DialogueChoices(choice.text, choice.guid);
+                DialogueChoices choiceData = new DialogueChoices(choice.text, choice.portGUID);
+                choiceData.targetGUID = choice.targetGUID;
 
                 choices.Add(choiceData);
             }

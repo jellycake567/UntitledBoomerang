@@ -70,6 +70,17 @@ public class DialogueGraphView : GraphView
                     return change;
                 }
             }
+
+            DialogueNode bNode = baseNode as DialogueNode;
+            if (bNode.choices.Count > 0)
+            {
+                string portGUID = edge.output.name;
+                DialogueChoices choice = bNode.choices.First(x => x.portGUID == portGUID);
+                
+                DialogueNode tNode = targetNode as DialogueNode;
+
+                choice.targetGUID = tNode.GUID;
+            }
         }
 
         return change;
