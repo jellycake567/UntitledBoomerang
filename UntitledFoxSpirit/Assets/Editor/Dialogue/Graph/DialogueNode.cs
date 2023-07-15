@@ -84,7 +84,7 @@ public class DialogueNode : Node
         if (choices.Count > 0)
             return;
 
-        Port outputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, typeof(float));
+        Port outputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
         outputPort.portName = "Output";
         outputPort.name = "output";
         outputContainer.Add(outputPort);
