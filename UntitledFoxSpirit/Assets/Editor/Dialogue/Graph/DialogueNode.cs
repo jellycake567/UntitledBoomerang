@@ -99,16 +99,16 @@ public class DialogueNode : Node
         Foldout textFolout = new Foldout();
         textFolout.text = "Dialogue Text";
 
-        TextField textField = CreateTextField(dialogueText, callback =>
+        TextField textArea = CreateTextArea(dialogueText, callback =>
         {
             dialogueText = callback.newValue;
         });
 
-        textField.AddToClassList("ds-node__textfield");
-        textField.AddToClassList("ds-node__quote-textfield");
+        textArea.AddToClassList("ds-node__textfield");
+        textArea.AddToClassList("ds-node__quote-textfield");
 
 
-        textFolout.Add(textField);
+        textFolout.Add(textArea);
         customDataContainer.Add(textFolout);
         extensionContainer.Add(customDataContainer);
     }
@@ -196,5 +196,14 @@ public class DialogueNode : Node
         }
 
         return textField;
+    }
+
+    TextField CreateTextArea(string text, EventCallback<ChangeEvent<string>> onValueChanged = null)
+    {
+        TextField textArea = CreateTextField(text, onValueChanged);
+
+        textArea.multiline = true;
+
+        return textArea;
     }
 }
