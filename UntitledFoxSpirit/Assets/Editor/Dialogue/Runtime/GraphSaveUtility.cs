@@ -93,6 +93,17 @@ public class GraphSaveUtility
         // Save all nodes
         foreach (DialogueNode dialogueNode in Nodes)
         {
+
+            // Cloning choices so there won't be a reference in scriptable object
+            List<DialogueChoices> choices = new List<DialogueChoices>();
+
+            foreach (DialogueChoices choice in dialogueNode.choices)
+            {
+                DialogueChoices choiceData = new DialogueChoices(choice.text, choice.guid);
+
+                choices.Add(choiceData);
+            }
+
             DialogueNodeData newNode = new DialogueNodeData
             {
                 Guid = dialogueNode.GUID,
@@ -100,7 +111,7 @@ public class GraphSaveUtility
                 Npc = dialogueNode.npcName,
                 Position = dialogueNode.GetPosition().position,
                 Connections = nodeLinks.Where(x => x.BaseNodeGuid == dialogueNode.GUID).ToList(),
-                Choices = dialogueNode.choices,
+                Choices = choices,
             };
 
             // Starting node
@@ -171,9 +182,21 @@ public class GraphSaveUtility
     {
         foreach (DialogueNodeData nodeData in _containerCache.DialogueNodeData)
         {
-            DialogueNode tempNode = new DialogueNode(Guid.NewGuid().ToString(), nodeData.DialogueText, _targetGraphView);
+            DialogueNode tempNode;
+
+            if (nodeData.Choices.Count > 0)
+            {
+                tempNode = new DialogueNode(nodeData.Guid, nodeData.Npc, _targetGraphView, true);
+                tempNode.choices = nodeData.Choices;
+            }
+            else
+            {
+                tempNode = new DialogueNode(nodeData.Guid, nodeData.Npc, _targetGraphView);
+            }
+                                                                 
+            tempNode.dialogueText = nodeData.DialogueText;
+
             tempNode.Draw(nodeData.Position, _targetGraphView.DefaultNodeSize);
-            tempNode.GUID = nodeData.Guid;
 
             _targetGraphView.AddElement(tempNode);
         }
@@ -192,7 +215,7 @@ public class GraphSaveUtility
                 DialogueNode targetNode = Nodes.First(x => x.GUID == targetNodeGuid);
 
                 // Link ports
-                LinkNodes(Nodes[i].outputContainer[0].Q<Port>(), (Port)targetNode.inputContainer[0]);
+                LinkNodes(Nodes[i].outputContainer[j].Q<Port>(), (Port)targetNode.inputContainer[0]);
             }
         }
     }

@@ -13,25 +13,61 @@ MonoBehaviour:
   m_Name: New Dialogue
   m_EditorClassIdentifier: 
   DialogueNodeData:
-  - Guid: b05a08da-e856-4952-bbcb-c64c974265fd
-    Npc: Name
-    DialogueText: 
-    Position: {x: 539, y: 280}
-    isStartNode: 1
+  - Guid: ecf6fb31-14d7-4f64-a517-ab84c471d866
+    Npc: dsadasdad
+    DialogueText: test
+    Position: {x: 458, y: 31}
+    isStartNode: 0
     Connections:
-    - BaseNodeGuid: b05a08da-e856-4952-bbcb-c64c974265fd
+    - BaseNodeGuid: ecf6fb31-14d7-4f64-a517-ab84c471d866
       PortName: Output
-      TargetNodeGuid: 4884033e-f4ea-4828-983b-81fa7c8e6d89
+      TargetNodeGuid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
       ChoiceGUID: output
     Choices: []
-  - Guid: 4884033e-f4ea-4828-983b-81fa7c8e6d89
-    Npc: Name
-    DialogueText: 
-    Position: {x: 751, y: 254}
+  - Guid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
+    Npc: dsadad
+    DialogueText: test
+    Position: {x: 690, y: 193}
+    isStartNode: 0
+    Connections:
+    - BaseNodeGuid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
+      PortName: Output
+      TargetNodeGuid: aacc541c-d3e7-492f-a341-4ddda0a60ef3
+      ChoiceGUID: output
+    Choices: []
+  - Guid: aacc541c-d3e7-492f-a341-4ddda0a60ef3
+    Npc: dsadasd
+    DialogueText: test
+    Position: {x: 954, y: 378}
     isStartNode: 0
     Connections: []
     Choices:
-    - text: test
-      guid: 3788f96e-64f3-479d-b5de-a8d86558b22c
-    - text: test1
-      guid: 43cfee14-4b82-460c-a791-f5e2989a70f8
+    - text: New Choice
+      guid: 370524a6-0394-4f5c-b91e-71a4a18f8ca0
+  - Guid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
+    Npc: test
+    DialogueText: test
+    Position: {x: 146, y: 314}
+    isStartNode: 1
+    Connections:
+    - BaseNodeGuid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
+      PortName: 
+      TargetNodeGuid: ecf6fb31-14d7-4f64-a517-ab84c471d866
+      ChoiceGUID: abd16353-481e-4803-b8cb-53166a2e0e5a
+    - BaseNodeGuid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
+      PortName: 
+      TargetNodeGuid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
+      ChoiceGUID: c6649f9b-edf8-4cf7-b286-75f146782cd3
+    - BaseNodeGuid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
+      PortName: 
+      TargetNodeGuid: aacc541c-d3e7-492f-a341-4ddda0a60ef3
+      ChoiceGUID: 42bc58f0-d7e2-45af-80f6-33342e4a5f0c
+    Choices:
+    - text: sadad
+      guid: abd16353-481e-4803-b8cb-53166a2e0e5a
+    - text: 2dsad
+      guid: c6649f9b-edf8-4cf7-b286-75f146782cd3
+    - text: rffdsfffffdsff
+      guid: 42bc58f0-d7e2-45af-80f6-33342e4a5f0c
+    - text: sssssss
+      guid: 55740b5d-549c-4b57-bbae-21f92de465fe
