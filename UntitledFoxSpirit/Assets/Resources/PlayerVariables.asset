@@ -37,7 +37,7 @@ MonoBehaviour:
   ignorePlayerMask:
     serializedVersion: 2
     m_Bits: 256
-  JUMP: 1
+  JUMP: 0
   humanJumpHeight: 8
   jumpCooldown: 0.2
   jumpBufferTime: 0.1
@@ -63,8 +63,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 512
-  ATTACK: 0
-  attackCooldown: 0.1
+  ATTACK: 1
+  attackCooldown: 0.8
   resetComboDelay: 2
   rootMotionAtkSpeed: 2
   STAMINA: 0

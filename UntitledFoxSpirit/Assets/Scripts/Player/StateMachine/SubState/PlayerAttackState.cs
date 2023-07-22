@@ -23,7 +23,7 @@ public class PlayerAttackState : PlayerBaseState
         CheckSwitchState();
 
         AttackAnimation();
-        Attack();
+        //Attack();
     }
 
     public override void FixedUpdateState() { }
@@ -66,13 +66,13 @@ public class PlayerAttackState : PlayerBaseState
     void AttackAnimation()
     {
         // Move after attacking
-        if (ctx.animController.IsInTransition(0) && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f )
+        if (ctx.animController.IsInTransition(0) && ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.5f)
         {
             ctx.animIsAttacking = false;
         }
 
         // End animation combo
-        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime") && ctx.animIsTagAttack)
+        if (ctx.animController.GetCurrentAnimatorStateInfo(0).normalizedTime > ctx.animController.GetFloat("resetComboTime"))
         {
             if (!ctx.animController.IsInTransition(0) && ctx.resetAttack) // Check if not in transiton, so it doesn't reset run during transition
             {
