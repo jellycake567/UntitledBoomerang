@@ -15086,6 +15086,7 @@ MonoBehaviour:
   currentDashCooldown: 1
   disableDashing: 0
   isDashing: 0
+  isBackStep: 0
   currentLedgeHangCooldown: 0
   isClimbing: 0
   isWallClimbing: 0

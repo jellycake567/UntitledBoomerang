@@ -24,7 +24,7 @@ public class PlayerIdleState : PlayerBaseState
     {
         if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f)
         {
-            SwitchState(factory.Dash());
+            SwitchState(factory.BackStep());
         }
         else if (ctx.input.isMovementHeld)
         {

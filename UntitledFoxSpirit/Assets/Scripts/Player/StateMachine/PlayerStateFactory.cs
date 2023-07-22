@@ -43,6 +43,9 @@ public class PlayerStateFactory
     public PlayerBaseState LedgeHang()
     {
         return new PlayerLedgeHangState(context, this, vso);
-        
+    }
+    public PlayerBaseState BackStep()
+    {
+        return new PlayerBackStepState(context, this, vso);
     }
 }

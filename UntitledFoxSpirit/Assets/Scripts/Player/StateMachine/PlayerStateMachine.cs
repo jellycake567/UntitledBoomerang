@@ -69,6 +69,9 @@ public class PlayerStateMachine : MonoBehaviour
         get { return animController.GetBool("isRunning"); }
     }
 
+    // BackStep
+    [HideInInspector] public bool isBackStep;
+
     // Ledge Climb
     [HideInInspector] public float currentLedgeHangCooldown;
     [HideInInspector] public bool isClimbing = false, isWallClimbing, canClimbWall, isTouchingWall, isTouchingLedge, canClimbLedge, ledgeDetected;
@@ -473,6 +476,11 @@ public class PlayerStateMachine : MonoBehaviour
         ledgeRootJntTransform.localPosition = ledgeRootJntTransform.localPosition;
 
         canClimbLedge = false;
+    }
+
+    void FinishBackStep()
+    {
+        isBackStep = false;
     }
 
 }

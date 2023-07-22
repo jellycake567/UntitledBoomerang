@@ -50,10 +50,11 @@ MonoBehaviour:
   sneakSpeed: 2
   sneakCheckOffset: {x: 0, y: 0, z: 0}
   sneakCheckSize: {x: 0.5, y: 0.5, z: 0.5}
-  DASH: 0
+  DASH: 1
   humanDashTime: 0.5
   humanDashDistance: 4
   dashCooldown: 0.6
+  rootMotionBackStepSpeed: 1.05
   LEDGE_CLIMB: 0
   wallCheckDistance: 0.5
   ledgeHangDistanceOffset: -0.3

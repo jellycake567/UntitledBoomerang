@@ -73,9 +73,13 @@ public class VariableScriptObject : ScriptableObject
 
     public bool DASH = false; // Never use, editor stuff
 
+    [Header("Player")]
     public float humanDashTime = 5.0f;
     public float humanDashDistance = 4.0f;
     public float dashCooldown = 1f;
+
+    [Header("Backstep")]
+    public float rootMotionBackStepSpeed = 1f;
 
 
     public bool LEDGE_CLIMB = false; // Never use, editor stuff
