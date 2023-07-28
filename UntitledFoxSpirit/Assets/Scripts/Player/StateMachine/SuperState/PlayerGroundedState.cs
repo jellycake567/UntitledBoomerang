@@ -47,7 +47,7 @@ public class PlayerGroundedState : PlayerBaseState
 
     public override void CheckSwitchState()
     {
-        if (ctx.jumpBufferCounter > 0f || !ctx.isGrounded && !ctx.isDashing)
+        if (ctx.jumpBufferCounter > 0f || !ctx.isGrounded && !ctx.isDashing && !ctx.isBackStep)
         {
             if (ctx.isHeavyLand)
             {

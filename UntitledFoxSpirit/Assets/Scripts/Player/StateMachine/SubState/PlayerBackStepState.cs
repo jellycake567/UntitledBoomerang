@@ -9,6 +9,9 @@ public class PlayerBackStepState : PlayerBaseState
     {
         Debug.Log("BackStep State");
 
+        ctx.animController.SetBool("isMoving", false);
+        ctx.animController.SetFloat("ForwardSpeed", 0f);
+
         DashInput();
     }
     public override void UpdateState()
@@ -37,6 +40,10 @@ public class PlayerBackStepState : PlayerBaseState
         if (!ctx.input.isMovementHeld && !ctx.isBackStep)
         {
             SwitchState(factory.Idle());
+        }
+        else if (ctx.input.isMovementHeld && !ctx.isBackStep)
+        {
+            SwitchState(factory.Walk());
         }
     }
     public override void InitializeSubState() { }

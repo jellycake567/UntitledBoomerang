@@ -42,16 +42,16 @@ public class PlayerWalkState : PlayerBaseState
             ctx.animController.speed = vso.animJogDecelSpeed;
             ctx.StartCoroutine(Deceleration());
         }
-        else if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f && ctx.isGrounded)
+        else if (ctx.input.isInputDashPressed && !ctx.isDecel && ctx.currentDashCooldown <= 0f && ctx.isGrounded)
         {
-            Debug.Log("dash");
-
             SwitchState(factory.Dash());
+        }
+        else if (ctx.input.isInputDashPressed && ctx.isDecel && ctx.currentDashCooldown <= 0f && ctx.isGrounded)
+        {
+            SwitchState(factory.BackStep());
         }
         else if (!ctx.input.isMovementHeld && ctx.animIsRunning && ctx.currentSpeed < 4f) // is running and switching to idle
         {
-            Debug.Log("idle");
-
             SwitchState(factory.Idle());
             ctx.rb.velocity = new Vector3(-vso.reduceSpeed * ctx.prevInputDirection.x, 0f, 0f);
         }
@@ -89,6 +89,9 @@ public class PlayerWalkState : PlayerBaseState
 
     IEnumerator Deceleration()
     {
+        Debug.Log("Decel Start");
+        ctx.isDecel = true;
+
         float time = 0f;
         float timeToZero = vso.decelTimeToZeroSpeed * ctx.currentSpeed;
 
@@ -97,14 +100,28 @@ public class PlayerWalkState : PlayerBaseState
         {
             time += -ctx.decelRatePerSec * Time.deltaTime;
 
-            if (ctx.input.isMovementHeld || ctx.isDashing)
+            if (ctx.input.isMovementHeld || ctx.isBackStep)
+            {
+                Debug.Log("Break");
+                ctx.isDecel = false;
                 yield break;
+            }
 
             yield return new WaitForEndOfFrame();
         }
 
-        SwitchState(factory.Idle());
+        if (ctx.isBackStep)
+        {
+            Debug.Log("Break!!");
 
+
+            ctx.isDecel = false;
+            yield break;
+        }
+
+        ctx.isDecel = false;
+
+        SwitchState(factory.Idle());
     }
 
     void Movement()
