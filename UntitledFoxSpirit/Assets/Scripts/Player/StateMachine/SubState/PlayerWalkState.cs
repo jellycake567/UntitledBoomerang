@@ -44,10 +44,14 @@ public class PlayerWalkState : PlayerBaseState
         }
         else if (ctx.input.isInputDashPressed && ctx.currentDashCooldown <= 0f && ctx.isGrounded)
         {
+            Debug.Log("dash");
+
             SwitchState(factory.Dash());
         }
         else if (!ctx.input.isMovementHeld && ctx.animIsRunning && ctx.currentSpeed < 4f) // is running and switching to idle
         {
+            Debug.Log("idle");
+
             SwitchState(factory.Idle());
             ctx.rb.velocity = new Vector3(-vso.reduceSpeed * ctx.prevInputDirection.x, 0f, 0f);
         }
@@ -93,7 +97,7 @@ public class PlayerWalkState : PlayerBaseState
         {
             time += -ctx.decelRatePerSec * Time.deltaTime;
 
-            if (ctx.input.isMovementHeld)
+            if (ctx.input.isMovementHeld || ctx.isDashing)
                 yield break;
 
             yield return new WaitForEndOfFrame();
