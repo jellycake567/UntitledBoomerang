@@ -13,61 +13,66 @@ MonoBehaviour:
   m_Name: New Dialogue
   m_EditorClassIdentifier: 
   DialogueNodeData:
-  - Guid: ecf6fb31-14d7-4f64-a517-ab84c471d866
-    Npc: dsadasdad
-    DialogueText: test
-    Position: {x: 458, y: 31}
-    isStartNode: 0
-    Connections:
-    - BaseNodeGuid: ecf6fb31-14d7-4f64-a517-ab84c471d866
-      PortName: Output
-      TargetNodeGuid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
-      ChoiceGUID: output
-    Choices: []
-  - Guid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
-    Npc: dsadad
-    DialogueText: test
-    Position: {x: 690, y: 193}
-    isStartNode: 0
-    Connections:
-    - BaseNodeGuid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
-      PortName: Output
-      TargetNodeGuid: aacc541c-d3e7-492f-a341-4ddda0a60ef3
-      ChoiceGUID: output
-    Choices: []
-  - Guid: aacc541c-d3e7-492f-a341-4ddda0a60ef3
-    Npc: dsadasd
-    DialogueText: test
-    Position: {x: 954, y: 378}
-    isStartNode: 0
-    Connections: []
-    Choices:
-    - text: New Choice
-      guid: 370524a6-0394-4f5c-b91e-71a4a18f8ca0
-  - Guid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
-    Npc: test
-    DialogueText: test
-    Position: {x: 146, y: 314}
+  - Guid: f6d02d19-14c2-4da8-b0f4-b9d7856ab037
+    Npc: ???
+    DialogueText: Welcome Mortal!
+    Position: {x: -1310, y: 65}
     isStartNode: 1
     Connections:
-    - BaseNodeGuid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
+    - BaseNodeGuid: f6d02d19-14c2-4da8-b0f4-b9d7856ab037
       PortName: 
-      TargetNodeGuid: ecf6fb31-14d7-4f64-a517-ab84c471d866
-      ChoiceGUID: abd16353-481e-4803-b8cb-53166a2e0e5a
-    - BaseNodeGuid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
+      TargetNodeGuid: 549b5ff6-f752-4dc7-97c4-71e878c77b37
+      ChoiceGUID: 1d62bc5f-4da0-4bf6-b82e-dc68b7d63ff5
+    - BaseNodeGuid: f6d02d19-14c2-4da8-b0f4-b9d7856ab037
       PortName: 
-      TargetNodeGuid: 4ec48aaf-cf2c-4a17-994e-b3672bddce82
-      ChoiceGUID: c6649f9b-edf8-4cf7-b286-75f146782cd3
-    - BaseNodeGuid: a7e7c95e-eeb2-4174-9600-95999a3a38d2
-      PortName: 
-      TargetNodeGuid: aacc541c-d3e7-492f-a341-4ddda0a60ef3
-      ChoiceGUID: 42bc58f0-d7e2-45af-80f6-33342e4a5f0c
+      TargetNodeGuid: a9673a10-7acb-4cd8-b83c-291b8847f101
+      ChoiceGUID: ca175aac-83d9-48a4-be04-2adf3864693f
     Choices:
-    - text: sadad
-      guid: abd16353-481e-4803-b8cb-53166a2e0e5a
-    - text: 2dsad
-      guid: c6649f9b-edf8-4cf7-b286-75f146782cd3
-    - text: rffdsfffffdsff
-      guid: 42bc58f0-d7e2-45af-80f6-33342e4a5f0c
-    - text: sssssss
-      guid: 55740b5d-549c-4b57-bbae-21f92de465fe
+    - text: Who are you?
+      portGUID: 1d62bc5f-4da0-4bf6-b82e-dc68b7d63ff5
+      targetGUID: 549b5ff6-f752-4dc7-97c4-71e878c77b37
+    - text: Where am I?
+      portGUID: ca175aac-83d9-48a4-be04-2adf3864693f
+      targetGUID: a9673a10-7acb-4cd8-b83c-291b8847f101
+  - Guid: 549b5ff6-f752-4dc7-97c4-71e878c77b37
+    Npc: ???
+    DialogueText: 
+    Position: {x: -897, y: -54}
+    isStartNode: 0
+    Connections: []
+    Choices: []
+  - Guid: a9673a10-7acb-4cd8-b83c-291b8847f101
+    Npc: ???
+    DialogueText: Where your death awaits
+    Position: {x: -895, y: 227}
+    isStartNode: 0
+    Connections:
+    - BaseNodeGuid: a9673a10-7acb-4cd8-b83c-291b8847f101
+      PortName: Output
+      TargetNodeGuid: 5c3d0ca0-a110-4171-9b4c-567e45968ff6
+      ChoiceGUID: output
+    Choices: []
+  - Guid: 5c3d0ca0-a110-4171-9b4c-567e45968ff6
+    Npc: ???
+    DialogueText: Now how do you want to die?
+    Position: {x: -600, y: 120}
+    isStartNode: 0
+    Connections:
+    - BaseNodeGuid: 5c3d0ca0-a110-4171-9b4c-567e45968ff6
+      PortName: 
+      TargetNodeGuid: 9a1df1c5-faca-4327-a306-1cff22354e45
+      ChoiceGUID: 42c5162b-7d5c-4744-a530-2240c0978f75
+    Choices:
+    - text: Make it quick, I'm busy
+      portGUID: 42c5162b-7d5c-4744-a530-2240c0978f75
+      targetGUID: 
+    - text: Not if I kill you first
+      portGUID: d143bad2-ed9f-48ea-8f86-7110eaf902fc
+      targetGUID: 9a1df1c5-faca-4327-a306-1cff22354e45
+  - Guid: 9a1df1c5-faca-4327-a306-1cff22354e45
+    Npc: ???
+    DialogueText: You fool, now die
+    Position: {x: -177, y: 210}
+    isStartNode: 0
+    Connections: []
+    Choices: []

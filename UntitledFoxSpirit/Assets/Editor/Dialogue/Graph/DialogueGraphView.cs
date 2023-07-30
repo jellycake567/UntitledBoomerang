@@ -71,12 +71,15 @@ public class DialogueGraphView : GraphView
                 }
             }
 
+            
             DialogueNode bNode = baseNode as DialogueNode;
             if (bNode.choices.Count > 0)
             {
+                // Use the connected output port to get choice
                 string portGUID = edge.output.name;
                 DialogueChoices choice = bNode.choices.First(x => x.portGUID == portGUID);
                 
+                // Use connected input port to get target guid
                 DialogueNode tNode = targetNode as DialogueNode;
 
                 choice.targetGUID = tNode.GUID;
