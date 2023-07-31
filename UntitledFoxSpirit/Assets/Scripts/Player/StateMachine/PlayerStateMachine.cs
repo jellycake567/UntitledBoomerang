@@ -94,6 +94,13 @@ public class PlayerStateMachine : MonoBehaviour
         get { return animController.GetBool("Attack"); }
     }
 
+    // Parry
+    [HideInInspector] public bool isParrying;
+    [HideInInspector] public bool animIsParryTriggered
+    {
+        get { return animController.GetBool("Parry"); }
+    }
+
     #endregion
 
     #region Other
@@ -481,6 +488,12 @@ public class PlayerStateMachine : MonoBehaviour
     void FinishBackStep()
     {
         isBackStep = false;
+    }
+
+    void EndParry()
+    {
+        isParrying = false;
+        Debug.Log("move");
     }
 
 }

@@ -59,6 +59,10 @@ public class PlayerWalkState : PlayerBaseState
         {
             SwitchState(factory.Attack());
         }
+        else if (ctx.input.isInputParryPressed && ctx.isGrounded)
+        {
+            SwitchState(factory.Parry());
+        }
     }
 
     public override void InitializeSubState() { }
@@ -89,7 +93,6 @@ public class PlayerWalkState : PlayerBaseState
 
     IEnumerator Deceleration()
     {
-        Debug.Log("Decel Start");
         ctx.isDecel = true;
 
         float time = 0f;
@@ -102,7 +105,6 @@ public class PlayerWalkState : PlayerBaseState
 
             if (ctx.input.isMovementHeld || ctx.isBackStep)
             {
-                Debug.Log("Break");
                 ctx.isDecel = false;
                 yield break;
             }
@@ -112,9 +114,6 @@ public class PlayerWalkState : PlayerBaseState
 
         if (ctx.isBackStep)
         {
-            Debug.Log("Break!!");
-
-
             ctx.isDecel = false;
             yield break;
         }

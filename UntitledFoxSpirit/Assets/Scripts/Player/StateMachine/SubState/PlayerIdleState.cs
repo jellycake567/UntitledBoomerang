@@ -1,6 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class PlayerIdleState : PlayerBaseState
 {
@@ -33,6 +34,10 @@ public class PlayerIdleState : PlayerBaseState
         else if (ctx.input.isInputAttackPressed && ctx.isGrounded && ctx.currentAttackCooldown <= 0f)
         {
             SwitchState(factory.Attack());
+        }
+        else if (ctx.input.isInputParryPressed && ctx.isGrounded)
+        {
+            SwitchState(factory.Parry());
         }
     }
     public override void InitializeSubState() { }

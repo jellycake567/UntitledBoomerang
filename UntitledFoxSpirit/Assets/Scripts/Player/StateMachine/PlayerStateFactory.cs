@@ -48,4 +48,8 @@ public class PlayerStateFactory
     {
         return new PlayerBackStepState(context, this, vso);
     }
+    public PlayerParryState Parry()
+    {
+        return new PlayerParryState(context, this, vso);
+    }
 }

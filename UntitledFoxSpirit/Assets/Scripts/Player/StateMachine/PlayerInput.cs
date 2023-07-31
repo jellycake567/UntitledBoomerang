@@ -17,6 +17,7 @@ public class PlayerInput : MonoBehaviour
     private bool _isInputCrouchPressed;
     private bool _isInputClimbPressed;
     private bool _isInputDropPressed;
+    private bool _isInputParryPressed;
 
     public bool isMovementHeld 
     { 
@@ -37,6 +38,7 @@ public class PlayerInput : MonoBehaviour
     public bool isInputCrouchPressed { get { return _isInputCrouchPressed; } }
     public bool isInputClimbPressed { get { return _isInputClimbPressed; } }
     public bool isInputDropPressed { get { return _isInputDropPressed; } }
+    public bool isInputParryPressed { get { return _isInputParryPressed; } }
 
     
 
@@ -61,6 +63,7 @@ public class PlayerInput : MonoBehaviour
         _isInputCrouchPressed = Input.GetKeyDown(KeyCode.C) ? true : false;
         _isInputClimbPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) ? true : false;
         _isInputDropPressed = Input.GetKeyDown(KeyCode.S) ? true : false;
+        _isInputParryPressed = Input.GetKeyDown(KeyCode.Q) ? true : false;
 
 
         InputReleased();
