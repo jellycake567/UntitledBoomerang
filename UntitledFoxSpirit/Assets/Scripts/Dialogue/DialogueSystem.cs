@@ -34,6 +34,7 @@ public class DialogueSystem : MonoBehaviour
     Dictionary<DialogueChoices, string> choiceList = new Dictionary<DialogueChoices, string>();
 
     bool isChoice = false;
+    const float DEFAULT_HEIGHT = 1440f;
 
     void Start()
     {
@@ -88,7 +89,10 @@ public class DialogueSystem : MonoBehaviour
             newChoiceUI = Instantiate(choicePrefab, newChoiceUI.transform).transform;
             newChoiceUI.parent = parentChoiceObject.transform;
 
-            newChoiceUI.position = newChoiceUI.position - new Vector3(0, 100f, 0);
+            // Set button position
+            RectTransform rt = newChoiceUI.GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(0, rt.anchoredPosition.y - 300f * index);
+            
 
             newChoiceUI.GetComponentInChildren<TextMeshProUGUI>().text = choice.text;
 
